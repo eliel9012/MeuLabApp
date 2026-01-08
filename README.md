@@ -2,6 +2,12 @@
 
 App SwiftUI para iOS/iPadOS que monitora dados do servidor Raspberry Pi em tempo real.
 
+## Setup rapido
+
+1. Copie a pasta `MeuLabApp` para seu Mac
+2. Crie `MeuLabApp/Resources/Secrets.plist` a partir do exemplo
+3. Abra `MeuLabApp.xcodeproj` no Xcode e rode
+
 ## Funcionalidades
 
 - **ADS-B**: Rastreamento de aeronaves em tempo real
