@@ -1,14 +1,7 @@
 import Foundation
 
 enum RadarHTML {
-    static var content: String {
-        let envJWT = ProcessInfo.processInfo.environment["MEULAB_MAPKIT_JWT"]?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let plistJWT = (Bundle.main.object(forInfoDictionaryKey: "MEULAB_MAPKIT_JWT") as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let jwt = envJWT?.isEmpty == false ? envJWT! : (plistJWT ?? "")
-        return rawContent.replacingOccurrences(of: "__MEULAB_MAPKIT_JWT__", with: jwt)
-    }
-
-    private static let rawContent = #"""
+    static let content = #"""
 <!doctype html>
 <html lang="pt-BR">
 <head>
@@ -406,7 +399,7 @@ enum RadarHTML {
 
   <script>
 "use strict";
-var MAPKIT_JWT="__MEULAB_MAPKIT_JWT__",
+var MAPKIT_JWT="eyJhbGciOiJFUzI1NiIsImtpZCI6IjlRTDNWWFkyNEIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI3S0dOTUQ2UkJZIiwiaWF0IjoxNzcxNTQxODkxLCJleHAiOjE3ODcwOTM4OTF9.MEYCIQCU4_dRN9NfvrUTdbSfwZJrZQPdt-lziGnpXYJWT_MeEAIhAJgInfCIEh60PZvFT9YnKy_t83PeSeHW8UMfWgBb8iRK",
 CACHE_KEY="tar1090_cache",CACHE_MAX_AGE=3e5,MIN_UPDATE_MS=400,MAX_HISTORY=60,PREDICTION_MIN=5,NM2KM=1.852;
 
 var MIL_PFX={FAB:1,BRS:1,FFAB:1,PAT:1,CBJ:1,PBM:1,CPB:1,NAe:1,NAV:1,MAR:1,RCH:1,EVAC:1,REACH:1,CNV:1,DUKE:1,KING:1,JAKE:1,TOPCAT:1,MMF:1,BAF:1,GAF:1,RRR:1,USAF:1,USN:1,USMC:1},

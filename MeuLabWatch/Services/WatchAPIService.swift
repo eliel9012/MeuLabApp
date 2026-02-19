@@ -13,7 +13,7 @@ actor WatchAPIService {
     private init() {
         let envToken = ProcessInfo.processInfo.environment["MEULAB_API_TOKEN"]?.trimmingCharacters(in: .whitespacesAndNewlines)
         let plistToken = (Bundle.main.object(forInfoDictionaryKey: "MEULAB_API_TOKEN") as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.apiToken = envToken?.isEmpty == false ? envToken! : (plistToken ?? "")
+        self.apiToken = envToken?.isEmpty == false ? envToken! : (plistToken?.isEmpty == false ? plistToken! : "")
 
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30 // Sincronizado com App principal
