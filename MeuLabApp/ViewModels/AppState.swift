@@ -615,12 +615,32 @@ class AppState: ObservableObject {
             
             // Check for user location
             if LocationManager.shared.isAuthorized, let loc = LocationManager.shared.userLocation {
-                // Prefer backend (WeatherKit REST when configured); fallback to Open-Meteo.
+                // Prefer native WeatherKit; fallback to backend and then Open-Meteo.
+                #if canImport(WeatherKit)
+                if #available(iOS 16.0, *) {
+                    do {
+                        data = try await fetchWeatherKitWeatherData(location: loc)
+                    } catch {
+                        do {
+                            data = try await api.fetchWeather(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                        } catch {
+                            data = try await api.fetchWeatherOpenMeteo(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                        }
+                    }
+                } else {
+                    do {
+                        data = try await api.fetchWeather(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                    } catch {
+                        data = try await api.fetchWeatherOpenMeteo(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                    }
+                }
+                #else
                 do {
                     data = try await api.fetchWeather(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
                 } catch {
                     data = try await api.fetchWeatherOpenMeteo(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
                 }
+                #endif
                 
                 // Try reverse geocoding for city name (optional enhancement)
                 // For now, it uses coordinates string from APIService
