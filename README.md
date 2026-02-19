@@ -16,6 +16,36 @@ App SwiftUI para iOS/iPadOS que monitora dados do servidor Raspberry Pi em tempo
 - **Rádio**: Player da Diário FM com Now Playing no Control Center
 - **Clima**: Previsão do tempo para Franca, SP
 
+## Screenshots
+
+### ADS-B
+![Tela ADS-B](Screenshots/apple-silicon/adsb.png)
+_Visão geral do tráfego aéreo em tempo real._
+
+### Alertas
+![Tela de alertas](Screenshots/apple-silicon/alerts.png)
+_Feed de notificações e eventos recentes do sistema._
+
+### Mapa
+![Tela de mapa](Screenshots/apple-silicon/map.png)
+_Mapa com posições de aeronaves e contexto geográfico._
+
+### Rádio
+![Tela de rádio](Screenshots/apple-silicon/radio.png)
+_Player da Diário FM com status de reprodução._
+
+### Satélite
+![Tela de satélite](Screenshots/apple-silicon/satellite.png)
+_Imagens Meteor e monitoramento de recepção SatDump._
+
+### Sistema
+![Tela de sistema](Screenshots/apple-silicon/system.png)
+_Métricas de CPU, memória, disco e saúde geral._
+
+### Clima
+![Tela de clima](Screenshots/apple-silicon/weather.png)
+_Condições atuais e previsão para Franca, SP._
+
 ## Requisitos
 
 - Xcode 15.0+
