@@ -13,9 +13,16 @@ App SwiftUI para iOS/iPadOS que monitora em tempo real os serviços do ambiente 
 
 | | | |
 |---|---|---|
-| ![ADS-B](Screenshots/apple-silicon/adsb.png)<br><sub>ADS-B: tráfego aéreo em tempo real</sub> | ![Alertas](Screenshots/apple-silicon/alerts.png)<br><sub>Alertas e eventos recebidos</sub> | ![Mapa](Screenshots/apple-silicon/map.png)<br><sub>Radar/Mapa com aeronaves</sub> |
-| ![Rádio](Screenshots/apple-silicon/radio.png)<br><sub>Player da rádio com now playing</sub> | ![Satélite](Screenshots/apple-silicon/satellite.png)<br><sub>Imagens Meteor via SatDump</sub> | ![Sistema](Screenshots/apple-silicon/system.png)<br><sub>Métricas de CPU, RAM e disco</sub> |
-| ![Clima](Screenshots/apple-silicon/weather.png)<br><sub>Condições atuais e previsão</sub> |  |  |
+| ![ADS-B](Screenshots/apple-silicon/adsb.png)<br><sub>Resumo ADS-B com aeronaves no ar, classificação civil/não civil, subida/descida/cruzeiro, altitude e velocidade médias.</sub> | ![Satélite](Screenshots/apple-silicon/satellite.png)<br><sub>Painel satelital com mapa de cobertura, satélites captáveis e histórico de passes Meteor M2-x.</sub> | ![Sistema](Screenshots/apple-silicon/system.png)<br><sub>Monitoramento do Pi4: CPU, temperatura, RAM, armazenamento e qualidade do Wi‑Fi.</sub> |
+| ![Rádio](Screenshots/apple-silicon/radio.png)<br><sub>Tela “Now Playing” da Diário FM com capa, faixa atual, status e controles.</sub> | ![Alertas](Screenshots/apple-silicon/alerts.png)<br><sub>Central de alertas com regras, disparos recentes e estado de integração com a API.</sub> | ![Clima](Screenshots/apple-silicon/weather.png)<br><sub>Clima local em Franca/SP com temperatura, sensação, umidade, vento, UV e próximos dias.</sub> |
+| ![Mapa](Screenshots/apple-silicon/map.png)<br><sub>Radar/Mapa para acompanhamento visual de tráfego aéreo e contexto geográfico.</sub> |  |  |
+
+### Fluxos detalhados mostrados no app
+
+- ADS-B (drilldown): lista “Subindo” com callsign, empresa, razão vertical, velocidade e altitude.
+- ADS-B (detalhe do voo): origem/destino, foto da aeronave e telemetria completa (altitude, proa, velocidade, coordenadas).
+- Rádio (biblioteca): histórico de músicas e item “tocando agora” com deep links.
+- Satélite (detalhe do passe): grade de imagens por canal/espectro (visível, IR, falso color etc.).
 
 ## Requisitos
 
