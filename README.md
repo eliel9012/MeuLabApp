@@ -11,18 +11,19 @@ App SwiftUI para iOS/iPadOS que monitora em tempo real os serviços do ambiente 
 
 ## Screenshots
 
+### Visão principal das abas
+
 | | | |
 |---|---|---|
-| ![ADS-B](Screenshots/apple-silicon/adsb.png)<br><sub>Resumo ADS-B com aeronaves no ar, classificação civil/não civil, subida/descida/cruzeiro, altitude e velocidade médias.</sub> | ![Satélite](Screenshots/apple-silicon/satellite.png)<br><sub>Painel satelital com mapa de cobertura, satélites captáveis e histórico de passes Meteor M2-x.</sub> | ![Sistema](Screenshots/apple-silicon/system.png)<br><sub>Monitoramento do Pi4: CPU, temperatura, RAM, armazenamento e qualidade do Wi‑Fi.</sub> |
-| ![Rádio](Screenshots/apple-silicon/radio.png)<br><sub>Tela “Now Playing” da Diário FM com capa, faixa atual, status e controles.</sub> | ![Alertas](Screenshots/apple-silicon/alerts.png)<br><sub>Central de alertas com regras, disparos recentes e estado de integração com a API.</sub> | ![Clima](Screenshots/apple-silicon/weather.png)<br><sub>Clima local em Franca/SP com temperatura, sensação, umidade, vento, UV e próximos dias.</sub> |
-| ![Mapa](Screenshots/apple-silicon/map.png)<br><sub>Radar/Mapa para acompanhamento visual de tráfego aéreo e contexto geográfico.</sub> |  |  |
+| ![ADS-B - visão geral](Screenshots/ios-dark/adsb-overview.png)<br><sub>ADS-B: total de aeronaves, distribuição por fase de voo, altitude/velocidade média e destaques.</sub> | ![Satélite - mapa](Screenshots/ios-dark/satellite-map.png)<br><sub>Mapa satelital com cobertura da estação, satélites captáveis e resumo do último passe.</sub> | ![Sistema - monitoramento](Screenshots/ios-dark/system-overview.png)<br><sub>Status do Pi4 com CPU, temperatura, RAM, armazenamento e sinal Wi‑Fi.</sub> |
+| ![Rádio - now playing](Screenshots/ios-dark/radio-now-playing.png)<br><sub>Player da rádio com capa, faixa atual, status de reprodução e controle central.</sub> | ![Clima - visão geral](Screenshots/ios-dark/weather-overview.png)<br><sub>Clima atual em Franca/SP com sensação, umidade, vento, UV e previsão do dia.</sub> | ![Satélite - próximos passes](Screenshots/ios-dark/satellite-passes.png)<br><sub>Lista de próximos passes Meteor M2-3 e histórico recente de capturas.</sub> |
 
-### Fluxos detalhados mostrados no app
+### Fluxos detalhados
 
-- ADS-B (drilldown): lista “Subindo” com callsign, empresa, razão vertical, velocidade e altitude.
-- ADS-B (detalhe do voo): origem/destino, foto da aeronave e telemetria completa (altitude, proa, velocidade, coordenadas).
-- Rádio (biblioteca): histórico de músicas e item “tocando agora” com deep links.
-- Satélite (detalhe do passe): grade de imagens por canal/espectro (visível, IR, falso color etc.).
+| | | |
+|---|---|---|
+| ![ADS-B - lista subindo](Screenshots/ios-dark/adsb-climbing-list.png)<br><sub>Modal de aeronaves subindo com callsign, companhia, razão vertical, velocidade e altitude.</sub> | ![ADS-B - detalhe do voo](Screenshots/ios-dark/adsb-flight-details.png)<br><sub>Detalhe do voo com origem/destino, foto da aeronave e telemetria completa.</sub> | ![Satélite - galeria do passe](Screenshots/ios-dark/satellite-pass-gallery.png)<br><sub>Grade de imagens por canal/espectro (visível, infravermelho e composições).</sub> |
+| ![Rádio - histórico](Screenshots/ios-dark/radio-history.png)<br><sub>Biblioteca de músicas: “tocando agora” + histórico de faixas com deep links.</sub> |  |  |
 
 ## Requisitos
 
