@@ -6,19 +6,19 @@ actor WatchAPIService {
     static let shared = WatchAPIService()
     
     private let baseURL = "https://app.meulab.fun"
-    private let apiToken: String
+    private let apiToken = WatchSecrets.apiToken.isEmpty ? WatchSecrets.apiTokenAlternative : WatchSecrets.apiToken
     
     private let session: URLSession
     
     private init() {
-        let envToken = ProcessInfo.processInfo.environment["MEULAB_API_TOKEN"]?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let plistToken = (Bundle.main.object(forInfoDictionaryKey: "MEULAB_API_TOKEN") as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.apiToken = envToken?.isEmpty == false ? envToken! : (plistToken?.isEmpty == false ? plistToken! : "")
-
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 30 // Sincronizado com App principal
         config.timeoutIntervalForResource = 60
         self.session = URLSession(configuration: config)
+        
+        #if DEBUG
+        print("🔐 watchOS Secrets: Token configured = \(WatchSecrets.isConfigured)")
+        #endif
     }
     
     private func makeRequest(path: String) throws -> URLRequest {

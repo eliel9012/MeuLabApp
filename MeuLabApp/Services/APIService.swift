@@ -30,8 +30,8 @@ enum APIError: Error, LocalizedError {
 actor APIService {
     static let shared = APIService()
 
-    private let baseURL = "https://app.meulab.fun"
-    private let apiToken: String
+    private let baseURL = Secrets.apiBaseURL
+    private let apiToken = Secrets.apiToken.isEmpty ? Secrets.apiTokenAlternative : Secrets.apiToken
 
     // AviationStack (Flight Routes)
     private let aviationStackBaseURL = "http://api.aviationstack.com/v1"
@@ -52,16 +52,16 @@ actor APIService {
     private let session: URLSession
 
     private init() {
-        let envToken = ProcessInfo.processInfo.environment["MEULAB_API_TOKEN"]?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let plistToken = (Bundle.main.object(forInfoDictionaryKey: "MEULAB_API_TOKEN") as? String)?.trimmingCharacters(in: .whitespacesAndNewlines)
-        self.apiToken = envToken?.isEmpty == false ? envToken! : (plistToken?.isEmpty == false ? plistToken! : "")
-
         let config = URLSessionConfiguration.default
         config.timeoutIntervalForRequest = 60
         config.timeoutIntervalForResource = 120
         config.waitsForConnectivity = true
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         self.session = URLSession(configuration: config)
+        
+        #if DEBUG
+        Secrets.debugPrintStatus()
+        #endif
     }
 
     // MARK: - Request Helpers

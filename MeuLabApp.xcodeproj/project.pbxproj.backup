@@ -84,8 +84,7 @@
 		W013 /* WatchAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = W113 /* WatchAPIService.swift */; };
 		W014 /* WatchModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = W114 /* WatchModels.swift */; };
 
-			8E67D5B72FC44490AD989D19 /* Secrets.plist in Sources */ = {isa = PBXBuildFile; fileRef = D916AD0964D84EF1A89E02C6 /* Secrets.plist */; };
-			3909786604B94EE5BE1AD25A /* WatchSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E181A3D935D7491286930152 /* WatchSecrets.swift */; };/* End PBXBuildFile section */
+			8E67D5B72FC44490AD989D19 /* Secrets.plist in Sources */ = {isa = PBXBuildFile; fileRef = D916AD0964D84EF1A89E02C6 /* Secrets.plist */; };/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		F703A8BF2F40352B007B6FD3 /* PBXContainerItemProxy */ = {
@@ -218,8 +217,7 @@
 		W113 /* WatchAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAPIService.swift; sourceTree = "<group>"; };
 		W114 /* WatchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchModels.swift; sourceTree = "<group>"; };
 
-			D916AD0964D84EF1A89E02C6 /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Secrets.plist; sourceTree = "<group>"; };
-			E181A3D935D7491286930152 /* WatchSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWatch/Services/WatchSecrets.swift; sourceTree = "<group>"; };/* End PBXFileReference section */
+			D916AD0964D84EF1A89E02C6 /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Secrets.plist; sourceTree = "<group>"; };/* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		F703A8C42F40352B007B6FD3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {

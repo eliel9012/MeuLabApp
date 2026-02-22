@@ -1,0 +1,12 @@
+// Config.default.xcconfig
+// Build configuration - Public values (safe to commit)
+
+// Base URL - pode variar por environment
+API_BASE_URL = https://app.meulab.fun
+
+// API Token Value - NUNCA commitar com valor real!
+// Em desenvolvimento, usar Config.local.xcconfig
+API_TOKEN_VALUE = PLACEHOLDER_TOKEN_SET_IN_LOCAL_CONFIG
+
+// Flags
+ENABLE_API_LOGGING = YES

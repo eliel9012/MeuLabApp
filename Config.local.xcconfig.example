@@ -1,0 +1,19 @@
+// Config.local.xcconfig.example
+// Build configuration - LOCAL ONLY (copy to Config.local.xcconfig, NOT in git)
+//
+// 🔐 SECURITY: This file is in .gitignore
+// DO NOT commit Config.local.xcconfig or this file with real tokens!
+//
+// To use:
+// 1. cp Config.local.xcconfig.example Config.local.xcconfig
+// 2. Edit Config.local.xcconfig and add your real tokens
+// 3. In Xcode: Target Build Settings → add #include "Config.local.xcconfig"
+
+// API Token - NEVER commit this with real value!
+API_TOKEN_VALUE = p19Yl1wARrFHjn-4Pg0feQQDeihnRQrMwTUyncjGtgs
+
+// Optional: Override API Base URL for local testing
+// API_BASE_URL = http://localhost:8000
+
+// Optional: Enable debug logging
+// ENABLE_API_LOGGING = YES

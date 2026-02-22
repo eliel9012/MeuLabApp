@@ -24,11 +24,16 @@ watch*_errors.txt
 widget*_errors.txt
 clean_build_errors.txt
 
-# Local secret files
+# Local secret files - NEVER commit these
+Secrets.plist
+**/Secrets.plist
+Secrets.xcconfig
+**/Secrets.xcconfig
 .env
 .env.*
 *.xcconfig.local
-Secrets.plist
+.secrets
+**/.secrets
 
 # Python cache (server scripts)
 __pycache__/
