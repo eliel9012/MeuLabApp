@@ -1,5 +1,37 @@
 # MeuLab App
 
+## Português
+
+App SwiftUI para iOS/iPadOS que monitora em tempo real os serviços do ambiente MeuLab.
+
+Resumo rápido:
+
+- monitora ADS-B, ACARS, satélite, sistema, rádio e clima
+- consome a API principal do MeuLab e feeds auxiliares
+- mantém o token fora do código-fonte
+
+Setup rápido:
+
+1. Abra `MeuLabApp.xcodeproj` no Xcode.
+2. Crie `MeuLabApp/Resources/Secrets.plist` a partir do exemplo.
+3. Configure seu Team e rode o app.
+
+## English
+
+SwiftUI app for iOS/iPadOS that monitors MeuLab services in real time.
+
+Quick summary:
+
+- monitors ADS-B, ACARS, satellite, system, radio, and weather data
+- consumes the main MeuLab API plus auxiliary feeds
+- keeps the API token out of source control
+
+Quick start:
+
+1. Open `MeuLabApp.xcodeproj` in Xcode.
+2. Create `MeuLabApp/Resources/Secrets.plist` from the example file.
+3. Configure your Team and run the app.
+
 App SwiftUI para iOS/iPadOS que monitora em tempo real os serviços do ambiente MeuLab (ADS-B, ACARS, satélite, sistema, rádio e clima).
 
 ## Visão geral
