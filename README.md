@@ -9,90 +9,53 @@ SwiftUI app for iOS and iPadOS that monitors MeuLab services in real time.
 <table>
   <tr>
     <td align="center">
-      <img src="Screenshots/apple-silicon/adsb.png" alt="ADS-B dashboard / painel ADS-B" width="260"><br>
-      <sub>ADS-B dashboard / Painel ADS-B</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/apple-silicon/alerts.png" alt="Alerts center / central de alertas" width="260"><br>
-      <sub>Alerts center / Central de alertas</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/apple-silicon/map.png" alt="Live map / mapa em tempo real" width="260"><br>
-      <sub>Live map / Mapa em tempo real</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/apple-silicon/radio.png" alt="Radio playback / reprodução de rádio" width="260"><br>
-      <sub>Radio playback / Reprodução de rádio</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/apple-silicon/satellite.png" alt="Satellite view / visão de satélite" width="260"><br>
-      <sub>Satellite view / Visão de satélite</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/apple-silicon/system.png" alt="System status / status do sistema" width="260"><br>
-      <sub>System status / Status do sistema</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/apple-silicon/weather.png" alt="Weather overview / visão geral do clima" width="260"><br>
-      <sub>Weather overview / Visão geral do clima</sub>
-    </td>
-    <td align="center">
       <img src="Screenshots/ios-dark/adsb-overview.png" alt="ADS-B overview / visão geral do ADS-B" width="260"><br>
       <sub>ADS-B overview / Visão geral do ADS-B</sub>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/adsb-climbing-list.png" alt="Climbing aircraft list / lista de aeronaves em subida" width="260"><br>
       <sub>Climbing aircraft list / Lista de aeronaves em subida</sub>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/adsb-flight-details.png" alt="Flight details / detalhes do voo" width="260"><br>
       <sub>Flight details / Detalhes do voo</sub>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/radio-now-playing.png" alt="Now playing / tocando agora" width="260"><br>
       <sub>Now playing / Tocando agora</sub>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/radio-history.png" alt="Radio history / histórico da rádio" width="260"><br>
       <sub>Radio history / Histórico da rádio</sub>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/satellite-map.png" alt="Satellite map / mapa de satélite" width="260"><br>
       <sub>Satellite map / Mapa de satélite</sub>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/satellite-passes.png" alt="Satellite passes / passagens de satélite" width="260"><br>
       <sub>Satellite passes / Passagens de satélite</sub>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/satellite-pass-gallery.png" alt="Pass gallery / galeria de passagens" width="260"><br>
       <sub>Pass gallery / Galeria de passagens</sub>
     </td>
+  </tr>
+  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/system-overview.png" alt="System overview / visão geral do sistema" width="260"><br>
       <sub>System overview / Visão geral do sistema</sub>
     </td>
-  </tr>
-  <tr>
     <td align="center">
       <img src="Screenshots/ios-dark/weather-overview.png" alt="Weather overview / visão geral do clima" width="260"><br>
       <sub>Weather overview / Visão geral do clima</sub>
     </td>
-    <td></td>
   </tr>
 </table>
 
