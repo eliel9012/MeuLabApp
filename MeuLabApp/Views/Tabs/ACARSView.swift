@@ -3,16 +3,18 @@ import SwiftUI
 struct ACARSView: View {
     @EnvironmentObject var appState: AppState
     @State private var showMessagesList = false
+    @State private var showSearchResults = false
     @State private var searchText = ""
     @State private var isSearching = false
     @State private var selectedAircraft: ACARSTopAircraft?
     @State private var aircraftMessages: [ACARSMessage] = []
     @State private var isLoadingAircraftMessages = false
+    @State private var searchResults: [ACARSMessage] = []
 
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 16) {
+                LazyVStack(spacing: 16) {
                     // Summary Section
                     if let summary = appState.acarsSummary {
                         summarySection(summary)
@@ -61,12 +63,28 @@ struct ACARSView: View {
             .sheet(isPresented: $showMessagesList) {
                 ACARSMessagesSheet(messages: appState.acarsMessages)
             }
+            .sheet(isPresented: $showSearchResults) {
+                ACARSMessagesSheet(messages: searchResults)
+            }
             .sheet(item: $selectedAircraft) { aircraft in
                 AircraftMessagesSheet(
                     aircraft: aircraft,
                     messages: aircraftMessages,
                     isLoading: isLoadingAircraftMessages
                 )
+            }
+            .onChange(of: appState.intelligenceContext) { _, context in
+                guard
+                    let context,
+                    context["tab"] == ContentView.Tab.acars.rawValue,
+                    context["kind"] == "acars",
+                    let identifier = context["identifier"],
+                    !identifier.isEmpty
+                else { return }
+
+                searchText = identifier
+                appState.intelligenceContext = nil
+                Task { await searchFlight() }
             }
         }
     }
@@ -109,11 +127,13 @@ struct ACARSView: View {
                 }
             }
 
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: 12) {
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible()),
+                    GridItem(.flexible()),
+                    GridItem(.flexible()),
+                ], spacing: 12
+            ) {
                 ACARSStatCard(
                     title: "Mensagens",
                     value: "\(summary.today.messages)",
@@ -146,8 +166,7 @@ struct ACARSView: View {
             .foregroundStyle(.secondary)
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 
     // MARK: - Hourly Chart
@@ -173,7 +192,8 @@ struct ACARSView: View {
                                 .frame(width: 45, alignment: .leading)
 
                             GeometryReader { geo in
-                                let width = CGFloat(hour.messages) / CGFloat(maxMessages) * geo.size.width
+                                let width =
+                                    CGFloat(hour.messages) / CGFloat(maxMessages) * geo.size.width
                                 RoundedRectangle(cornerRadius: 4)
                                     .fill(.purple.opacity(0.7))
                                     .frame(width: max(width, 2))
@@ -191,8 +211,7 @@ struct ACARSView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 
     // MARK: - Top Aircraft
@@ -245,15 +264,13 @@ struct ACARSView: View {
                         }
                         .padding(.vertical, 6)
                         .padding(.horizontal, 8)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .materialCard(cornerRadius: 8)
                     }
                     .buttonStyle(.plain)
                 }
             }
             .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
+            .glassCard(cornerRadius: 12)
         }
     }
 
@@ -270,10 +287,12 @@ struct ACARSView: View {
                         .font(.headline)
                 }
 
-                LazyVGrid(columns: [
-                    GridItem(.flexible()),
-                    GridItem(.flexible())
-                ], spacing: 8) {
+                LazyVGrid(
+                    columns: [
+                        GridItem(.flexible()),
+                        GridItem(.flexible()),
+                    ], spacing: 8
+                ) {
                     ForEach(labels) { label in
                         HStack {
                             Text(label.label)
@@ -299,14 +318,12 @@ struct ACARSView: View {
                         }
                         .padding(.horizontal, 8)
                         .padding(.vertical, 6)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .materialCard(cornerRadius: 8)
                     }
                 }
             }
             .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
+            .glassCard(cornerRadius: 12)
         }
     }
 
@@ -337,8 +354,7 @@ struct ACARSView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 
     // MARK: - Search
@@ -346,8 +362,20 @@ struct ACARSView: View {
     private func searchFlight() async {
         guard !searchText.isEmpty else { return }
         isSearching = true
-        // TODO: Implement search via API
-        isSearching = false
+        defer { isSearching = false }
+
+        do {
+            let result = try await APIService.shared.searchACARSMessages(query: searchText)
+            await MainActor.run {
+                searchResults = result.messages
+                showSearchResults = true
+            }
+        } catch {
+            await MainActor.run {
+                searchResults = []
+                showSearchResults = false
+            }
+        }
     }
 
     // MARK: - History
@@ -383,8 +411,7 @@ struct ACARSView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 
     @ViewBuilder
@@ -408,7 +435,7 @@ struct ACARSView: View {
         }
         return formatTime(timeString)
     }
-    
+
     private func formatTime(_ timeString: String) -> String {
         // Extract HH:MM from formats like "YYYY-MM-DD HH:MM:SS" or return original if not matched
         let parts = timeString.split(separator: " ")
@@ -421,8 +448,12 @@ struct ACARSView: View {
         // If there's no space, try to take HH:MM from the whole string
         if let colonIndex = timeString.firstIndex(of: ":") {
             // We want 2 digits for minutes after the colon -> total of 5 chars starting at (hour start)
-            let startOfHour = timeString.index(colonIndex, offsetBy: -2, limitedBy: timeString.startIndex) ?? timeString.startIndex
-            let end = timeString.index(startOfHour, offsetBy: min(5, timeString.distance(from: startOfHour, to: timeString.endIndex)))
+            let startOfHour =
+                timeString.index(colonIndex, offsetBy: -2, limitedBy: timeString.startIndex)
+                ?? timeString.startIndex
+            let end = timeString.index(
+                startOfHour,
+                offsetBy: min(5, timeString.distance(from: startOfHour, to: timeString.endIndex)))
             let slice = timeString[startOfHour..<end]
             return String(slice)
         }
@@ -455,8 +486,7 @@ struct ACARSStatCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .background(Color(.systemGray5))
-        .cornerRadius(10)
+        .glassCard(cornerRadius: 10)
     }
 }
 
@@ -533,6 +563,7 @@ struct ACARSMessagesSheet: View {
             List(messages) { message in
                 ACARSMessageRow(message: message)
             }
+            .scrollContentBackground(.hidden)
             .navigationTitle("Mensagens (\(messages.count))")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -607,6 +638,7 @@ struct AircraftMessagesSheet: View {
                         }
                     }
                     .listStyle(.plain)
+                    .scrollContentBackground(.hidden)
                 }
             }
             .navigationTitle("\(aircraft.tail)")
@@ -678,8 +710,7 @@ struct ACARSDetailedMessageRow: View {
                                     .foregroundStyle(.primary)
                                     .padding(8)
                                     .frame(maxWidth: .infinity, alignment: .leading)
-                                    .background(Color(.systemGray6))
-                                    .cornerRadius(8)
+                                    .materialCard(cornerRadius: 8)
                             } else {
                                 Text(text.prefix(60) + (text.count > 60 ? "..." : ""))
                                     .font(.caption)

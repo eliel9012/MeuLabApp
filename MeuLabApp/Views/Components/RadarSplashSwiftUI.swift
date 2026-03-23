@@ -40,8 +40,13 @@ private struct RadarSplashInjector: UIViewControllerRepresentable {
 }
 
 public final class RadarSplashPresenter {
+    private static var hasShownThisSession = false
+
     /// Chame uma vez (ex.: no .onAppear do primeiro view) se preferir controle manual.
     public static func show(on view: UIView) {
+        guard !hasShownThisSession else { return }
+        hasShownThisSession = true
+
         let hostView: UIView
         if let window = view.window ?? UIApplication.shared.connectedScenes
             .compactMap({ $0 as? UIWindowScene })
@@ -51,6 +56,8 @@ public final class RadarSplashPresenter {
         } else {
             hostView = view
         }
+
+        guard !hostView.subviews.contains(where: { $0 is RadarSplashOverlay }) else { return }
 
         let splash = RadarSplashOverlay(frame: hostView.bounds)
         splash.autoresizingMask = [.flexibleWidth, .flexibleHeight]

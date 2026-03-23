@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FMDS02 /* FoundationModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMDS01 /* FoundationModelService.swift */; };
+		INTV02 /* IntelligenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = INTV01 /* IntelligenceView.swift */; };
 		001 /* MeuLabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 101 /* MeuLabApp.swift */; };
 		002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 102 /* ContentView.swift */; };
 		003 /* ADSBModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 103 /* ADSBModels.swift */; };
@@ -138,6 +140,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		FMDS01 /* FoundationModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelService.swift; sourceTree = "<group>"; };
+		INTV01 /* IntelligenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceView.swift; sourceTree = "<group>"; };
 		100 /* MeuLabApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeuLabApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		101 /* MeuLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp.swift; sourceTree = "<group>"; };
 		102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -343,6 +347,7 @@
 			children = (
 				108 /* APIService.swift */,
 				109 /* AudioPlayer.swift */,
+				FMDS01 /* FoundationModelService.swift */,
 				122 /* PushNotificationManager.swift */,
 				123 /* LocationManager.swift */,
 				132 /* NotificationFeedManager.swift */,
@@ -386,6 +391,7 @@
 			children = (
 				111 /* ADSBView.swift */,
 				120 /* ACARSView.swift */,
+				INTV01 /* IntelligenceView.swift */,
 				112 /* SystemView.swift */,
 				127 /* InfraView.swift */,
 				113 /* RadioView.swift */,
@@ -666,6 +672,7 @@
 			files = (
 				001 /* MeuLabApp.swift in Sources */,
 				002 /* ContentView.swift in Sources */,
+				FMDS02 /* FoundationModelService.swift in Sources */,
 				F7E628EB2F1448E000763B43 /* LocalNowPlayingFetcher.swift in Sources */,
 				003 /* ADSBModels.swift in Sources */,
 				004 /* SystemModels.swift in Sources */,
@@ -686,6 +693,7 @@
 				F7CE39022F14BDBA00EF7A25 /* SatellitePassPredictor.swift in Sources */,
 				018 /* ACARSModels.swift in Sources */,
 				019 /* ACARSView.swift in Sources */,
+				INTV02 /* IntelligenceView.swift in Sources */,
 				F762D6292F44164400D6BA3B /* OpenSkyService.swift in Sources */,
 				020 /* MapView.swift in Sources */,
 				021 /* PushNotificationManager.swift in Sources */,

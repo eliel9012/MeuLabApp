@@ -1,9 +1,10 @@
-import Foundation
-import SwiftUI
 import Combine
 import CoreLocation
+import Foundation
+import SwiftUI
+
 #if canImport(WeatherKit)
-import WeatherKit
+    import WeatherKit
 #endif
 
 @MainActor
@@ -14,35 +15,56 @@ class AppState: ObservableObject {
     // o AppState publica atualizacoes frequentes (ex.: ADSB a cada 0.5s), mesmo as
     // views escondidas recompoem e isso explode CPU e deixa a UI lenta ao trocar de tab.
     @Published private(set) var activeTabRawValue: String = "adsb"
+    @Published var intelligenceContext: [String: String]?
     func setActiveTab(_ rawValue: String) {
+        let didChange = activeTabRawValue != rawValue
         activeTabRawValue = rawValue
+        guard didChange, hasBootstrapped else { return }
+
+        Task { @MainActor [weak self] in
+            await self?.refreshActiveTabNow(force: false)
+        }
     }
-    
+
     func updateRadarBounds(_ bounds: [Double]) {
-        self.radarBoundingBox = bounds
+        guard bounds.count == 4 else {
+            self.radarBoundingBox = bounds
+            return
+        }
+
+        let minLat = min(bounds[0], bounds[1])
+        let maxLat = max(bounds[0], bounds[1])
+        let minLon = min(bounds[2], bounds[3])
+        let maxLon = max(bounds[2], bounds[3])
+        self.radarBoundingBox = [minLat, maxLat, minLon, maxLon]
     }
 
     // MARK: - ADS-B
-    @Published var adsbSummary: ADSBSummary?
-    @Published var aircraftList: [Aircraft] = []
-    @Published var localAircraftCount: Int = 0      // Aeronaves do radar local
-    @Published var openskyAircraftCount: Int = 0    // Aeronaves da OpenSky
+    @Published var adsbSummary: ADSBSummary? {
+        didSet { rebuildADSBViewCache() }
+    }
+    @Published var aircraftList: [Aircraft] = [] {
+        didSet { rebuildADSBViewCache() }
+    }
+    @Published var localAircraftCount: Int = 0  // Aeronaves do radar local
+    @Published var openskyAircraftCount: Int = 0  // Aeronaves da OpenSky
     @Published var adsbError: String?
     @Published var adsbLoading = false
     @Published var isOpenSkyEnabled: Bool = false {
         didSet {
-            // Trigger refresh immediately when enabled
-            if isOpenSkyEnabled {
-                lastOpenSkyRefresh = nil // Força o refresh no próximo ciclo
-                Task { await refreshADSB() }
-            }
+            lastOpenSkyRefresh = nil
+            lastADSBSummaryRefresh = nil
+            lastADSBListRefresh = nil
+            Task { await refreshADSB(includeSummary: true, includeAircraft: true) }
         }
     }
     @Published private(set) var manualAirlineOverrides: [String: String] = [:]
-    
+    @Published private(set) var adsbAirlines: [Airline] = []
+    @Published private(set) var adsbNearbyAircraftPreview: [Aircraft] = []
+
     // MARK: - Map Coordination
     @Published var mapFocusAircraft: Aircraft?
-    @Published var radarBoundingBox: [Double]? // [minLat, maxLat, minLon, maxLon]
+    @Published var radarBoundingBox: [Double]?  // [minLat, maxLat, minLon, maxLon]
 
     // MARK: - System
     @Published var systemStatus: SystemStatus?
@@ -102,20 +124,38 @@ class AppState: ObservableObject {
     @Published var adsbHistory: ADSBHistoryResponse?
     @Published var adsbAlerts: [ADSBAlert] = []
     @Published var adsbHistoryError: String?
+    @Published var tuyaSensor: TuyaTemperatureHumidityResponse?
+    @Published var tuyaSensorError: String?
+    @Published var tuyaSensorLoading = false
 
     // MARK: - Metrics
     @Published var metrics: MetricsResponse?
     @Published var metricsError: String?
 
     // MARK: - Timers
-    private var refreshTimer: Timer?
-    private let refreshTickInterval: TimeInterval = 0.5 // base tick for throttled refresh (2x/s)
-    private var refreshAllInFlight = false
+    //
+    // Arquitetura: cada grupo de módulos tem seu próprio timer independente.
+    // Só módulos da tab ativa são atualizados no ritmo rápido.
+    // Módulos de tabs inativas NÃO fazem polling (zero custo).
+    private var adsbTimer: Timer?
+    private var moduleTimer: Timer?
 
-    private let adsbInterval: TimeInterval = 0.5
+    // Per-group in-flight guards — nunca bloqueia outro grupo.
+    private var adsbInFlight = false
+    private var systemInFlight = false
+    private var radioInFlight = false
+    private var weatherInFlight = false
+    private var satelliteInFlight = false
+    private var acarsInFlight = false
+
+    // Intervalos de cada módulo quando a tab está ativa
+    private let adsbTimerInterval: TimeInterval = 0.75
+    private let adsbSummaryInterval: TimeInterval = 0.75
+    private let adsbAircraftInterval: TimeInterval = 1.5
     private let systemInterval: TimeInterval = 5.0
     private let firestickInterval: TimeInterval = 10.0
     private let radioInterval: TimeInterval = 5.0
+    private let radioBackgroundInterval: TimeInterval = 15.0
     private let weatherInterval: TimeInterval = 60.0
     private let satelliteInterval: TimeInterval = 120.0
     private let acarsInterval: TimeInterval = 10.0
@@ -128,11 +168,13 @@ class AppState: ObservableObject {
     private let satDumpStatusInterval: TimeInterval = 60.0
     private let adsbHistoryInterval: TimeInterval = 300.0
     private let adsbAlertsInterval: TimeInterval = 60.0
+    private let tuyaSensorInterval: TimeInterval = 30.0
     private let acarsHistoryInterval: TimeInterval = 300.0
     private let acarsAlertsInterval: TimeInterval = 60.0
     private let metricsInterval: TimeInterval = 10.0
 
-    private var lastADSBRefresh: Date?
+    private var lastADSBSummaryRefresh: Date?
+    private var lastADSBListRefresh: Date?
     private var lastSystemRefresh: Date?
     private var lastFirestickRefresh: Date?
     private var lastRadioRefresh: Date?
@@ -148,6 +190,7 @@ class AppState: ObservableObject {
     private var lastSatDumpStatusRefresh: Date?
     private var lastADSBHistoryRefresh: Date?
     private var lastADSBAlertsRefresh: Date?
+    private var lastTuyaSensorRefresh: Date?
     private var lastACARSHistoryRefresh: Date?
     private var lastACARSAlertsRefresh: Date?
     private var lastMetricsRefresh: Date?
@@ -156,129 +199,250 @@ class AppState: ObservableObject {
     private let api = APIService.shared
     private let openSkyService = OpenSkyService.shared
     private let manualAirlineOverridesDefaultsKey = "adsb.manualAirlineOverrides"
+    private var hasBootstrapped = false
 
     init() {
         loadManualAirlineOverrides()
-        startRefreshTimer()
+        rebuildADSBViewCache()
     }
 
     deinit {
-        refreshTimer?.invalidate()
+        adsbTimer?.invalidate()
+        moduleTimer?.invalidate()
     }
 
     // MARK: - Timer Management
 
-    private func startRefreshTimer() {
-        guard refreshTimer == nil else { return }
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: refreshTickInterval, repeats: true) { [weak self] _ in
+    private func startRefreshTimers() {
+        guard adsbTimer == nil else { return }
+        // Timer dedicado ao ADS-B com cadence menos agressiva para reduzir CPU e wakeups.
+        adsbTimer = Timer.scheduledTimer(withTimeInterval: adsbTimerInterval, repeats: true) {
+            [weak self] _ in
             Task { @MainActor [weak self] in
-                await self?.refreshAllData()
+                await self?.tickADSB()
+            }
+        }
+        // Timer para os demais módulos — cada grupo roda independente via in-flight flags
+        moduleTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.tickActiveModules()
             }
         }
     }
 
-    func setRefreshEnabled(_ enabled: Bool) {
-        if enabled {
-            startRefreshTimer()
-        } else {
-            refreshTimer?.invalidate()
-            refreshTimer = nil
+    func bootstrapIfNeeded() {
+        guard !hasBootstrapped else { return }
+        hasBootstrapped = true
+        startRefreshTimers()
+
+        Task { @MainActor [weak self] in
+            await self?.refreshActiveTabNow(force: true)
+            // Pré-carrega rádio em background para já ter album/artista ao abrir
+            await self?.refreshRadio()
         }
     }
 
-    private func refreshAllData() async {
-        // Prevent overlapping refresh cycles from piling up when network calls are slow.
-        if refreshAllInFlight { return }
-        refreshAllInFlight = true
-        defer { refreshAllInFlight = false }
+    func setRefreshEnabled(_ enabled: Bool) {
+        guard hasBootstrapped else { return }
+        if enabled {
+            startRefreshTimers()
+        } else {
+            adsbTimer?.invalidate()
+            adsbTimer = nil
+            moduleTimer?.invalidate()
+            moduleTimer = nil
+        }
+    }
+
+    // MARK: - ADSB Tick (independente)
+
+    private func tickADSB(forceVisible: Bool = false) async {
+        let active = activeTabRawValue
+        let isADSBActive = forceVisible || active == "adsb" || active == "map" || active == "intelligence"
+        guard isADSBActive else { return }  // Não gasta CPU se a tab não está visível
+        guard !adsbInFlight else { return }
+        adsbInFlight = true
+        defer { adsbInFlight = false }
 
         let now = Date()
+        let doSummary =
+            adsbSummary == nil
+            || shouldRefresh(last: lastADSBSummaryRefresh, interval: adsbSummaryInterval, now: now)
+        let doAircraft =
+            aircraftList.isEmpty
+            || shouldRefresh(last: lastADSBListRefresh, interval: adsbAircraftInterval, now: now)
+        guard doSummary || doAircraft else { return }
 
-        // Gate frequent polling by active tab to avoid heavy background churn.
-        // Keep some light background refresh for widgets, but much less frequently.
-        let active = activeTabRawValue
-        let isADSBActive = (active == "adsb" || active == "map")
-        let isSystemActive = (active == "system" || active == "infra")
-        let isRadioActive = (active == "radio")
-        let isWeatherActive = (active == "weather")
-        let isSatelliteActive = (active == "satellite")
-        let isACARSActive = (active == "acars")
-
-        let adsbEffective = isADSBActive ? adsbInterval : 10.0
-        let systemEffective = isSystemActive ? systemInterval : 30.0
-        let firestickEffective = isSystemActive ? firestickInterval : 60.0
-        let radioEffective = isRadioActive ? radioInterval : 30.0
-        let weatherEffective = isWeatherActive ? weatherInterval : 300.0
-        let satelliteEffective = isSatelliteActive ? satelliteInterval : 600.0
-        let acarsEffective = isACARSActive ? acarsInterval : 60.0
-        let processesEffective = isSystemActive ? processesInterval : 60.0
-        let networkEffective = isSystemActive ? networkInterval : 60.0
-        let metricsEffective = (isADSBActive || isSystemActive) ? metricsInterval : 60.0
-
-        // Compute refresh flags on the main actor before launching async work.
-        let refreshADSBNow = shouldRefresh(last: lastADSBRefresh, interval: adsbEffective, now: now)
-        let refreshSystemNow = shouldRefresh(last: lastSystemRefresh, interval: systemEffective, now: now)
-        let refreshFirestickNow = shouldRefresh(last: lastFirestickRefresh, interval: firestickEffective, now: now)
-        let refreshRadioNow = shouldRefresh(last: lastRadioRefresh, interval: radioEffective, now: now)
-        let refreshWeatherNow = shouldRefresh(last: lastWeatherRefresh, interval: weatherEffective, now: now)
-        let refreshSatelliteNow = shouldRefresh(last: lastSatelliteRefresh, interval: satelliteEffective, now: now)
-        let refreshACARSNow = shouldRefresh(last: lastACARSRefresh, interval: acarsEffective, now: now)
-        let refreshProcessesNow = shouldRefresh(last: lastProcessesRefresh, interval: processesEffective, now: now)
-        let refreshPartitionsNow = shouldRefresh(last: lastPartitionsRefresh, interval: partitionsInterval, now: now)
-        let refreshNetworkNow = shouldRefresh(last: lastNetworkRefresh, interval: networkEffective, now: now)
-        let refreshDockerStatusNow = shouldRefresh(last: lastDockerStatusRefresh, interval: dockerStatusInterval, now: now)
-        let refreshDockerVersionNow = shouldRefresh(last: lastDockerVersionRefresh, interval: dockerVersionInterval, now: now)
-        let refreshSystemdNow = shouldRefresh(last: lastSystemdRefresh, interval: systemdInterval, now: now)
-        let refreshSatDumpStatusNow = shouldRefresh(last: lastSatDumpStatusRefresh, interval: satDumpStatusInterval, now: now)
-        let refreshADSBHistoryNow = shouldRefresh(last: lastADSBHistoryRefresh, interval: adsbHistoryInterval, now: now)
-        let refreshADSBAlertsNow = shouldRefresh(last: lastADSBAlertsRefresh, interval: adsbAlertsInterval, now: now)
-        let refreshACARSHistoryNow = shouldRefresh(last: lastACARSHistoryRefresh, interval: acarsHistoryInterval, now: now)
-        let refreshACARSAlertsNow = shouldRefresh(last: lastACARSAlertsRefresh, interval: acarsAlertsInterval, now: now)
-        let refreshMetricsNow = shouldRefresh(last: lastMetricsRefresh, interval: metricsEffective, now: now)
-
-        if refreshADSBNow { lastADSBRefresh = now }
-        if refreshSystemNow { lastSystemRefresh = now }
-        if refreshFirestickNow { lastFirestickRefresh = now }
-        if refreshRadioNow { lastRadioRefresh = now }
-        if refreshWeatherNow { lastWeatherRefresh = now }
-        if refreshSatelliteNow { lastSatelliteRefresh = now }
-        if refreshACARSNow { lastACARSRefresh = now }
-        if refreshProcessesNow { lastProcessesRefresh = now }
-        if refreshPartitionsNow { lastPartitionsRefresh = now }
-        if refreshNetworkNow { lastNetworkRefresh = now }
-        if refreshDockerStatusNow { lastDockerStatusRefresh = now }
-        if refreshDockerVersionNow { lastDockerVersionRefresh = now }
-        if refreshSystemdNow { lastSystemdRefresh = now }
-        if refreshSatDumpStatusNow { lastSatDumpStatusRefresh = now }
-        if refreshADSBHistoryNow { lastADSBHistoryRefresh = now }
-        if refreshADSBAlertsNow { lastADSBAlertsRefresh = now }
-        if refreshACARSHistoryNow { lastACARSHistoryRefresh = now }
-        if refreshACARSAlertsNow { lastACARSAlertsRefresh = now }
-        if refreshMetricsNow { lastMetricsRefresh = now }
-
-        // Refresh in parallel, but throttle per category
-        async let adsb: () = refreshADSBNow ? refreshADSB() : ()
-        async let system: () = refreshSystemNow ? refreshSystem() : ()
-        async let firestick: () = refreshFirestickNow ? refreshFirestick() : ()
-        async let radio: () = refreshRadioNow ? refreshRadio() : ()
-        async let weather: () = refreshWeatherNow ? refreshWeather() : ()
-        async let satellite: () = refreshSatelliteNow ? refreshSatellite() : ()
-        async let acars: () = refreshACARSNow ? refreshACARS() : ()
-        async let processes: () = refreshProcessesNow ? refreshProcesses() : ()
-        async let partitions: () = refreshPartitionsNow ? refreshPartitions() : ()
-        async let network: () = refreshNetworkNow ? refreshNetwork() : ()
-        async let dockerStatus: () = refreshDockerStatusNow ? refreshDockerStatus() : ()
-        async let dockerVersion: () = refreshDockerVersionNow ? refreshDockerVersion() : ()
-        async let systemd: () = refreshSystemdNow ? refreshSystemd() : ()
-        async let satdumpStatus: () = refreshSatDumpStatusNow ? refreshSatDumpStatus() : ()
-        async let adsbHistory: () = refreshADSBHistoryNow ? refreshADSBHistory() : ()
-        async let adsbAlerts: () = refreshADSBAlertsNow ? refreshADSBAlerts() : ()
-        async let acarsHistory: () = refreshACARSHistoryNow ? refreshACARSHistory() : ()
-        async let acarsAlerts: () = refreshACARSAlertsNow ? refreshACARSAlerts() : ()
-        async let metrics: () = refreshMetricsNow ? refreshMetrics() : ()
-
-        _ = await (adsb, system, firestick, radio, weather, satellite, acars, processes, partitions, network, dockerStatus, dockerVersion, systemd, satdumpStatus, adsbHistory, adsbAlerts, acarsHistory, acarsAlerts, metrics)
+        if doSummary { lastADSBSummaryRefresh = now }
+        if doAircraft { lastADSBListRefresh = now }
+        await refreshADSB(includeSummary: doSummary, includeAircraft: doAircraft)
     }
+
+    // MARK: - Demais módulos — só a tab ativa atualiza
+
+    private func tickActiveModules() async {
+        let active = activeTabRawValue
+        let now = Date()
+
+        // Rádio sempre atualiza em background (intervalo maior quando não é a tab ativa)
+        await tickRadio(now, background: active != "radio")
+
+        switch active {
+        case "adsb", "map":
+            // ADSB live já roda no seu próprio timer rápido.
+            // Aqui só atualizamos dados complementares (history, alerts, metrics).
+            await tickADSBExtras(now)
+
+        case "system", "infra":
+            await tickSystem(now)
+
+        case "weather":
+            await tickWeather(now)
+
+        case "satellite":
+            await tickSatellite(now)
+
+        case "acars":
+            await tickACARS(now)
+
+        case "intelligence":
+            await tickIntelligence(now)
+
+        default:
+            break
+        }
+    }
+
+    // --- Grupos de refresh isolados ---
+
+    private func tickADSBExtras(_ now: Date) async {
+        let doHistory = shouldRefresh(
+            last: lastADSBHistoryRefresh, interval: adsbHistoryInterval, now: now)
+        let doAlerts = shouldRefresh(
+            last: lastADSBAlertsRefresh, interval: adsbAlertsInterval, now: now)
+        let doTuya =
+            shouldRefresh(last: lastTuyaSensorRefresh, interval: tuyaSensorInterval, now: now)
+            || tuyaSensor == nil
+        let doMetrics = shouldRefresh(last: lastMetricsRefresh, interval: metricsInterval, now: now)
+        if doHistory { lastADSBHistoryRefresh = now }
+        if doAlerts { lastADSBAlertsRefresh = now }
+        if doTuya { lastTuyaSensorRefresh = now }
+        if doMetrics { lastMetricsRefresh = now }
+
+        async let history: () = doHistory ? refreshADSBHistory() : ()
+        async let alerts: () = doAlerts ? refreshADSBAlerts() : ()
+        async let tuya: () = doTuya ? refreshTuyaSensor() : ()
+        async let metrics: () = doMetrics ? refreshMetrics() : ()
+        _ = await (history, alerts, tuya, metrics)
+    }
+
+    private func tickSystem(_ now: Date) async {
+        guard !systemInFlight else { return }
+        systemInFlight = true
+        defer { systemInFlight = false }
+
+        let doSys = shouldRefresh(last: lastSystemRefresh, interval: systemInterval, now: now)
+        let doFire = shouldRefresh(
+            last: lastFirestickRefresh, interval: firestickInterval, now: now)
+        let doProc = shouldRefresh(
+            last: lastProcessesRefresh, interval: processesInterval, now: now)
+        let doParts = shouldRefresh(
+            last: lastPartitionsRefresh, interval: partitionsInterval, now: now)
+        let doNet = shouldRefresh(last: lastNetworkRefresh, interval: networkInterval, now: now)
+        let doDkSt = shouldRefresh(
+            last: lastDockerStatusRefresh, interval: dockerStatusInterval, now: now)
+        let doDkVer = shouldRefresh(
+            last: lastDockerVersionRefresh, interval: dockerVersionInterval, now: now)
+        let doSysd = shouldRefresh(last: lastSystemdRefresh, interval: systemdInterval, now: now)
+        let doSatdump = shouldRefresh(
+            last: lastSatDumpStatusRefresh, interval: satDumpStatusInterval, now: now)
+        let doMetrics = shouldRefresh(last: lastMetricsRefresh, interval: metricsInterval, now: now)
+
+        if doSys { lastSystemRefresh = now }
+        if doFire { lastFirestickRefresh = now }
+        if doProc { lastProcessesRefresh = now }
+        if doParts { lastPartitionsRefresh = now }
+        if doNet { lastNetworkRefresh = now }
+        if doDkSt { lastDockerStatusRefresh = now }
+        if doDkVer { lastDockerVersionRefresh = now }
+        if doSysd { lastSystemdRefresh = now }
+        if doSatdump { lastSatDumpStatusRefresh = now }
+        if doMetrics { lastMetricsRefresh = now }
+
+        async let sys: () = doSys ? refreshSystem() : ()
+        async let fire: () = doFire ? refreshFirestick() : ()
+        async let proc: () = doProc ? refreshProcesses() : ()
+        async let parts: () = doParts ? refreshPartitions() : ()
+        async let net: () = doNet ? refreshNetwork() : ()
+        async let dkStatus: () = doDkSt ? refreshDockerStatus() : ()
+        async let dkVersion: () = doDkVer ? refreshDockerVersion() : ()
+        async let sysd: () = doSysd ? refreshSystemd() : ()
+        async let satdump: () = doSatdump ? refreshSatDumpStatus() : ()
+        async let metrics: () = doMetrics ? refreshMetrics() : ()
+        _ = await (sys, fire, proc, parts, net, dkStatus, dkVersion, sysd, satdump, metrics)
+    }
+
+    private func tickRadio(_ now: Date, background: Bool = false) async {
+        guard !radioInFlight else { return }
+        radioInFlight = true
+        defer { radioInFlight = false }
+        let interval = background ? radioBackgroundInterval : radioInterval
+        guard shouldRefresh(last: lastRadioRefresh, interval: interval, now: now) else { return }
+        lastRadioRefresh = now
+        await refreshRadio()
+    }
+
+    private func tickWeather(_ now: Date) async {
+        guard !weatherInFlight else { return }
+        weatherInFlight = true
+        defer { weatherInFlight = false }
+        guard shouldRefresh(last: lastWeatherRefresh, interval: weatherInterval, now: now) else {
+            return
+        }
+        lastWeatherRefresh = now
+        await refreshWeather()
+    }
+
+    private func tickSatellite(_ now: Date) async {
+        guard !satelliteInFlight else { return }
+        satelliteInFlight = true
+        defer { satelliteInFlight = false }
+        guard shouldRefresh(last: lastSatelliteRefresh, interval: satelliteInterval, now: now)
+        else { return }
+        lastSatelliteRefresh = now
+        await refreshSatellite()
+    }
+
+    private func tickACARS(_ now: Date) async {
+        guard !acarsInFlight else { return }
+        acarsInFlight = true
+        defer { acarsInFlight = false }
+
+        let doAcars = shouldRefresh(last: lastACARSRefresh, interval: acarsInterval, now: now)
+        let doHistory = shouldRefresh(
+            last: lastACARSHistoryRefresh, interval: acarsHistoryInterval, now: now)
+        let doAlerts = shouldRefresh(
+            last: lastACARSAlertsRefresh, interval: acarsAlertsInterval, now: now)
+        if doAcars { lastACARSRefresh = now }
+        if doHistory { lastACARSHistoryRefresh = now }
+        if doAlerts { lastACARSAlertsRefresh = now }
+
+        async let acars: () = doAcars ? refreshACARS() : ()
+        async let history: () = doHistory ? refreshACARSHistory() : ()
+        async let alerts: () = doAlerts ? refreshACARSAlerts() : ()
+        _ = await (acars, history, alerts)
+    }
+
+    private func tickIntelligence(_ now: Date) async {
+        await tickADSB(forceVisible: true)
+        await tickADSBExtras(now)
+        await tickSystem(now)
+        await tickWeather(now)
+        await tickSatellite(now)
+        await tickACARS(now)
+    }
+
+    // MARK: - Helpers
 
     private func shouldRefresh(last: Date?, interval: TimeInterval, now: Date) -> Bool {
         if let last, now.timeIntervalSince(last) < interval {
@@ -289,217 +453,233 @@ class AppState: ObservableObject {
 
     // MARK: - ADS-B
 
-    func refreshADSB() async {
-        guard !adsbLoading else { 
-            print("[ADSB] ⏭️ Skipping refresh - already loading")
-            return 
-        }
+    func refreshADSB(includeSummary: Bool = true, includeAircraft: Bool = true) async {
+        guard includeSummary || includeAircraft else { return }
+        guard !adsbLoading else { return }
         adsbLoading = true
         defer { adsbLoading = false }
-        
-        print("[ADSB] 🔄 Starting refresh...")
-        
-        do {
-            print("[ADSB] 📡 Fetching summary and aircraft list...")
-            async let summaryTask = api.fetchADSBSummary()
-            async let localTask = api.fetchAircraftList(limit: 100)
 
-            let summaryResult: Result<ADSBSummary, Error>
-            let localResult: Result<AircraftList, Error>
+        let summaryTask = includeSummary ? Task { try await api.fetchADSBSummary() } : nil
+        let localTask = includeAircraft ? Task { try await api.fetchAircraftList(limit: 100) } : nil
 
+        var summaryResult: Result<ADSBSummary, Error>?
+        var localResult: Result<AircraftList, Error>?
+
+        if let summaryTask {
             do {
-                let summary = try await summaryTask
-                summaryResult = .success(summary)
+                summaryResult = .success(try await summaryTask.value)
             } catch {
                 summaryResult = .failure(error)
             }
+        }
 
+        if let localTask {
             do {
-                let localAircraftList = try await localTask
-                localResult = .success(localAircraftList)
+                localResult = .success(try await localTask.value)
             } catch {
                 localResult = .failure(error)
             }
+        }
 
-            var localItems: [Aircraft] = []
-            if case .success(let localAircraft) = localResult {
-                localItems = localAircraft.items.map { ac in
-                    var modifiedAc = ac.with(source: .local, dualTracked: false)
-                    
-                    // Inject registration from cache if missing
-                    if (modifiedAc.registration == nil || modifiedAc.registration?.isEmpty == true),
-                       let cachedReg = self.registrationCache[modifiedAc.callsign] {
-                        modifiedAc.registration = cachedReg
-                        // print("[ADSB] 🔗 Linked \(modifiedAc.callsign) to \(cachedReg)")
-                    }
+        var finalAircraftList = self.aircraftList
 
-                    if let manualAirline = manualAirlineOverride(for: modifiedAc) {
-                        modifiedAc.airline = manualAirline
-                    }
-                    
-                    return modifiedAc
-                }
-                print("[ADSB] ✅ Aircraft list received: \(localItems.count) aircraft")
-                if let first = localItems.first {
-                    print("[ADSB]   First aircraft: \(first.callsign) at \(first.altitudeFt) ft, VR: \(first.verticalRateFpm) fpm")
-                }
-            } else {
-                print("[ADSB] ❌ Failed to fetch aircraft list")
-            }
-
-            let localSuccess: Bool
+        if includeAircraft {
             switch localResult {
-            case .success:
-                localSuccess = true
-            case .failure(let error):
-                localSuccess = false
-                print("[ADSB] ❌ Aircraft list error: \(error.localizedDescription)")
-            }
+            case .success(let localAircraft):
+                let localItems = localAircraft.items.map { normalizeAircraftForDisplay($0) }
+                let merged = mergeADSBAircraft(localItems: localItems)
 
-            if localSuccess {
                 self.localAircraftCount = localItems.count
-                // Premature update removed. Final list will be updated after merge.
-            }
+                finalAircraftList = merged
+                if self.aircraftList != merged {
+                    self.aircraftList = merged
+                }
 
-            // --- OpenSky Integration ---
-            var openSkyItems: [Aircraft] = []
-            if isOpenSkyEnabled {
-                // Throttle OpenSky to avoid rate limits (e.g., every 10s)
-                let openSkyInterval: TimeInterval = 10.0
-                if shouldRefresh(last: lastOpenSkyRefresh, interval: openSkyInterval, now: Date()) {
-                    print("[ADSB] 🌍 Fetching OpenSky data...")
-                    do {
-                        // Calculate bounding box: prioritize radar map visible area
-                        var box: (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double)? = nil
-                        
-                        if let rBox = radarBoundingBox, rBox.count == 4 {
-                            box = (minLat: rBox[0], maxLat: rBox[1], minLon: rBox[2], maxLon: rBox[3])
-                            print("[ADSB] 🌍 Fetching OpenSky for radar box: [\(rBox[0]), \(rBox[1]), \(rBox[2]), \(rBox[3])]")
-                        } else if let loc = LocationManager.shared.userLocation?.coordinate {
-                             let delta = 5.0 // Slightly smaller default
-                             box = (minLat: loc.latitude - delta, maxLat: loc.latitude + delta, 
-                                    minLon: loc.longitude - delta, maxLon: loc.longitude + delta)
-                             print("[ADSB] 🌍 Fetching OpenSky for user location")
-                        } else {
-                            // Fallback to Franca, SP
-                            let lat = -20.5386
-                            let lon = -47.4008
-                            let delta = 5.0
-                            box = (minLat: lat - delta, maxLat: lat + delta, 
-                                   minLon: lon - delta, maxLon: lon + delta)
-                            print("[ADSB] 🌍 Fetching OpenSky for fallback location")
-                        }
-                        
-                        let states = try await openSkyService.fetchStates(boundingBox: box)
-                        openSkyItems = states
-                        self.lastOpenSkyRefresh = Date()
-                        self.openskyAircraftCount = openSkyItems.count
-                        print("[ADSB] 🌍 OpenSky data received: \(openSkyItems.count) aircraft")
-                    } catch {
-                        print("[ADSB] ⚠️ OpenSky error: \(error.localizedDescription)")
+                if !isOpenSkyEnabled, let currentSummary = self.adsbSummary {
+                    let updatedSummary = overlayAircraftMetrics(
+                        on: currentSummary,
+                        using: merged,
+                        preserveServerTotals: true
+                    )
+                    if updatedSummary != currentSummary {
+                        self.adsbSummary = updatedSummary
+                        WidgetDataManager.shared.updateADSB(
+                            total: updatedSummary.totalNow,
+                            withPos: updatedSummary.withPos
+                        )
                     }
-                } else {
-                    // Keep existing OpenSky items if not refreshing yet
-                    openSkyItems = self.aircraftList.filter { $0.source == .opensky }
                 }
-            } else {
-                self.openskyAircraftCount = 0
-            }
-
-            // Merge Lists
-            // Priority: Local > OpenSky (if dual tracked, keep local and mark as dual)
-            var mergedMap: [String: Aircraft] = [:]
-            
-            // 1. Add Local
-            for ac in localItems {
-                mergedMap[ac.id] = ac
-            }
-            
-            // 2. Merge OpenSky
-            for ac in openSkyItems {
-                if let existing = mergedMap[ac.id] {
-                    // Collision: It's dual tracked!
-                    mergedMap[ac.id] = existing.with(source: .local, dualTracked: true)
-                } else {
-                    // Unique to OpenSky
-                    mergedMap[ac.id] = ac
-                }
-            }
-            
-            let finalAircraftList = Array(mergedMap.values)
-            
-            if localSuccess || isOpenSkyEnabled {
-                self.localAircraftCount = localItems.count
-                // We update list if anything changed
-                // Use Set comparison for efficiency if needed, or simple equality if Aircraft is Equatable
-                
-                // Note: We might want to sort them? Usually View handles sorting.
-                
-                self.aircraftList = finalAircraftList
-                print("[ADSB] 🌍 Final list updated: \(self.aircraftList.count) aircraft (Local: \(localItems.count), OpenSky: \(openSkyItems.count))")
-            } else {
-                 print("[ADSB] ⏭️ Aircraft list refresh skipped or failed")
-            }
-
-            if case .success(var summary) = summaryResult {
-                print("[ADSB] ✅ Summary received: \(summary.totalNow) aircraft")
-                
-                // If OpenSky is enabled, we override the counts with our merged list
-                if isOpenSkyEnabled {
-                    let total = finalAircraftList.count
-                    let climbing = finalAircraftList.filter { $0.verticalRateFpm > 256 }.count
-                    let descending = finalAircraftList.filter { $0.verticalRateFpm < -256 }.count
-                    let cruising = total - climbing - descending
-                    
-                    let newMovement = Movement(climbing: climbing, descending: descending, cruising: cruising)
-                    
-                    // Create updated summary
-                    summary = ADSBSummary(
-                        timestamp: summary.timestamp,
-                        totalNow: total,
-                        withPos: finalAircraftList.filter { $0.hasPosition }.count,
-                        above10000: finalAircraftList.filter { $0.altitudeFt > 10000 }.count,
-                        nonCivilNow: summary.nonCivilNow, // We don't have this for OpenSky easily
-                        movement: newMovement,
-                        averages: summary.averages, // Keep local averages or recalculate? Keep local for now.
-                        highlights: summary.highlights,
-                        airlines: summary.airlines,
-                        topModels: summary.topModels,
-                        stats24h: summary.stats24h
-                    )
-                    print("[ADSB] 🌍 Global summary calculated: \(total) aircraft (C: \(climbing), D: \(descending), Z: \(cruising))")
-                }
-
-                if self.adsbSummary != summary {
-                    print("[ADSB] 📝 Updating summary (changed)")
-                    self.adsbSummary = summary
-                    WidgetDataManager.shared.updateADSB(
-                        total: summary.totalNow,
-                        withPos: summary.withPos
-                    )
-                } else {
-                    print("[ADSB] ⏭️ Summary unchanged, skipping update")
-                }
-            }
-
-            var firstError: Error?
-            if case .failure(let error) = summaryResult {
-                firstError = error
-            }
-            if firstError == nil, case .failure(let error) = localResult {
-                firstError = error
-            }
-
-            if (self.adsbSummary != nil || !self.aircraftList.isEmpty) {
-                self.adsbError = nil
-            } else {
-                self.adsbError = firstError?.localizedDescription
-            }
-        } catch {
-            if adsbSummary == nil {
-                self.adsbError = error.localizedDescription
+            case .failure:
+                finalAircraftList = self.aircraftList
+            case .none:
+                break
             }
         }
+
+        if case .success(let summary) = summaryResult {
+            let resolvedSummary =
+                isOpenSkyEnabled
+                ? overlayAircraftMetrics(
+                    on: summary, using: finalAircraftList, preserveServerTotals: false)
+                : summary
+
+            if self.adsbSummary != resolvedSummary {
+                self.adsbSummary = resolvedSummary
+                WidgetDataManager.shared.updateADSB(
+                    total: resolvedSummary.totalNow,
+                    withPos: resolvedSummary.withPos
+                )
+            }
+        } else if includeAircraft, isOpenSkyEnabled, let currentSummary = self.adsbSummary {
+            let updatedSummary = overlayAircraftMetrics(
+                on: currentSummary,
+                using: finalAircraftList,
+                preserveServerTotals: false
+            )
+            if updatedSummary != currentSummary {
+                self.adsbSummary = updatedSummary
+                WidgetDataManager.shared.updateADSB(
+                    total: updatedSummary.totalNow,
+                    withPos: updatedSummary.withPos
+                )
+            }
+        }
+
+        var firstError: Error?
+        if case .failure(let error) = summaryResult {
+            firstError = error
+        }
+        if firstError == nil, case .failure(let error) = localResult {
+            firstError = error
+        }
+
+        if self.adsbSummary != nil || !self.aircraftList.isEmpty {
+            self.adsbError = nil
+        } else {
+            self.adsbError = firstError?.localizedDescription
+        }
+    }
+
+    func refreshTuyaSensor() async {
+        guard !tuyaSensorLoading else { return }
+        tuyaSensorLoading = true
+        defer { tuyaSensorLoading = false }
+
+        do {
+            let response = try await api.fetchTuyaTemperatureHumidity()
+
+            if self.tuyaSensor != response {
+                self.tuyaSensor = response
+            }
+
+            self.tuyaSensorError = response.friendlyErrorMessage
+        } catch {
+            if tuyaSensor == nil {
+                self.tuyaSensorError = error.localizedDescription
+            }
+        }
+    }
+
+    /// OpenSky roda em background separado — nunca bloqueia o refresh rápido do ADSB local.
+    private var cachedOpenSkyItems: [Aircraft] = []
+
+    private func refreshOpenSkyBackground() async {
+        var box: (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double)? = nil
+
+        if let rBox = radarBoundingBox, rBox.count == 4 {
+            box = (minLat: rBox[0], maxLat: rBox[1], minLon: rBox[2], maxLon: rBox[3])
+        } else if let loc = LocationManager.shared.userLocation?.coordinate {
+            let delta = 5.0
+            box = (
+                minLat: loc.latitude - delta, maxLat: loc.latitude + delta,
+                minLon: loc.longitude - delta, maxLon: loc.longitude + delta
+            )
+        } else {
+            let lat = -20.5386
+            let lon = -47.4008
+            let delta = 5.0
+            box = (
+                minLat: lat - delta, maxLat: lat + delta,
+                minLon: lon - delta, maxLon: lon + delta
+            )
+        }
+
+        do {
+            let states = try await openSkyService.fetchStates(boundingBox: box)
+            self.cachedOpenSkyItems = states
+            self.openskyAircraftCount = states.count
+        } catch {
+            // Mantém o cache anterior em caso de erro
+        }
+    }
+
+    private func normalizeAircraftForDisplay(_ aircraft: Aircraft) -> Aircraft {
+        var modified = aircraft.with(source: .local, dualTracked: false)
+        if modified.registration == nil || modified.registration?.isEmpty == true,
+            let cachedReg = self.registrationCache[modified.callsign]
+        {
+            modified.registration = cachedReg
+        }
+        if let manualAirline = manualAirlineOverride(for: modified) {
+            modified.airline = manualAirline
+        }
+        return modified
+    }
+
+    private func mergeADSBAircraft(localItems: [Aircraft]) -> [Aircraft] {
+        var openSkyItems: [Aircraft] = []
+        if isOpenSkyEnabled {
+            openSkyItems = self.cachedOpenSkyItems
+            let openSkyInterval: TimeInterval = 10.0
+            if shouldRefresh(last: lastOpenSkyRefresh, interval: openSkyInterval, now: Date()) {
+                self.lastOpenSkyRefresh = Date()
+                Task { [weak self] in
+                    await self?.refreshOpenSkyBackground()
+                }
+            }
+        } else {
+            self.openskyAircraftCount = 0
+        }
+
+        var mergedMap: [String: Aircraft] = [:]
+        for ac in localItems {
+            mergedMap[ac.id] = ac
+        }
+        for ac in openSkyItems {
+            if let existing = mergedMap[ac.id] {
+                mergedMap[ac.id] = existing.with(source: .local, dualTracked: true)
+            } else {
+                mergedMap[ac.id] = ac
+            }
+        }
+        return Array(mergedMap.values)
+    }
+
+    private func overlayAircraftMetrics(
+        on summary: ADSBSummary,
+        using aircraft: [Aircraft],
+        preserveServerTotals: Bool
+    ) -> ADSBSummary {
+        guard !aircraft.isEmpty else { return summary }
+
+        let total = preserveServerTotals ? summary.totalNow : aircraft.count
+        let climbing = aircraft.filter { $0.verticalRateFpm > 256 }.count
+        let descending = aircraft.filter { $0.verticalRateFpm < -256 }.count
+        let cruising = max(0, aircraft.count - climbing - descending)
+
+        return ADSBSummary(
+            timestamp: summary.timestamp,
+            totalNow: total,
+            withPos: aircraft.filter { $0.hasPosition }.count,
+            above10000: aircraft.filter { $0.altitudeFt > 10000 }.count,
+            nonCivilNow: summary.nonCivilNow,
+            movement: Movement(climbing: climbing, descending: descending, cruising: cruising),
+            averages: summary.averages,
+            highlights: summary.highlights,
+            airlines: summary.airlines,
+            topModels: summary.topModels,
+            stats24h: summary.stats24h
+        )
     }
 
     // MARK: - System
@@ -538,10 +718,13 @@ class AppState: ObservableObject {
             let devicesResp = try await api.fetchFirestickDevices()
             let devices = devicesResp.devices
 
-            let statuses: [FirestickDeviceStatus] = try await withThrowingTaskGroup(of: FirestickDeviceStatus.self) { group in
+            let statuses: [FirestickDeviceStatus] = try await withThrowingTaskGroup(
+                of: FirestickDeviceStatus.self
+            ) { group in
                 for dev in devices {
                     group.addTask {
-                        let st = try await APIService.shared.fetchFirestickStatus(id: dev.id, force: false)
+                        let st = try await APIService.shared.fetchFirestickStatus(
+                            id: dev.id, force: false)
                         return FirestickDeviceStatus(device: dev, status: st)
                     }
                 }
@@ -586,7 +769,7 @@ class AppState: ObservableObject {
                 self.nowPlaying = playing
                 // Update Now Playing in Control Center
                 AudioPlayer.shared.updateNowPlayingInfo(track: playing)
-                
+
                 // Update Widget
                 // Update Widget
                 WidgetDataManager.shared.updateRadio(
@@ -604,49 +787,66 @@ class AppState: ObservableObject {
     }
 
     // MARK: - Weather
-    
+
     func refreshWeather() async {
         guard !weatherLoading else { return }
         weatherLoading = true
         defer { weatherLoading = false }
-        
+
         do {
-            let data: WeatherData
-            
+            var data: WeatherData
+            let fallbackCoordinate = LocationManager.receiverLocation.coordinate
+
             // Check for user location
             if LocationManager.shared.isAuthorized, let loc = LocationManager.shared.userLocation {
                 // Prefer native WeatherKit; fallback to backend and then Open-Meteo.
                 #if canImport(WeatherKit)
-                if #available(iOS 16.0, *) {
-                    do {
-                        data = try await fetchWeatherKitWeatherData(location: loc)
-                    } catch {
+                    if #available(iOS 16.0, *) {
                         do {
-                            data = try await api.fetchWeather(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                            data = try await fetchWeatherKitWeatherData(location: loc)
                         } catch {
-                            data = try await api.fetchWeatherOpenMeteo(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                            do {
+                                data = try await api.fetchWeather(
+                                    lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                            } catch {
+                                data = try await api.fetchWeatherOpenMeteo(
+                                    lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                            }
+                        }
+                    } else {
+                        do {
+                            data = try await api.fetchWeather(
+                                lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                        } catch {
+                            data = try await api.fetchWeatherOpenMeteo(
+                                lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
                         }
                     }
-                } else {
-                    do {
-                        data = try await api.fetchWeather(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
-                    } catch {
-                        data = try await api.fetchWeatherOpenMeteo(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
-                    }
-                }
                 #else
-                do {
-                    data = try await api.fetchWeather(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
-                } catch {
-                    data = try await api.fetchWeatherOpenMeteo(lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
-                }
+                    do {
+                        data = try await api.fetchWeather(
+                            lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                    } catch {
+                        data = try await api.fetchWeatherOpenMeteo(
+                            lat: loc.coordinate.latitude, lon: loc.coordinate.longitude)
+                    }
                 #endif
-                
+
                 // Try reverse geocoding for city name (optional enhancement)
                 // For now, it uses coordinates string from APIService
+                data = try await enrichWeatherForecastIfNeeded(
+                    data,
+                    lat: loc.coordinate.latitude,
+                    lon: loc.coordinate.longitude
+                )
             } else {
                 // Fallback to Lab API (Franca, SP)
-                data = try await api.fetchWeather()
+                let baseWeather = try await api.fetchWeather()
+                data = try await enrichWeatherForecastIfNeeded(
+                    baseWeather,
+                    lat: fallbackCoordinate.latitude,
+                    lon: fallbackCoordinate.longitude
+                )
             }
 
             if self.weather != data {
@@ -660,83 +860,165 @@ class AppState: ObservableObject {
         }
     }
 
+    private func enrichWeatherForecastIfNeeded(_ data: WeatherData, lat: Double, lon: Double)
+        async throws -> WeatherData
+    {
+        let needsForecast = data.forecast.count < 10
+        let needsHourly = (data.hourly?.isEmpty ?? true)
+        let needsDetails =
+            data.today.description == nil
+            || data.forecast.contains {
+                $0.description == nil || $0.sunrise == nil || $0.sunset == nil
+            }
+
+        guard needsForecast || needsHourly || needsDetails else { return data }
+
+        let enriched = try await api.fetchWeatherOpenMeteo(lat: lat, lon: lon)
+        return WeatherData(
+            timestamp: data.timestamp,
+            location: data.location,
+            current: CurrentWeather(
+                tempC: data.current.tempC,
+                feelsLikeC: data.current.feelsLikeC,
+                humidity: data.current.humidity,
+                windKmh: data.current.windKmh,
+                windDir: data.current.windDir,
+                description: data.current.description,
+                precipMm: data.current.precipMm,
+                uvIndex: data.current.uvIndex,
+                weatherCode: data.current.weatherCode ?? enriched.current.weatherCode,
+                isDaylight: data.current.isDaylight ?? enriched.current.isDaylight
+            ),
+            today: TodayWeather(
+                maxTempC: data.today.maxTempC,
+                minTempC: data.today.minTempC,
+                rainChance: data.today.rainChance,
+                rainMm: data.today.rainMm,
+                uvIndex: data.today.uvIndex,
+                description: data.today.description ?? enriched.today.description,
+                sunrise: data.today.sunrise ?? enriched.today.sunrise,
+                sunset: data.today.sunset ?? enriched.today.sunset
+            ),
+            forecast: mergedForecastDays(primary: data.forecast, fallback: enriched.forecast),
+            hourly: needsHourly ? enriched.hourly : data.hourly
+        )
+    }
+
+    private func mergedForecastDays(primary: [ForecastDay], fallback: [ForecastDay]) -> [ForecastDay] {
+        if primary.count < 10 {
+            return fallback
+        }
+
+        let fallbackByDate = Dictionary(uniqueKeysWithValues: fallback.map { ($0.date, $0) })
+        return primary.map { day in
+            guard let fallback = fallbackByDate[day.date] else { return day }
+            return ForecastDay(
+                date: day.date,
+                maxTempC: day.maxTempC,
+                minTempC: day.minTempC,
+                rainChance: day.rainChance,
+                rainMm: day.rainMm,
+                uvIndex: day.uvIndex,
+                description: day.description ?? fallback.description,
+                sunrise: day.sunrise ?? fallback.sunrise,
+                sunset: day.sunset ?? fallback.sunset
+            )
+        }
+    }
+
     #if canImport(WeatherKit)
-    @available(iOS 16.0, *)
-    private func fetchWeatherKitWeatherData(location: CLLocation) async throws -> WeatherData {
-        let service = WeatherService.shared
-        let weather = try await service.weather(for: location)
+        @available(iOS 16.0, *)
+        private func fetchWeatherKitWeatherData(location: CLLocation) async throws -> WeatherData {
+            let service = WeatherService.shared
+            let weather = try await service.weather(for: location)
 
-        let current = weather.currentWeather
-        let daily = weather.dailyForecast
+            let current = weather.currentWeather
+            let daily = weather.dailyForecast
 
-        let currentWeather = CurrentWeather(
-            tempC: Int(round(current.temperature.converted(to: UnitTemperature.celsius).value)),
-            feelsLikeC: Int(round(current.apparentTemperature.converted(to: UnitTemperature.celsius).value)),
-            humidity: Int(round(current.humidity * 100.0)),
-            windKmh: Int(round(current.wind.speed.converted(to: UnitSpeed.kilometersPerHour).value)),
-            windDir: LocationManager.compassDirection(from: current.wind.direction.converted(to: UnitAngle.degrees).value),
-            description: weatherKitConditionPT(current.condition),
-            // WeatherKit exposes precipitation intensity with a unit not representable by Foundation's UnitSpeed.
-            // Keep it as a best-effort scalar (typically mm/h) to fit the existing model.
-            precipMm: current.precipitationIntensity.value,
-            uvIndex: Int(current.uvIndex.value)
-        )
+            let currentWeather = CurrentWeather(
+                tempC: Int(round(current.temperature.converted(to: UnitTemperature.celsius).value)),
+                feelsLikeC: Int(
+                    round(current.apparentTemperature.converted(to: UnitTemperature.celsius).value)),
+                humidity: Int(round(current.humidity * 100.0)),
+                windKmh: Int(
+                    round(current.wind.speed.converted(to: UnitSpeed.kilometersPerHour).value)),
+                windDir: LocationManager.compassDirection(
+                    from: current.wind.direction.converted(to: UnitAngle.degrees).value),
+                description: weatherKitConditionPT(current.condition),
+                // WeatherKit exposes precipitation intensity with a unit not representable by Foundation's UnitSpeed.
+                // Keep it as a best-effort scalar (typically mm/h) to fit the existing model.
+                precipMm: current.precipitationIntensity.value,
+                uvIndex: Int(current.uvIndex.value)
+            )
 
-        let today = daily.forecast.first
-        let todayWeather = TodayWeather(
-            maxTempC: Int(round(today?.highTemperature.converted(to: UnitTemperature.celsius).value ?? Double(currentWeather.tempC))),
-            minTempC: Int(round(today?.lowTemperature.converted(to: UnitTemperature.celsius).value ?? Double(currentWeather.tempC))),
-            rainChance: Int(round((today?.precipitationChance ?? 0) * 100.0)),
-            rainMm: (today?.precipitationAmount.converted(to: UnitLength.millimeters).value ?? 0),
-            uvIndex: Int(today?.uvIndex.value ?? current.uvIndex.value)
-        )
+            let today = daily.forecast.first
+            let todayWeather = TodayWeather(
+                maxTempC: Int(
+                    round(
+                        today?.highTemperature.converted(to: UnitTemperature.celsius).value
+                            ?? Double(currentWeather.tempC))),
+                minTempC: Int(
+                    round(
+                        today?.lowTemperature.converted(to: UnitTemperature.celsius).value
+                            ?? Double(currentWeather.tempC))),
+                rainChance: Int(round((today?.precipitationChance ?? 0) * 100.0)),
+                rainMm: today?.precipitationAmountByType.precipitation.converted(to: .millimeters)
+                    .value ?? 0,
+                uvIndex: Int(today?.uvIndex.value ?? current.uvIndex.value)
+            )
 
-        var forecast: [ForecastDay] = []
-        for day in daily.forecast.dropFirst().prefix(7) {
-            forecast.append(
-                ForecastDay(
-                    date: isoDay(day.date),
-                    maxTempC: Int(round(day.highTemperature.converted(to: UnitTemperature.celsius).value)),
-                    minTempC: Int(round(day.lowTemperature.converted(to: UnitTemperature.celsius).value)),
-                    rainChance: Int(round(day.precipitationChance * 100.0)),
-                    rainMm: day.precipitationAmount.converted(to: UnitLength.millimeters).value,
-                    uvIndex: Int(day.uvIndex.value)
+            var forecast: [ForecastDay] = []
+            for day in daily.forecast.dropFirst().prefix(10) {
+                forecast.append(
+                    ForecastDay(
+                        date: isoDay(day.date),
+                        maxTempC: Int(
+                            round(day.highTemperature.converted(to: UnitTemperature.celsius).value)),
+                        minTempC: Int(
+                            round(day.lowTemperature.converted(to: UnitTemperature.celsius).value)),
+                        rainChance: Int(round(day.precipitationChance * 100.0)),
+                        rainMm: day.precipitationAmountByType.precipitation.converted(
+                            to: .millimeters
+                        ).value,
+                        uvIndex: Int(day.uvIndex.value)
+                    )
                 )
+            }
+
+            return WeatherData(
+                timestamp: ISO8601DateFormatter().string(from: Date()),
+                location: String(
+                    format: "%.4f, %.4f", location.coordinate.latitude,
+                    location.coordinate.longitude),
+                current: currentWeather,
+                today: todayWeather,
+                forecast: forecast
             )
         }
 
-        return WeatherData(
-            timestamp: ISO8601DateFormatter().string(from: Date()),
-            location: String(format: "%.4f, %.4f", location.coordinate.latitude, location.coordinate.longitude),
-            current: currentWeather,
-            today: todayWeather,
-            forecast: forecast
-        )
-    }
-
-    @available(iOS 16.0, *)
-    private func weatherKitConditionPT(_ condition: WeatherCondition) -> String {
-        switch condition {
-        case .clear: return "Céu limpo"
-        case .mostlyClear: return "Quase limpo"
-        case .partlyCloudy: return "Parcialmente nublado"
-        case .mostlyCloudy: return "Muito nublado"
-        case .cloudy: return "Nublado"
-        case .foggy: return "Nevoeiro"
-        case .haze: return "Neblina"
-        case .windy: return "Vento"
-        case .drizzle: return "Garoa"
-        case .rain: return "Chuva"
-        case .heavyRain: return "Chuva forte"
-        case .thunderstorms: return "Trovoadas"
-        case .hail: return "Granizo"
-        case .sleet: return "Aguaneve"
-        case .snow: return "Neve"
-        case .heavySnow: return "Neve forte"
-        case .blizzard: return "Nevasca"
-        default: return "Tempo"
+        @available(iOS 16.0, *)
+        private func weatherKitConditionPT(_ condition: WeatherCondition) -> String {
+            switch condition {
+            case .clear: return "Céu limpo"
+            case .mostlyClear: return "Quase limpo"
+            case .partlyCloudy: return "Parcialmente nublado"
+            case .mostlyCloudy: return "Muito nublado"
+            case .cloudy: return "Nublado"
+            case .foggy: return "Nevoeiro"
+            case .haze: return "Neblina"
+            case .windy: return "Vento"
+            case .drizzle: return "Garoa"
+            case .rain: return "Chuva"
+            case .heavyRain: return "Chuva forte"
+            case .thunderstorms: return "Trovoadas"
+            case .hail: return "Granizo"
+            case .sleet: return "Aguaneve"
+            case .snow: return "Neve"
+            case .heavySnow: return "Neve forte"
+            case .blizzard: return "Nevasca"
+            default: return "Tempo"
+            }
         }
-    }
     #endif
 
     private func isoDay(_ date: Date) -> String {
@@ -758,7 +1040,7 @@ class AppState: ObservableObject {
             // 1. Fetch past images/passes (existing logic)
             async let imagesTask = api.fetchLastImages()
             async let passesTask = api.fetchPasses()
-            
+
             let (images, passesList) = try await (imagesTask, passesTask)
 
             if self.lastImages != images {
@@ -769,7 +1051,7 @@ class AppState: ObservableObject {
             if self.passes != newPasses {
                 self.passes = newPasses
             }
-            
+
             // 2. Fetch predictions for Widget (New logic)
             await SatellitePassPredictor.shared.fetchAndPredict()
             if let next = SatellitePassPredictor.shared.predictedPasses.first {
@@ -856,28 +1138,33 @@ class AppState: ObservableObject {
         return keys
     }
 
-    private func hasAnyMatchingAirlineOverrideKey(between lhs: Aircraft, and rhs: Aircraft) -> Bool {
+    private func hasAnyMatchingAirlineOverrideKey(between lhs: Aircraft, and rhs: Aircraft) -> Bool
+    {
         let left = Set(airlineOverrideKeys(for: lhs))
         let right = Set(airlineOverrideKeys(for: rhs))
         return !left.isDisjoint(with: right)
     }
 
     private func normalizedLookupToken(_ value: String?) -> String? {
-        guard let token = value?
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-            .uppercased(),
-              !token.isEmpty else {
+        guard
+            let token = value?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+                .uppercased(),
+            !token.isEmpty
+        else {
             return nil
         }
         return token
     }
 
     private func loadManualAirlineOverrides() {
-        guard let data = UserDefaults.standard.data(forKey: manualAirlineOverridesDefaultsKey) else {
+        guard let data = UserDefaults.standard.data(forKey: manualAirlineOverridesDefaultsKey)
+        else {
             return
         }
         if let decoded = try? JSONDecoder().decode([String: String].self, from: data) {
             manualAirlineOverrides = decoded
+            rebuildADSBViewCache()
         }
     }
 
@@ -885,34 +1172,83 @@ class AppState: ObservableObject {
         if let data = try? JSONEncoder().encode(manualAirlineOverrides) {
             UserDefaults.standard.set(data, forKey: manualAirlineOverridesDefaultsKey)
         }
+        rebuildADSBViewCache()
+    }
+
+    private func rebuildADSBViewCache() {
+        if !aircraftList.isEmpty {
+            var grouped: [String: (displayName: String, count: Int)] = [:]
+
+            for aircraft in aircraftList {
+                let effectiveName = manualAirlineOverride(for: aircraft) ?? aircraft.airline
+                guard let cleaned = normalizedAirlineDisplayName(effectiveName) else { continue }
+                let key = cleaned.folding(
+                    options: [.diacriticInsensitive, .caseInsensitive], locale: .current
+                ).uppercased()
+
+                if var current = grouped[key] {
+                    current.count += 1
+                    grouped[key] = current
+                } else {
+                    grouped[key] = (displayName: cleaned, count: 1)
+                }
+            }
+
+            adsbAirlines = grouped.values
+                .map { Airline(name: $0.displayName, count: $0.count) }
+                .sorted {
+                    if $0.count == $1.count {
+                        return $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending
+                    }
+                    return $0.count > $1.count
+                }
+        } else {
+            adsbAirlines = adsbSummary?.airlines ?? []
+        }
+
+        adsbNearbyAircraftPreview =
+            aircraftList
+            .filter { $0.computedDistanceNm < 100000 }
+            .sorted { $0.computedDistanceNm < $1.computedDistanceNm }
+            .prefix(5)
+            .map { $0 }
+    }
+
+    private func normalizedAirlineDisplayName(_ value: String?) -> String? {
+        guard let cleaned = value?.trimmingCharacters(in: .whitespacesAndNewlines), !cleaned.isEmpty
+        else {
+            return nil
+        }
+        return cleaned
     }
 
     // MARK: - ACARS
 
     func refreshACARS() async {
-        guard !acarsLoading else { 
+        guard !acarsLoading else {
             print("[ACARS] ⏭️ Skipping refresh - already loading")
-            return 
+            return
         }
         acarsLoading = true
         defer { acarsLoading = false }
-        
+
         print("[ACARS] 🔄 Starting refresh...")
-        
+
         do {
             print("[ACARS] 📡 Fetching summary...")
             let summary = try await api.fetchACARSSummary()
             print("[ACARS] ✅ Summary received: \(summary.today.messages) messages today")
-            
+
             print("[ACARS] 📡 Fetching messages...")
             let messageList = try await api.fetchACARSMessages(limit: 20)
             print("[ACARS] ✅ Messages received: \(messageList.messages.count) messages")
-            
+
             // Populate registration cache from ACARS
             var newRegistrations = 0
             for msg in messageList.messages {
                 if let flight = msg.flight, !flight.isEmpty,
-                   let tail = msg.tail, !tail.isEmpty {
+                    let tail = msg.tail, !tail.isEmpty
+                {
                     if registrationCache[flight] == nil {
                         registrationCache[flight] = tail
                         newRegistrations += 1
@@ -922,7 +1258,7 @@ class AppState: ObservableObject {
             if newRegistrations > 0 {
                 print("[ACARS] 💾 Cached \(newRegistrations) new registrations from ACARS")
             }
-            
+
             print("[ACARS] 📡 Fetching hourly stats...")
             let hourly = try await api.fetchACARSHourly()
             print("[ACARS] ✅ Hourly stats received: \(hourly.hours.count) hours")
@@ -938,10 +1274,12 @@ class AppState: ObservableObject {
             if self.acarsMessages != newMessages {
                 print("[ACARS] 📝 Updating messages: \(newMessages.count) messages")
                 if let first = newMessages.first {
-                    print("[ACARS]   First message: \(first.flight ?? "N/A") - \(first.label ?? "N/A")")
+                    print(
+                        "[ACARS]   First message: \(first.flight ?? "N/A") - \(first.label ?? "N/A")"
+                    )
                 }
                 self.acarsMessages = newMessages
-                
+
                 if let msg = newMessages.first {
                     WidgetDataManager.shared.updateACARS(
                         lastMessage: msg.text ?? msg.labelDesc ?? "Mensagem Recebida",
@@ -1131,26 +1469,113 @@ class AppState: ObservableObject {
     // MARK: - Manual Refresh (for pull-to-refresh)
 
     func forceRefresh() async {
-        lastADSBRefresh = nil
-        lastSystemRefresh = nil
-        lastFirestickRefresh = nil
-        lastRadioRefresh = nil
-        lastWeatherRefresh = nil
-        lastSatelliteRefresh = nil
-        lastACARSRefresh = nil
-        lastProcessesRefresh = nil
-        lastPartitionsRefresh = nil
-        lastNetworkRefresh = nil
-        lastDockerStatusRefresh = nil
-        lastDockerVersionRefresh = nil
-        lastSystemdRefresh = nil
-        lastSatDumpStatusRefresh = nil
-        lastADSBHistoryRefresh = nil
-        lastADSBAlertsRefresh = nil
-        lastACARSHistoryRefresh = nil
-        lastACARSAlertsRefresh = nil
-        lastMetricsRefresh = nil
-        await refreshAllData()
+        await refreshActiveTabNow(force: true)
+    }
+
+    private func refreshActiveTabNow(force: Bool) async {
+        let active = activeTabRawValue
+
+        if force {
+            switch active {
+            case "adsb", "map":
+                lastADSBSummaryRefresh = nil
+                lastADSBListRefresh = nil
+                lastADSBHistoryRefresh = nil
+                lastADSBAlertsRefresh = nil
+                lastTuyaSensorRefresh = nil
+                lastMetricsRefresh = nil
+                adsbInFlight = false
+
+            case "system", "infra":
+                lastSystemRefresh = nil
+                lastFirestickRefresh = nil
+                lastProcessesRefresh = nil
+                lastPartitionsRefresh = nil
+                lastNetworkRefresh = nil
+                lastDockerStatusRefresh = nil
+                lastDockerVersionRefresh = nil
+                lastSystemdRefresh = nil
+                lastSatDumpStatusRefresh = nil
+                lastMetricsRefresh = nil
+                systemInFlight = false
+
+            case "radio":
+                lastRadioRefresh = nil
+                radioInFlight = false
+
+            case "weather":
+                lastWeatherRefresh = nil
+                weatherInFlight = false
+
+            case "satellite":
+                lastSatelliteRefresh = nil
+                satelliteInFlight = false
+
+            case "acars":
+                lastACARSRefresh = nil
+                lastACARSHistoryRefresh = nil
+                lastACARSAlertsRefresh = nil
+                acarsInFlight = false
+
+            case "intelligence":
+                lastADSBSummaryRefresh = nil
+                lastADSBListRefresh = nil
+                lastADSBHistoryRefresh = nil
+                lastADSBAlertsRefresh = nil
+                lastTuyaSensorRefresh = nil
+                lastMetricsRefresh = nil
+                lastSystemRefresh = nil
+                lastFirestickRefresh = nil
+                lastProcessesRefresh = nil
+                lastPartitionsRefresh = nil
+                lastNetworkRefresh = nil
+                lastDockerStatusRefresh = nil
+                lastDockerVersionRefresh = nil
+                lastSystemdRefresh = nil
+                lastSatDumpStatusRefresh = nil
+                lastWeatherRefresh = nil
+                lastSatelliteRefresh = nil
+                lastACARSRefresh = nil
+                lastACARSHistoryRefresh = nil
+                lastACARSAlertsRefresh = nil
+                adsbInFlight = false
+                systemInFlight = false
+                weatherInFlight = false
+                satelliteInFlight = false
+                acarsInFlight = false
+
+            default:
+                break
+            }
+        }
+
+        let now = Date()
+        switch active {
+        case "adsb", "map":
+            await tickADSB()
+            await tickADSBExtras(now)
+
+        case "system", "infra":
+            await tickSystem(now)
+
+        case "radio":
+            await tickRadio(now)
+
+        case "weather":
+            await tickWeather(now)
+
+        case "satellite":
+            await tickSatellite(now)
+
+        case "acars":
+            await tickACARS(now)
+
+        case "intelligence":
+            await tickIntelligence(now)
+
+        default:
+            break
+        }
     }
 }
 
@@ -1158,6 +1583,7 @@ struct LabIntelligenceSnapshot {
     let aircraft: [Aircraft]
     let adsbSummary: ADSBSummary?
     let system: SystemStatus?
+    let weather: WeatherData?
     let lastImages: LastImages?
     let passes: [SatellitePass]
     let acarsSummary: ACARSSummary?
@@ -1167,12 +1593,22 @@ struct LabIntelligenceSnapshot {
     let adsbHistory: ADSBHistoryResponse?
     let acarsHistory: ACARSHistoryResponse?
     let metrics: MetricsResponse?
+    let firestickStatuses: [FirestickDeviceStatus]
+    let processes: [ProcessItem]
+    let partitions: [Partition]
+    let networkInterfaces: [NetworkInterface]
+    let dockerVersion: DockerVersionResponse?
+    let dockerContainers: [DockerContainer]
+    let systemdServices: [SystemdService]
+    let satDumpStatus: SatDumpStatus?
+    let nowPlaying: NowPlaying?
 
     @MainActor
     init(state: AppState) {
         aircraft = state.aircraftList
         adsbSummary = state.adsbSummary
         system = state.systemStatus
+        weather = state.weather
         lastImages = state.lastImages
         passes = state.passes
         acarsSummary = state.acarsSummary
@@ -1182,6 +1618,15 @@ struct LabIntelligenceSnapshot {
         adsbHistory = state.adsbHistory
         acarsHistory = state.acarsHistory
         metrics = state.metrics
+        firestickStatuses = state.firestickDeviceStatuses
+        processes = state.processes
+        partitions = state.partitions
+        networkInterfaces = state.networkInterfaces
+        dockerVersion = state.dockerVersion
+        dockerContainers = state.dockerContainers
+        systemdServices = state.systemdServices
+        satDumpStatus = state.satDumpStatus
+        nowPlaying = state.nowPlaying
     }
 }
 
@@ -1228,18 +1673,33 @@ actor LabIntelligenceService {
 
     func briefing(from snapshot: LabIntelligenceSnapshot) -> String {
         let total = snapshot.adsbSummary?.totalNow ?? snapshot.aircraft.count
-        let withPos = snapshot.adsbSummary?.withPos ?? snapshot.aircraft.filter { $0.lat != nil && $0.lon != nil }.count
+        let withPos =
+            snapshot.adsbSummary?.withPos
+            ?? snapshot.aircraft.filter { $0.lat != nil && $0.lon != nil }.count
         let fastest = snapshot.aircraft.max(by: { $0.speedKt < $1.speedKt })
         let closest = snapshot.aircraft.compactMap { ac -> Aircraft? in
             guard ac.distanceNm != nil else { return nil }
             return ac
-        }.min(by: { ($0.distanceNm ?? .greatestFiniteMagnitude) < ($1.distanceNm ?? .greatestFiniteMagnitude) })
+        }.min(by: {
+            ($0.distanceNm ?? .greatestFiniteMagnitude)
+                < ($1.distanceNm ?? .greatestFiniteMagnitude)
+        })
 
         let cpu = Int(snapshot.system?.cpu?.usagePercent ?? 0)
         let mem = Int(snapshot.system?.memory?.usedPercent ?? 0)
         let temp = snapshot.system?.cpu?.temperatureC.map { String(format: "%.0f", $0) } ?? "-"
-        let lastPass = snapshot.lastImages.map { "\($0.images.count) imagens em \(compactPassName($0.passName))" } ?? "sem passe recente"
+        let lastPass =
+            snapshot.lastImages.map {
+                "\($0.images.count) imagens em \(compactPassName($0.passName))"
+            } ?? "sem passe recente"
         let acarsToday = snapshot.acarsSummary?.today.messages ?? snapshot.acarsMessages.count
+        let weatherLine: String
+        if let weather = snapshot.weather {
+            weatherLine =
+                "Clima: \(weather.current.tempC)°C • \(weather.current.description.lowercased()) • chuva \(weather.current.precipMm.formattedBR(decimals: 1)) mm."
+        } else {
+            weatherLine = "Clima: leitura indisponível no momento."
+        }
 
         var lines: [String] = []
         lines.append("Radar: \(total) aeronaves (\(withPos) com posição).")
@@ -1247,11 +1707,13 @@ actor LabIntelligenceService {
             lines.append("Mais rápida: \(fastest.displayCallsign) a \(fastest.speedKt) kt.")
         }
         if let closest, let d = closest.distanceNm {
-            lines.append("Mais próxima: \(closest.displayCallsign) a \(String(format: "%.1f", d)) nm.")
+            lines.append(
+                "Mais próxima: \(closest.displayCallsign) a \(String(format: "%.1f", d)) nm.")
         }
         lines.append("Satélite: \(lastPass).")
         lines.append("ACARS hoje: \(acarsToday) mensagens.")
         lines.append("Sistema: CPU \(cpu)% • RAM \(mem)% • Temp \(temp)°C.")
+        lines.append(weatherLine)
         return lines.joined(separator: "\n")
     }
 
@@ -1286,25 +1748,34 @@ actor LabIntelligenceService {
         }
         if q.contains("proxim") || q.contains("perto") {
             if let ac = snapshot.aircraft.compactMap({ $0.distanceNm != nil ? $0 : nil })
-                .min(by: { ($0.distanceNm ?? .greatestFiniteMagnitude) < ($1.distanceNm ?? .greatestFiniteMagnitude) }),
-               let d = ac.distanceNm {
-                return "Aeronave mais próxima: \(ac.displayCallsign) a \(String(format: "%.1f", d)) nm."
+                .min(by: {
+                    ($0.distanceNm ?? .greatestFiniteMagnitude)
+                        < ($1.distanceNm ?? .greatestFiniteMagnitude)
+                }),
+                let d = ac.distanceNm
+            {
+                return
+                    "Aeronave mais próxima: \(ac.displayCallsign) a \(String(format: "%.1f", d)) nm."
             }
             return "Nenhuma aeronave com distância disponível no momento."
         }
         if q.contains("rapida") || q.contains("rápid") || q.contains("veloc") {
             if let ac = snapshot.aircraft.max(by: { $0.speedKt < $1.speedKt }) {
-                return "Aeronave mais rápida: \(ac.displayCallsign) a \(ac.speedKt) kt (\(ac.speedKmh) km/h)."
+                return
+                    "Aeronave mais rápida: \(ac.displayCallsign) a \(ac.speedKt) kt (\(ac.speedKmh) km/h)."
             }
             return "Não encontrei velocidade de aeronaves agora."
         }
         if q.contains("satel") || q.contains("meteor") || q.contains("passe") {
             if let last = snapshot.lastImages {
-                return "Último passe: \(compactPassName(last.passName)) com \(last.images.count) imagens."
+                return
+                    "Último passe: \(compactPassName(last.passName)) com \(last.images.count) imagens."
             }
             return "Sem passe de satélite recente no momento."
         }
-        if q.contains("cpu") || q.contains("ram") || q.contains("sistema") || q.contains("temperatura") {
+        if q.contains("cpu") || q.contains("ram") || q.contains("sistema")
+            || q.contains("temperatura")
+        {
             let cpu = Int(snapshot.system?.cpu?.usagePercent ?? 0)
             let mem = Int(snapshot.system?.memory?.usedPercent ?? 0)
             let temp = snapshot.system?.cpu?.temperatureC.map { String(format: "%.0f", $0) } ?? "-"
@@ -1319,23 +1790,29 @@ actor LabIntelligenceService {
         return "Resultados mais próximos para “\(query)”:\n\(top)"
     }
 
-    func semanticSearch(query: String, snapshot: LabIntelligenceSnapshot, limit: Int = 10) -> [LabSearchResult] {
+    func semanticSearch(query: String, snapshot: LabIntelligenceSnapshot, limit: Int = 10)
+        -> [LabSearchResult]
+    {
         let tokens = tokenizeIntelligence(query)
         guard !tokens.isEmpty else { return [] }
         var results: [LabSearchResult] = []
 
         for ac in snapshot.aircraft {
-            let haystack = normalizeIntelligence([ac.callsign, ac.registration, ac.model, ac.hex, ac.airline].compactMap { $0 }.joined(separator: " "))
+            let haystack = normalizeIntelligence(
+                [ac.callsign, ac.registration, ac.model, ac.hex, ac.airline].compactMap { $0 }
+                    .joined(separator: " "))
             let score = scoreIntelligence(tokens, in: haystack)
             if score > 0 {
-                let subtitle = [ac.registration, ac.model, ac.hex?.uppercased()].compactMap { $0 }.joined(separator: " • ")
-                results.append(.init(
-                    id: "ac_\(ac.id)",
-                    category: "Aeronave",
-                    title: ac.displayCallsign,
-                    subtitle: subtitle.isEmpty ? "Sem metadados adicionais" : subtitle,
-                    score: score
-                ))
+                let subtitle = [ac.registration, ac.model, ac.hex?.uppercased()].compactMap { $0 }
+                    .joined(separator: " • ")
+                results.append(
+                    .init(
+                        id: "ac_\(ac.id)",
+                        category: "Aeronave",
+                        title: ac.displayCallsign,
+                        subtitle: subtitle.isEmpty ? "Sem metadados adicionais" : subtitle,
+                        score: score
+                    ))
             }
         }
 
@@ -1343,43 +1820,50 @@ actor LabIntelligenceService {
             let haystack = normalizeIntelligence("\(pass.name) \(pass.satelliteName)")
             let score = scoreIntelligence(tokens, in: haystack)
             if score > 0 {
-                results.append(.init(
-                    id: "pass_\(pass.id)",
-                    category: "Satélite",
-                    title: pass.satelliteName,
-                    subtitle: compactPassName(pass.name),
-                    score: score
-                ))
+                results.append(
+                    .init(
+                        id: "pass_\(pass.id)",
+                        category: "Satélite",
+                        title: pass.satelliteName,
+                        subtitle: compactPassName(pass.name),
+                        score: score
+                    ))
             }
         }
 
         for msg in snapshot.acarsMessages {
-            let haystack = normalizeIntelligence([msg.flight, msg.tail, msg.label, msg.text, msg.departure, msg.destination].compactMap { $0 }.joined(separator: " "))
+            let haystack = normalizeIntelligence(
+                [msg.flight, msg.tail, msg.label, msg.text, msg.departure, msg.destination]
+                    .compactMap { $0 }.joined(separator: " "))
             let score = scoreIntelligence(tokens, in: haystack)
             if score > 0 {
                 let route = msg.displayRoute ?? "-"
-                results.append(.init(
-                    id: "acars_\(msg.id)",
-                    category: "ACARS",
-                    title: msg.displayFlight,
-                    subtitle: "\(msg.label ?? "-") • \(route)",
-                    score: score
-                ))
+                results.append(
+                    .init(
+                        id: "acars_\(msg.id)",
+                        category: "ACARS",
+                        title: msg.displayFlight,
+                        subtitle: "\(msg.label ?? "-") • \(route)",
+                        score: score
+                    ))
             }
         }
 
         for alert in snapshot.adsbAlerts {
-            let haystack = normalizeIntelligence([alert.callsign, alert.registration, alert.model, alert.aircraft].compactMap { $0 }.joined(separator: " "))
+            let haystack = normalizeIntelligence(
+                [alert.callsign, alert.registration, alert.model, alert.aircraft].compactMap { $0 }
+                    .joined(separator: " "))
             let score = scoreIntelligence(tokens, in: haystack)
             if score > 0 {
                 let title = alert.callsign ?? alert.registration ?? alert.aircraft
-                results.append(.init(
-                    id: "adsb_alert_\(alert.id)",
-                    category: "Alerta ADS-B",
-                    title: title,
-                    subtitle: alert.timestamp,
-                    score: score
-                ))
+                results.append(
+                    .init(
+                        id: "adsb_alert_\(alert.id)",
+                        category: "Alerta ADS-B",
+                        title: title,
+                        subtitle: alert.timestamp,
+                        score: score
+                    ))
             }
         }
 
@@ -1396,45 +1880,60 @@ actor LabIntelligenceService {
 
         for alert in snapshot.adsbAlerts {
             let title = alert.callsign ?? alert.registration ?? alert.aircraft
-            events.append(.init(
-                id: "adsb_\(alert.id)",
-                timeLabel: compactTime(alert.timestamp),
-                category: "ADS-B",
-                title: "Alerta de tráfego",
-                detail: title
-            ))
+            events.append(
+                .init(
+                    id: "adsb_\(alert.id)",
+                    timeLabel: compactTime(alert.timestamp),
+                    category: "ADS-B",
+                    title: "Alerta de tráfego",
+                    detail: title
+                ))
         }
 
         for alert in snapshot.acarsAlerts {
-            events.append(.init(
-                id: "acars_\(alert.id)",
-                timeLabel: alert.timestamp.toDisplayHHMM() ?? "-",
-                category: "ACARS",
-                title: "Alerta de mensagem",
-                detail: alert.id
-            ))
+            events.append(
+                .init(
+                    id: "acars_\(alert.id)",
+                    timeLabel: alert.timestamp.toDisplayHHMM() ?? "-",
+                    category: "ACARS",
+                    title: "Alerta de mensagem",
+                    detail: alert.id
+                ))
         }
 
         if let last = snapshot.lastImages {
-            events.append(.init(
-                id: "sat_\(last.timestamp)",
-                timeLabel: compactTime(last.timestamp),
-                category: "Satélite",
-                title: "Último passe capturado",
-                detail: "\(last.images.count) imagens • \(compactPassName(last.passName))"
-            ))
+            events.append(
+                .init(
+                    id: "sat_\(last.timestamp)",
+                    timeLabel: compactTime(last.timestamp),
+                    category: "Satélite",
+                    title: "Último passe capturado",
+                    detail: "\(last.images.count) imagens • \(compactPassName(last.passName))"
+                ))
+        }
+
+        if let weather = snapshot.weather {
+            events.append(
+                .init(
+                    id: "weather_\(weather.timestamp)",
+                    timeLabel: compactTime(weather.timestamp),
+                    category: "Clima",
+                    title: "Leitura meteorológica",
+                    detail: "\(weather.current.tempC)°C • \(weather.current.description)"
+                ))
         }
 
         if let sys = snapshot.system {
             let cpu = Int(sys.cpu?.usagePercent ?? 0)
             let mem = Int(sys.memory?.usedPercent ?? 0)
-            events.append(.init(
-                id: "sys_\(sys.timestamp)",
-                timeLabel: compactTime(sys.timestamp),
-                category: "Sistema",
-                title: "Snapshot de saúde",
-                detail: "CPU \(cpu)% • RAM \(mem)%"
-            ))
+            events.append(
+                .init(
+                    id: "sys_\(sys.timestamp)",
+                    timeLabel: compactTime(sys.timestamp),
+                    category: "Sistema",
+                    title: "Snapshot de saúde",
+                    detail: "CPU \(cpu)% • RAM \(mem)%"
+                ))
         }
 
         return events.sorted { $0.timeLabel > $1.timeLabel }.prefix(limit).map { $0 }
@@ -1445,48 +1944,65 @@ actor LabIntelligenceService {
 
         let cpu = Int(snapshot.system?.cpu?.usagePercent ?? 0)
         if cpu >= 80 {
-            list.append(.init(
-                id: "cpu_hot",
-                title: "CPU alta",
-                detail: "Abrir painel de sistema e investigar processos.",
-                targetTab: "system"
-            ))
+            list.append(
+                .init(
+                    id: "cpu_hot",
+                    title: "CPU alta",
+                    detail: "Abrir painel de sistema e investigar processos.",
+                    targetTab: "system"
+                ))
         }
 
         if !snapshot.adsbAlerts.isEmpty {
-            list.append(.init(
-                id: "adsb_alerts",
-                title: "Alertas ADS-B",
-                detail: "Abrir ADS-B com foco em aeronaves críticas.",
-                targetTab: "adsb"
-            ))
+            list.append(
+                .init(
+                    id: "adsb_alerts",
+                    title: "Alertas ADS-B",
+                    detail: "Abrir ADS-B com foco em aeronaves críticas.",
+                    targetTab: "adsb"
+                ))
         }
 
         if !snapshot.acarsAlerts.isEmpty {
-            list.append(.init(
-                id: "acars_alerts",
-                title: "Alertas ACARS",
-                detail: "Revisar mensagens recentes e histórico.",
-                targetTab: "acars"
-            ))
+            list.append(
+                .init(
+                    id: "acars_alerts",
+                    title: "Alertas ACARS",
+                    detail: "Revisar mensagens recentes e histórico.",
+                    targetTab: "acars"
+                ))
+        }
+
+        if let weather = snapshot.weather,
+            weather.current.precipMm >= 0.3 || weather.today.rainChance >= 55
+        {
+            list.append(
+                .init(
+                    id: "weather_watch",
+                    title: "Acompanhar clima",
+                    detail: "Abrir Clima e revisar chuva, vento e janela horária.",
+                    targetTab: "weather"
+                ))
         }
 
         if snapshot.lastImages == nil {
-            list.append(.init(
-                id: "sat_check",
-                title: "Sem passe recente",
-                detail: "Abrir Satélite e validar previsão/coleta.",
-                targetTab: "satellite"
-            ))
+            list.append(
+                .init(
+                    id: "sat_check",
+                    title: "Sem passe recente",
+                    detail: "Abrir Satélite e validar previsão/coleta.",
+                    targetTab: "satellite"
+                ))
         }
 
         if list.isEmpty {
-            list.append(.init(
-                id: "healthy",
-                title: "Operação estável",
-                detail: "Sem ação crítica agora. Recomendado: checar Analytics.",
-                targetTab: "analytics"
-            ))
+            list.append(
+                .init(
+                    id: "healthy",
+                    title: "Operação estável",
+                    detail: "Sem ação crítica agora. Recomendado: checar Analytics.",
+                    targetTab: "analytics"
+                ))
         }
         return list
     }
@@ -1496,14 +2012,28 @@ actor LabIntelligenceService {
         let satOk = (snapshot.lastImages != nil || !snapshot.passes.isEmpty)
         let acarsOk = (snapshot.acarsSummary != nil || !snapshot.acarsMessages.isEmpty)
         let sysOk = snapshot.system != nil
+        let weatherOk = snapshot.weather != nil
         let metricsOk = snapshot.metrics != nil
 
         return [
-            .init(id: "adsb", source: "ADS-B", status: adsbOk ? "OK" : "Sem dados", detail: "Aeronaves: \(snapshot.aircraft.count)"),
-            .init(id: "sat", source: "Satélite", status: satOk ? "OK" : "Sem dados", detail: "Passes: \(snapshot.passes.count)"),
-            .init(id: "acars", source: "ACARS", status: acarsOk ? "OK" : "Sem dados", detail: "Msgs: \(snapshot.acarsMessages.count)"),
-            .init(id: "sys", source: "Sistema", status: sysOk ? "OK" : "Sem dados", detail: "Host: \(snapshot.system?.hostname ?? "-")"),
-            .init(id: "metrics", source: "Métricas", status: metricsOk ? "OK" : "Sem dados", detail: metricsOk ? "Latência disponível" : "Coleta indisponível")
+            .init(
+                id: "adsb", source: "ADS-B", status: adsbOk ? "OK" : "Sem dados",
+                detail: "Aeronaves: \(snapshot.aircraft.count)"),
+            .init(
+                id: "sat", source: "Satélite", status: satOk ? "OK" : "Sem dados",
+                detail: "Passes: \(snapshot.passes.count)"),
+            .init(
+                id: "acars", source: "ACARS", status: acarsOk ? "OK" : "Sem dados",
+                detail: "Msgs: \(snapshot.acarsMessages.count)"),
+            .init(
+                id: "weather", source: "Clima", status: weatherOk ? "OK" : "Sem dados",
+                detail: weatherOk ? snapshot.weather?.current.description ?? "-" : "Coleta indisponível"),
+            .init(
+                id: "sys", source: "Sistema", status: sysOk ? "OK" : "Sem dados",
+                detail: "Host: \(snapshot.system?.hostname ?? "-")"),
+            .init(
+                id: "metrics", source: "Métricas", status: metricsOk ? "OK" : "Sem dados",
+                detail: metricsOk ? "Latência disponível" : "Coleta indisponível"),
         ]
     }
 
@@ -1512,37 +2042,55 @@ actor LabIntelligenceService {
 
         if let history = snapshot.adsbHistory {
             let todayPeak = history.days.first.flatMap { history.dailyPeaks[$0]?["peak"] } ?? 0
-            let yesterdayPeak = history.days.dropFirst().first.flatMap { history.dailyPeaks[$0]?["peak"] } ?? 0
-            insights.append(.init(
-                id: "adsb_peak",
-                metric: "Pico de aeronaves",
-                current: "\(todayPeak)",
-                previous: "\(yesterdayPeak)",
-                delta: signedDelta(current: Double(todayPeak), previous: Double(yesterdayPeak), suffix: "")
-            ))
+            let yesterdayPeak =
+                history.days.dropFirst().first.flatMap { history.dailyPeaks[$0]?["peak"] } ?? 0
+            insights.append(
+                .init(
+                    id: "adsb_peak",
+                    metric: "Pico de aeronaves",
+                    current: "\(todayPeak)",
+                    previous: "\(yesterdayPeak)",
+                    delta: signedDelta(
+                        current: Double(todayPeak), previous: Double(yesterdayPeak), suffix: "")
+                ))
         }
 
         if let acars = snapshot.acarsHistory {
             let todayMsgs = acars.last24hHours.reduce(0) { $0 + $1.messages }
             let yesterdayMsgs = acars.last7Days.dropFirst().first?.messages ?? 0
-            insights.append(.init(
-                id: "acars_msgs",
-                metric: "Mensagens ACARS",
-                current: "\(todayMsgs)",
-                previous: "\(yesterdayMsgs)",
-                delta: signedDelta(current: Double(todayMsgs), previous: Double(yesterdayMsgs), suffix: "")
-            ))
+            insights.append(
+                .init(
+                    id: "acars_msgs",
+                    metric: "Mensagens ACARS",
+                    current: "\(todayMsgs)",
+                    previous: "\(yesterdayMsgs)",
+                    delta: signedDelta(
+                        current: Double(todayMsgs), previous: Double(yesterdayMsgs), suffix: "")
+                ))
         }
 
         if let cpuNow = snapshot.system?.cpu?.usagePercent,
-           let avgResp = snapshot.metrics?.avgResponseMs {
-            insights.append(.init(
-                id: "sys_resp",
-                metric: "CPU x Latência API",
-                current: "\(Int(cpuNow))% CPU",
-                previous: "\(Int(avgResp)) ms",
-                delta: cpuNow > 75 && avgResp > 500 ? "Risco alto" : "Normal"
-            ))
+            let avgResp = snapshot.metrics?.avgResponseMs
+        {
+            insights.append(
+                .init(
+                    id: "sys_resp",
+                    metric: "CPU x Latência API",
+                    current: "\(Int(cpuNow))% CPU",
+                    previous: "\(Int(avgResp)) ms",
+                    delta: cpuNow > 75 && avgResp > 500 ? "Risco alto" : "Normal"
+                ))
+        }
+
+        if let weather = snapshot.weather {
+            insights.append(
+                .init(
+                    id: "weather_rain",
+                    metric: "Chuva prevista",
+                    current: "\(weather.today.rainChance)%",
+                    previous: "\(weather.today.rainMm.formattedBR(decimals: 1)) mm",
+                    delta: weather.today.rainChance >= 60 || weather.today.rainMm >= 5 ? "Atenção" : "Baixo risco"
+                ))
         }
 
         return insights

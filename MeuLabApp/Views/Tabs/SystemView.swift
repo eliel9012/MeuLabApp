@@ -1,12 +1,273 @@
 import SwiftUI
+import UIKit
+
+private func systemAdaptiveColor(light: UIColor, dark: UIColor) -> Color {
+    Color(
+        uiColor: UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? dark : light
+        }
+    )
+}
+
+private func systemRGBA(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, _ alpha: CGFloat = 1)
+    -> UIColor
+{
+    UIColor(red: red, green: green, blue: blue, alpha: alpha)
+}
+
+private enum SystemTheme {
+    static let piGreen = Color(red: 0.27, green: 0.78, blue: 0.37)
+    static let piLeaf = Color(red: 0.17, green: 0.62, blue: 0.28)
+    static let piRed = Color(red: 0.82, green: 0.21, blue: 0.32)
+    static let piBlue = Color(red: 0.14, green: 0.38, blue: 0.84)
+    static let amber = Color(red: 0.95, green: 0.57, blue: 0.15)
+    static let ink = systemAdaptiveColor(
+        light: systemRGBA(0.08, 0.11, 0.20),
+        dark: systemRGBA(0.92, 0.95, 1.00)
+    )
+    static let mist = systemAdaptiveColor(
+        light: systemRGBA(0.94, 0.97, 1.00),
+        dark: systemRGBA(0.09, 0.11, 0.18)
+    )
+    static let cloud = systemAdaptiveColor(
+        light: systemRGBA(0.98, 0.99, 1.00),
+        dark: systemRGBA(0.04, 0.06, 0.12)
+    )
+    static let canvasMid = systemAdaptiveColor(
+        light: systemRGBA(1.00, 1.00, 1.00),
+        dark: systemRGBA(0.06, 0.08, 0.15)
+    )
+    static let canvasEnd = systemAdaptiveColor(
+        light: systemRGBA(0.98, 0.99, 0.97),
+        dark: systemRGBA(0.08, 0.10, 0.17)
+    )
+    static let surfaceTop = systemAdaptiveColor(
+        light: systemRGBA(1.00, 1.00, 1.00, 0.98),
+        dark: systemRGBA(0.13, 0.16, 0.24, 0.98)
+    )
+    static let surfaceStroke = systemAdaptiveColor(
+        light: systemRGBA(1.00, 1.00, 1.00, 0.92),
+        dark: systemRGBA(0.26, 0.31, 0.42, 0.88)
+    )
+    static let shadow = systemAdaptiveColor(
+        light: systemRGBA(0.05, 0.12, 0.26),
+        dark: systemRGBA(0.00, 0.00, 0.00)
+    )
+}
+
+private struct SystemPanelBackground: View {
+    let cornerRadius: CGFloat
+    let highlight: Color
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [SystemTheme.surfaceTop, SystemTheme.mist],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [highlight.opacity(0.12), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [highlight.opacity(0.28), SystemTheme.surfaceStroke],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.1
+                    )
+            }
+            .shadow(color: SystemTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
+            .shadow(color: highlight.opacity(0.07), radius: 14, x: 0, y: 6)
+    }
+}
+
+private extension View {
+    func systemPanel(cornerRadius: CGFloat = 18, highlight: Color = SystemTheme.piBlue) -> some View
+    {
+        background(SystemPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+    }
+}
+
+private struct RaspberryPiGlyph: View {
+    var size: CGFloat = 28
+
+    var body: some View {
+        ZStack {
+            Group {
+                Circle().offset(x: -size * 0.18, y: -size * 0.05)
+                Circle().offset(x: 0, y: -size * 0.12)
+                Circle().offset(x: size * 0.18, y: -size * 0.05)
+                Circle().offset(x: -size * 0.24, y: size * 0.14)
+                Circle().offset(x: 0, y: size * 0.18)
+                Circle().offset(x: size * 0.24, y: size * 0.14)
+                Circle().frame(width: size * 0.34, height: size * 0.34)
+            }
+            .frame(width: size * 0.32, height: size * 0.32)
+            .foregroundStyle(
+                LinearGradient(
+                    colors: [SystemTheme.piRed, SystemTheme.piRed.opacity(0.86)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+
+            RoundedRectangle(cornerRadius: size * 0.06, style: .continuous)
+                .fill(SystemTheme.piRed.opacity(0.95))
+                .frame(width: size * 0.12, height: size * 0.14)
+                .offset(y: -size * 0.27)
+
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [SystemTheme.piGreen, SystemTheme.piLeaf],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.28, height: size * 0.15)
+                .rotationEffect(.degrees(-28))
+                .offset(x: -size * 0.12, y: -size * 0.37)
+
+            Ellipse()
+                .fill(
+                    LinearGradient(
+                        colors: [SystemTheme.piGreen, SystemTheme.piLeaf],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .frame(width: size * 0.28, height: size * 0.15)
+                .rotationEffect(.degrees(28))
+                .offset(x: size * 0.12, y: -size * 0.37)
+        }
+        .frame(width: size, height: size)
+    }
+}
+
+private struct SystemToolbarTitle: View {
+    var body: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [SystemTheme.piGreen.opacity(0.2), SystemTheme.piBlue.opacity(0.12)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 28, height: 28)
+
+                Image(systemName: "cpu")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(SystemTheme.piBlue)
+            }
+
+            Text("Sistema")
+                .font(.system(size: 23, weight: .black, design: .rounded))
+                .tracking(0.5)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [SystemTheme.piLeaf, SystemTheme.piBlue],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("Sistema")
+    }
+}
+
+private struct SystemInfoChip: View {
+    let title: String
+    let value: String
+    let tint: Color
+    var icon: String? = nil
+    var showsPi = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(SystemTheme.ink.opacity(0.56))
+
+            HStack(spacing: 6) {
+                if showsPi {
+                    RaspberryPiGlyph(size: 16)
+                } else if let icon {
+                    Image(systemName: icon)
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(tint)
+                }
+
+                Text(value)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(SystemTheme.ink)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .background(
+            Capsule()
+                .fill(tint.opacity(0.10))
+        )
+        .overlay(
+            Capsule()
+                .stroke(tint.opacity(0.18), lineWidth: 1)
+        )
+    }
+}
+
+private struct SystemQuickMetric: View {
+    let icon: String
+    let value: String
+    let label: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(tint)
+
+            Text(value)
+                .font(.callout.bold())
+                .monospacedDigit()
+                .foregroundStyle(SystemTheme.ink)
+
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(SystemTheme.ink.opacity(0.56))
+        }
+    }
+}
 
 struct SystemView: View {
     @EnvironmentObject var appState: AppState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var snapshotTarget: FirestickSnapshotTarget?
 
+    private var isCompactLayout: Bool { horizontalSizeClass == .compact }
+
     var body: some View {
-        ScrollView {
-                VStack(spacing: 16) {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 20) {
                     if let status = appState.systemStatus {
                         systemContent(status)
                     } else if let error = appState.systemError {
@@ -15,82 +276,127 @@ struct SystemView: View {
                         LoadingCard()
                     }
                 }
-                .padding()
+                .padding(.horizontal, isCompactLayout ? 14 : 16)
+                .padding(.bottom, 20)
+            }
+            .background {
+                ZStack {
+                    LinearGradient(
+                        colors: [SystemTheme.cloud, SystemTheme.canvasMid, SystemTheme.canvasEnd],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+
+                    RadialGradient(
+                        colors: [SystemTheme.piGreen.opacity(0.10), .clear],
+                        center: .topLeading,
+                        startRadius: 20,
+                        endRadius: 420
+                    )
+
+                    RadialGradient(
+                        colors: [SystemTheme.piRed.opacity(0.08), .clear],
+                        center: .topTrailing,
+                        startRadius: 30,
+                        endRadius: 360
+                    )
+                }
+                .ignoresSafeArea()
             }
             .navigationTitle("Sistema")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .principal) {
+                    SystemToolbarTitle()
+                }
+            }
             .sheet(item: $snapshotTarget) { target in
                 FirestickSnapshotView(deviceId: target.id, deviceName: target.name)
             }
+        }
     }
 
     @ViewBuilder
     private func systemContent(_ status: SystemStatus) -> some View {
-        // Header
-        VStack(spacing: 4) {
-            Text(status.hostname)
-                .font(.title2)
-                .fontWeight(.bold)
-
-            Text(status.location)
-                .font(.subheadline)
-                .foregroundStyle(.secondary)
-
-            if let uptime = status.uptime {
-                Label(uptime.formatted, systemImage: "clock")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-            }
-            
-            if let date = Formatters.isoDate.date(from: status.timestamp) ?? Formatters.isoDateNoFrac.date(from: status.timestamp) {
-                Text("Atualizado \(Formatters.relativeDate.localizedString(for: date, relativeTo: Date()))")
-                    .font(.caption2)
-                    .foregroundStyle(.tertiary)
-                    .padding(.top, 2)
-            }
-        }
-        .padding()
-        .frame(maxWidth: .infinity)
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        systemNodeBar(status)
+        systemOverviewHeader(status)
 
         // CPU
         if let cpu = status.cpu, cpu.error == nil {
             SystemCard(title: "CPU", icon: "cpu", color: .blue) {
-                HStack(spacing: 16) {
-                    GaugeView(
-                        value: cpu.usagePercent ?? 0,
-                        maxValue: 100,
-                        title: "Uso",
-                        color: .blue
-                    )
+                Group {
+                    if isCompactLayout {
+                        VStack(alignment: .leading, spacing: 16) {
+                            HStack(spacing: 16) {
+                                GaugeView(
+                                    value: cpu.usagePercent ?? 0,
+                                    maxValue: 100,
+                                    title: "Uso",
+                                    color: .blue
+                                )
 
-                    if let temp = cpu.temperatureC {
-                        GaugeView(
-                            value: temp,
-                            maxValue: 100,
-                            title: "Temp",
-                            color: Color.fromName(cpu.temperatureColor),
-                            suffix: "°C"
-                        )
-                    }
-                    
-                    VStack(alignment: .leading, spacing: 4) {
-                        if let l1 = cpu.load1min, let l5 = cpu.load5min, let l15 = cpu.load15min {
-                             Text("Load Avg")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                             Text(String(format: "%.2f  %.2f  %.2f", l1, l5, l15))
-                                .font(.caption)
-                                .monospacedDigit()
+                                if let temp = cpu.temperatureC {
+                                    GaugeView(
+                                        value: temp,
+                                        maxValue: 100,
+                                        title: "Temp",
+                                        color: Color.fromName(cpu.temperatureColor),
+                                        suffix: "°C"
+                                    )
+                                }
+                            }
+
+                            VStack(alignment: .leading, spacing: 6) {
+                                if let l1 = cpu.load1min, let l5 = cpu.load5min, let l15 = cpu.load15min {
+                                    Text("Load Avg")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text(String(format: "%.2f  %.2f  %.2f", l1, l5, l15))
+                                        .font(.callout.monospacedDigit())
+                                }
+
+                                Text("\(cpu.cores ?? 4) cores")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
                         }
-                        
-                        Text("\(cpu.cores ?? 4) Cores")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .padding(.top, 2)
+                    } else {
+                        HStack(spacing: 16) {
+                            GaugeView(
+                                value: cpu.usagePercent ?? 0,
+                                maxValue: 100,
+                                title: "Uso",
+                                color: .blue
+                            )
+
+                            if let temp = cpu.temperatureC {
+                                GaugeView(
+                                    value: temp,
+                                    maxValue: 100,
+                                    title: "Temp",
+                                    color: Color.fromName(cpu.temperatureColor),
+                                    suffix: "°C"
+                                )
+                            }
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                if let l1 = cpu.load1min, let l5 = cpu.load5min, let l15 = cpu.load15min {
+                                    Text("Load Avg")
+                                        .font(.caption2)
+                                        .foregroundStyle(.secondary)
+                                    Text(String(format: "%.2f  %.2f  %.2f", l1, l5, l15))
+                                        .font(.caption)
+                                        .monospacedDigit()
+                                }
+
+                                Text("\(cpu.cores ?? 4) Cores")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .padding(.top, 2)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .trailing)
+                        }
                     }
-                    .frame(maxWidth: .infinity, alignment: .trailing)
                 }
             }
         }
@@ -98,7 +404,9 @@ struct SystemView: View {
         // Memory
         if let memory = status.memory, memory.error == nil {
             SystemCard(title: "Memória RAM", icon: "memorychip", color: .purple) {
-                if let total = memory.totalMb, let used = memory.usedMb, let available = memory.availableMb {
+                if let total = memory.totalMb, let used = memory.usedMb,
+                    let available = memory.availableMb
+                {
                     VStack(spacing: 8) {
                         ProgressView(value: Double(used), total: Double(total)) {
                             HStack {
@@ -127,7 +435,9 @@ struct SystemView: View {
         // Disk
         if let disk = status.disk, disk.error == nil {
             SystemCard(title: "Armazenamento", icon: "internaldrive", color: .orange) {
-                if let total = disk.totalGb, let used = disk.usedGb, let available = disk.availableGb {
+                if let total = disk.totalGb, let used = disk.usedGb,
+                    let available = disk.availableGb
+                {
                     VStack(spacing: 8) {
                         ProgressView(value: used, total: total) {
                             HStack {
@@ -142,9 +452,13 @@ struct SystemView: View {
                         .tint(.orange)
 
                         HStack {
-                            Label(String(format: "%.1f GB total", total), systemImage: "square.stack.3d.up")
+                            Label(
+                                String(format: "%.1f GB total", total),
+                                systemImage: "square.stack.3d.up")
                             Spacer()
-                            Label(String(format: "%.1f GB livre", available), systemImage: "checkmark.circle")
+                            Label(
+                                String(format: "%.1f GB livre", available),
+                                systemImage: "checkmark.circle")
                         }
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -202,19 +516,21 @@ struct SystemView: View {
                         ForEach(appState.firestickDeviceStatuses) { item in
                             HStack(spacing: 10) {
                                 NavigationLink {
-                                    FirestickDetailView(deviceId: item.device.id, deviceName: item.device.name)
+                                    FirestickDetailView(
+                                        deviceId: item.device.id, deviceName: item.device.name)
                                 } label: {
                                     FirestickRowView(item: item)
                                 }
                                 .buttonStyle(.plain)
 
                                 Button {
-                                    snapshotTarget = FirestickSnapshotTarget(id: item.device.id, name: item.device.name)
+                                    snapshotTarget = FirestickSnapshotTarget(
+                                        id: item.device.id, name: item.device.name)
                                 } label: {
                                     Image(systemName: "camera")
                                         .font(.system(size: 16, weight: .semibold))
                                 }
-                                .buttonStyle(.bordered)
+                                .adaptiveGlassButton()
                             }
                             Divider()
                         }
@@ -248,7 +564,7 @@ struct SystemView: View {
 
         // Partitions
         if !appState.partitions.isEmpty {
-             SystemCard(title: "Partições", icon: "externaldrive", color: .orange) {
+            SystemCard(title: "Partições", icon: "externaldrive", color: .orange) {
                 VStack(spacing: 12) {
                     ForEach(appState.partitions) { partition in
                         VStack(alignment: .leading, spacing: 4) {
@@ -267,9 +583,11 @@ struct SystemView: View {
                             )
                             .tint(.orange)
 
-                            Text("\(formatBytes(partition.usedBytes)) / \(formatBytes(partition.totalBytes))")
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
+                            Text(
+                                "\(formatBytes(partition.usedBytes)) / \(formatBytes(partition.totalBytes))"
+                            )
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
                         }
                     }
                 }
@@ -299,6 +617,351 @@ struct SystemView: View {
         }
     }
 
+    private func systemNodeBar(_ status: SystemStatus) -> some View {
+        Group {
+            if isCompactLayout {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack(spacing: 10) {
+                                Label("Nó monitorado", systemImage: "desktopcomputer")
+                                    .font(.subheadline.weight(.semibold))
+                                    .foregroundStyle(SystemTheme.ink.opacity(0.82))
+
+                                Text("ONLINE")
+                                    .font(.system(size: 10, weight: .black, design: .rounded))
+                                    .tracking(1.0)
+                                    .foregroundStyle(SystemTheme.piGreen)
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(SystemTheme.piGreen.opacity(0.14), in: Capsule())
+                            }
+
+                            HStack(spacing: 10) {
+                                RaspberryPiGlyph(size: 28)
+
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(status.hostname)
+                                        .font(.system(size: 28, weight: .black, design: .rounded))
+                                        .foregroundStyle(SystemTheme.ink)
+
+                                    Text(status.location)
+                                        .font(.subheadline)
+                                        .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                                }
+                            }
+                        }
+
+                        Spacer(minLength: 12)
+
+                        VStack(alignment: .trailing, spacing: 8) {
+                            ZStack {
+                                Circle()
+                                    .fill(
+                                        LinearGradient(
+                                            colors: [SystemTheme.piGreen.opacity(0.16), SystemTheme.piBlue.opacity(0.10)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    .frame(width: 64, height: 64)
+
+                                Circle()
+                                    .stroke(SystemTheme.piGreen.opacity(0.22), lineWidth: 1.2)
+                                    .frame(width: 64, height: 64)
+
+                                RaspberryPiGlyph(size: 30)
+                            }
+
+                            Text(statusUpdateText(status))
+                                .font(.caption2.weight(.semibold))
+                                .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                                .multilineTextAlignment(.trailing)
+                        }
+                    }
+
+                    Text("Telemetria ao vivo do Raspberry Pi e dos dispositivos conectados.")
+                        .font(.callout)
+                        .foregroundStyle(SystemTheme.ink.opacity(0.62))
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 10) {
+                            if let uptime = status.uptime {
+                                SystemInfoChip(
+                                    title: "Uptime",
+                                    value: uptime.formatted,
+                                    tint: SystemTheme.piGreen,
+                                    icon: "clock"
+                                )
+                            }
+
+                            SystemInfoChip(
+                                title: "Rede",
+                                value: status.wifi?.ssid ?? "sem Wi-Fi",
+                                tint: SystemTheme.piBlue,
+                                icon: "wifi"
+                            )
+                        }
+                        .padding(.vertical, 2)
+                    }
+                }
+            } else {
+                HStack(alignment: .center, spacing: 18) {
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack(spacing: 10) {
+                            Label("Nó monitorado", systemImage: "desktopcomputer")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(SystemTheme.ink.opacity(0.82))
+
+                            Text("ONLINE")
+                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .tracking(1.0)
+                                .foregroundStyle(SystemTheme.piGreen)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(SystemTheme.piGreen.opacity(0.14), in: Capsule())
+                        }
+
+                        HStack(spacing: 10) {
+                            RaspberryPiGlyph(size: 28)
+
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(status.hostname)
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundStyle(SystemTheme.ink)
+
+                                Text(status.location)
+                                    .font(.subheadline)
+                                    .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                            }
+                        }
+
+                        Text("Telemetria ao vivo do Raspberry Pi e dos dispositivos conectados.")
+                            .font(.caption)
+                            .foregroundStyle(SystemTheme.ink.opacity(0.56))
+
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 10) {
+                                SystemInfoChip(
+                                    title: "Host",
+                                    value: status.hostname,
+                                    tint: SystemTheme.piRed,
+                                    showsPi: true
+                                )
+
+                                if let uptime = status.uptime {
+                                    SystemInfoChip(
+                                        title: "Uptime",
+                                        value: uptime.formatted,
+                                        tint: SystemTheme.piGreen,
+                                        icon: "clock"
+                                    )
+                                }
+
+                                SystemInfoChip(
+                                    title: "Rede",
+                                    value: status.wifi?.ssid ?? "sem Wi-Fi",
+                                    tint: SystemTheme.piBlue,
+                                    icon: "wifi"
+                                )
+                            }
+
+                            VStack(alignment: .leading, spacing: 8) {
+                                SystemInfoChip(
+                                    title: "Host",
+                                    value: status.hostname,
+                                    tint: SystemTheme.piRed,
+                                    showsPi: true
+                                )
+
+                                if let uptime = status.uptime {
+                                    SystemInfoChip(
+                                        title: "Uptime",
+                                        value: uptime.formatted,
+                                        tint: SystemTheme.piGreen,
+                                        icon: "clock"
+                                    )
+                                }
+
+                                SystemInfoChip(
+                                    title: "Rede",
+                                    value: status.wifi?.ssid ?? "sem Wi-Fi",
+                                    tint: SystemTheme.piBlue,
+                                    icon: "wifi"
+                                )
+                            }
+                        }
+                    }
+
+                    Spacer(minLength: 16)
+
+                    VStack(alignment: .trailing, spacing: 10) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [SystemTheme.piGreen.opacity(0.16), SystemTheme.piBlue.opacity(0.10)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                                .frame(width: 78, height: 78)
+
+                            Circle()
+                                .stroke(SystemTheme.piGreen.opacity(0.22), lineWidth: 1.2)
+                                .frame(width: 78, height: 78)
+
+                            RaspberryPiGlyph(size: 36)
+                        }
+
+                        Text(statusUpdateText(status))
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                            .multilineTextAlignment(.trailing)
+                    }
+                }
+            }
+        }
+        .padding(20)
+        .systemPanel(cornerRadius: 24, highlight: SystemTheme.piGreen)
+    }
+
+    private func systemOverviewHeader(_ status: SystemStatus) -> some View {
+        Group {
+            if isCompactLayout {
+                VStack(alignment: .leading, spacing: 14) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Visão geral")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(SystemTheme.piBlue.opacity(0.72))
+                            .textCase(.uppercase)
+
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(cpuUsageHeadline(status))
+                                .font(.system(size: 42, weight: .bold, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(SystemTheme.ink)
+
+                            if let temp = status.cpu?.temperatureC {
+                                Text("\(Int(temp))°C")
+                                    .font(.title3.weight(.bold))
+                                    .foregroundStyle(Color.fromName(status.cpu?.temperatureColor))
+                            }
+                        }
+
+                        Text("uso do processador")
+                            .font(.subheadline)
+                            .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                    }
+
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            if let memory = status.memory?.usedPercent {
+                                SystemQuickMetric(
+                                    icon: "memorychip",
+                                    value: String(format: "%.1f%%", memory),
+                                    label: "RAM",
+                                    tint: .purple
+                                )
+                            }
+
+                            if let disk = status.disk?.usedPercent {
+                                SystemQuickMetric(
+                                    icon: "internaldrive",
+                                    value: String(format: "%.1f%%", disk),
+                                    label: "Disco",
+                                    tint: .orange
+                                )
+                            }
+
+                            if let wifi = status.wifi?.qualityPercent {
+                                SystemQuickMetric(
+                                    icon: "wifi",
+                                    value: "\(wifi)%",
+                                    label: "Wi-Fi",
+                                    tint: wifi > 60 ? SystemTheme.piGreen : SystemTheme.amber
+                                )
+                            }
+                        }
+                    }
+                }
+            } else {
+                HStack(spacing: 16) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Visão geral")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(SystemTheme.piBlue.opacity(0.72))
+                            .textCase(.uppercase)
+
+                        HStack(alignment: .firstTextBaseline, spacing: 8) {
+                            Text(cpuUsageHeadline(status))
+                                .font(.system(size: 42, weight: .bold, design: .rounded))
+                                .monospacedDigit()
+                                .foregroundStyle(SystemTheme.ink)
+
+                            if let temp = status.cpu?.temperatureC {
+                                Text("\(Int(temp))°C")
+                                    .font(.title3.weight(.bold))
+                                    .foregroundStyle(Color.fromName(status.cpu?.temperatureColor))
+                            }
+                        }
+
+                        Text("uso do processador")
+                            .font(.subheadline)
+                            .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                    }
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 10) {
+                        if let memory = status.memory?.usedPercent {
+                            SystemQuickMetric(
+                                icon: "memorychip",
+                                value: String(format: "%.1f%%", memory),
+                                label: "RAM",
+                                tint: .purple
+                            )
+                        }
+
+                        if let disk = status.disk?.usedPercent {
+                            SystemQuickMetric(
+                                icon: "internaldrive",
+                                value: String(format: "%.1f%%", disk),
+                                label: "Disco",
+                                tint: .orange
+                            )
+                        }
+
+                        if let wifi = status.wifi?.qualityPercent {
+                            SystemQuickMetric(
+                                icon: "wifi",
+                                value: "\(wifi)%",
+                                label: "Wi-Fi",
+                                tint: wifi > 60 ? SystemTheme.piGreen : SystemTheme.amber
+                            )
+                        }
+                    }
+                }
+            }
+        }
+        .padding(20)
+        .systemPanel(cornerRadius: 24, highlight: SystemTheme.piBlue)
+    }
+
+    private func cpuUsageHeadline(_ status: SystemStatus) -> String {
+        guard let cpu = status.cpu?.usagePercent else { return "--%" }
+        return String(format: "%.0f%%", cpu)
+    }
+
+    private func statusUpdateText(_ status: SystemStatus) -> String {
+        guard let date = Formatters.isoDate.date(from: status.timestamp)
+            ?? Formatters.isoDateNoFrac.date(from: status.timestamp)
+        else {
+            return "Atualização indisponível"
+        }
+        return "Atualizado \(Formatters.relativeDate.localizedString(for: date, relativeTo: Date()))"
+    }
+
     private func formatBytes(_ bytes: Int64) -> String {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .binary
@@ -313,19 +976,30 @@ struct SystemCard<Content: View>: View {
     @ViewBuilder let content: Content
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: icon)
-                    .foregroundStyle(color)
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(spacing: 12) {
+                ZStack {
+                    Circle()
+                        .fill(color.opacity(0.14))
+                        .frame(width: 38, height: 38)
+
+                    Image(systemName: icon)
+                        .foregroundStyle(color)
+                        .font(.body.weight(.semibold))
+                }
+
                 Text(title)
                     .font(.headline)
+                    .foregroundStyle(SystemTheme.ink)
+
+                Spacer()
             }
+
             content
         }
-        .padding()
+        .padding(18)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .systemPanel(cornerRadius: 22, highlight: color)
     }
 }
 
@@ -348,16 +1022,21 @@ struct GaugeView: View {
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut, value: value)
 
-                Text(suffix == "°C" ? String(format: "%.0f%@", value, suffix) : String(format: "%.0f%@", value, suffix))
-                    .font(.caption)
-                    .fontWeight(.bold)
-                    .monospacedDigit()
+                Text(
+                    suffix == "°C"
+                        ? String(format: "%.0f%@", value, suffix)
+                        : String(format: "%.0f%@", value, suffix)
+                )
+                .font(.caption)
+                .fontWeight(.bold)
+                .monospacedDigit()
+                .foregroundStyle(SystemTheme.ink)
             }
             .frame(width: 60, height: 60)
 
             Text(title)
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(SystemTheme.ink.opacity(0.56))
         }
     }
 }
@@ -404,9 +1083,14 @@ private struct FirestickRowView: View {
         return "tv"
     }
 
-    private func subtitle(tvOn: Bool?, showing: Bool?, adbState: String, package: String?) -> String {
+    private func subtitle(tvOn: Bool?, showing: Bool?, adbState: String, package: String?) -> String
+    {
         var parts: [String] = []
-        if let tvOn { parts.append(tvOn ? "Ligada" : "Desligada") } else { parts.append("Estado: ?") }
+        if let tvOn {
+            parts.append(tvOn ? "Ligada" : "Desligada")
+        } else {
+            parts.append("Estado: ?")
+        }
         if let showing { parts.append(showing ? "HDMI: Fire Stick" : "HDMI: outro") }
         parts.append("ADB: \(adbState)")
         if let package, !package.isEmpty { parts.append(package) }
@@ -476,10 +1160,12 @@ private struct FirestickSnapshotView: View {
                 }
 
                 if let lastUpdated {
-                    Text("Atualizado \(Formatters.relativeDate.localizedString(for: lastUpdated, relativeTo: Date()))")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        .padding(.bottom, 6)
+                    Text(
+                        "Atualizado \(Formatters.relativeDate.localizedString(for: lastUpdated, relativeTo: Date()))"
+                    )
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+                    .padding(.bottom, 6)
                 }
             }
             .padding()
@@ -511,7 +1197,7 @@ private struct FirestickSnapshotView: View {
 
         do {
             let key = try await APIService.shared.fetchFirestickScreenshotKey(id: deviceId)
-            let raw = key.publicUrl ?? ("https://app.meulab.fun" + key.url)
+            let raw = key.publicUrl ?? (NetworkEnvironment.shared.apiBaseURL + key.url)
             let sep = raw.contains("?") ? "&" : "?"
             let withBust = raw + "\(sep)t=\(Int(Date().timeIntervalSince1970 * 1000))"
             url = URL(string: withBust)

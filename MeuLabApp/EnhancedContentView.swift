@@ -5,7 +5,7 @@ struct EnhancedContentView: View {
     @EnvironmentObject var pushManager: PushNotificationManager
     @State private var selectedTab: ContentView.Tab = .adsb
     @State private var selectedDetail: DetailItem?
-    
+
     var body: some View {
         NavigationSplitView {
             sidebar
@@ -16,13 +16,26 @@ struct EnhancedContentView: View {
         .environmentObject(appState)
         .environmentObject(pushManager)
         .environmentObject(NotificationFeedManager.shared)
-        .onReceive(NotificationCenter.default.publisher(for: Notification.Name("meulab.navigateToTab"))) { note in
+        .onReceive(NotificationCenter.default.publisher(for: .meulabNavigateToTab)) { note in
             guard let raw = note.userInfo?["tab"] as? String,
-                  let tab = ContentView.Tab(rawValue: raw) else { return }
+                let tab = ContentView.Tab(rawValue: raw)
+            else { return }
             selectedTab = tab
         }
+        .onReceive(NotificationCenter.default.publisher(for: .meulabOpenContext)) { note in
+            let pairs = (note.userInfo ?? [:]).reduce(into: [String: String]()) { partialResult, item in
+                if let key = item.key as? String, let value = item.value as? String {
+                    partialResult[key] = value
+                }
+            }
+            guard !pairs.isEmpty else { return }
+            appState.intelligenceContext = pairs
+            if let raw = pairs["tab"], let tab = ContentView.Tab(rawValue: raw) {
+                selectedTab = tab
+            }
+        }
     }
-    
+
     @ViewBuilder
     private var sidebar: some View {
         VStack(spacing: 0) {
@@ -32,14 +45,14 @@ struct EnhancedContentView: View {
                     Image(systemName: "cpu")
                         .font(.title2)
                         .foregroundStyle(.blue)
-                    
+
                     Text("MeuLab")
                         .font(.title2)
                         .fontWeight(.bold)
-                    
+
                     Spacer()
                 }
-                
+
                 // Quick Status
                 if let status = appState.systemStatus {
                     HStack(spacing: 8) {
@@ -64,10 +77,10 @@ struct EnhancedContentView: View {
                 }
             }
             .padding()
-            .background(Color(.systemBackground))
-            
+            .background(Color(.secondarySystemBackground))
+
             Divider()
-            
+
             // Navigation List
             List {
                 ForEach(ContentView.Tab.allCases, id: \.self) { tab in
@@ -83,7 +96,7 @@ struct EnhancedContentView: View {
         }
         .navigationSplitViewColumnWidth(300)
     }
-    
+
     @ViewBuilder
     private var detailView: some View {
         Group {
@@ -118,8 +131,12 @@ struct EnhancedContentView: View {
                     DataExportView()
                 case .remote:
                     RemoteControlView()
+                case .remoteRadio:
+                    RemoteRadioView()
                 case .intelligence:
                     IntelligenceView()
+                case .bible:
+                    BibleView()
                 }
             }
         }
@@ -127,7 +144,7 @@ struct EnhancedContentView: View {
         .environmentObject(pushManager)
         .environmentObject(NotificationFeedManager.shared)
     }
-    
+
     private var tabBar: some View {
         // Tab bar for compact mode (iPhone)
         HStack(spacing: 0) {
@@ -152,13 +169,13 @@ struct EnhancedContentView: View {
                                     .frame(width: 40, height: 40)
                                     .transition(.scale.combined(with: .opacity))
                             }
-                            
+
                             Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
                                 .font(.system(size: 20, weight: .semibold))
                                 .symbolEffect(.bounce, value: selectedTab == tab)
                                 .foregroundStyle(selectedTab == tab ? .blue : .primary.opacity(0.6))
                         }
-                        
+
                         Text(tab.title)
                             .font(.system(size: 10, weight: selectedTab == tab ? .bold : .semibold))
                             .foregroundStyle(selectedTab == tab ? .blue : .primary.opacity(0.5))
@@ -171,9 +188,7 @@ struct EnhancedContentView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .background(.ultraThinMaterial)
-        .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
-        .shadow(color: .black.opacity(0.2), radius: 25, x: 0, y: 15)
+        .glassCard(cornerRadius: 32)
         .padding(.horizontal, 14)
     }
 }
@@ -216,7 +231,7 @@ struct EnhancedSidebarRow: View {
     private func hasActiveAlerts(for tab: ContentView.Tab) -> Bool {
         switch tab {
         case .alerts, .system, .remote:
-            return true // In real app, check actual alerts
+            return true  // In real app, check actual alerts
         default:
             return false
         }
@@ -240,6 +255,8 @@ struct EnhancedQuickMetric: View {
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .glassCard(tint: color, cornerRadius: 8)
     }
 }
 

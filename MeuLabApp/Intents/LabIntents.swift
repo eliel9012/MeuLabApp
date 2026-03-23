@@ -1,5 +1,7 @@
 import AppIntents
+import CoreSpotlight
 import SwiftUI
+import UniformTypeIdentifiers
 
 // MARK: - Aeronaves no Radar
 
@@ -160,5 +162,326 @@ struct AskLabIntent: AppIntent {
         }
 
         return .result(dialog: "Não consegui responder no momento.")
+    }
+}
+
+// MARK: - Indexed Entities for Spotlight / Apple Intelligence
+
+@available(iOS 18.0, *)
+struct LabAircraftEntity: IndexedEntity {
+    static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Aeronave")
+    static var defaultQuery = LabAircraftQuery()
+
+    let id: String
+    let callsign: String
+    let registration: String?
+    let hex: String?
+    let model: String?
+    let airline: String?
+    let subtitle: String
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(
+            title: LocalizedStringResource(stringLiteral: callsign.isEmpty ? (registration ?? id) : callsign),
+            subtitle: LocalizedStringResource(stringLiteral: subtitle)
+        )
+    }
+
+    var attributeSet: CSSearchableItemAttributeSet {
+        let attributes = CSSearchableItemAttributeSet(itemContentType: UTType.text.identifier)
+        attributes.title = callsign.isEmpty ? (registration ?? id) : callsign
+        attributes.displayName = callsign.isEmpty ? (registration ?? id) : callsign
+        attributes.contentDescription = [registration, model, airline, hex]
+            .compactMap { $0 }
+            .joined(separator: " • ")
+        attributes.keywords = [callsign, registration, hex, model, airline].compactMap { $0 }
+        return attributes
+    }
+
+    init(aircraft: Aircraft) {
+        id = aircraft.id
+        callsign = aircraft.displayCallsign
+        registration = aircraft.registration
+        hex = aircraft.hex
+        model = aircraft.model
+        airline = aircraft.airline
+        subtitle = [aircraft.registration, aircraft.model, aircraft.airline].compactMap { $0 }.joined(separator: " • ")
+    }
+}
+
+@available(iOS 18.0, *)
+struct LabAircraftQuery: EntityStringQuery {
+    func entities(for identifiers: [String]) async throws -> [LabAircraftEntity] {
+        let aircraft = try await APIService.shared.fetchAircraftList(limit: 120).items
+        return aircraft
+            .filter { identifiers.contains($0.id) }
+            .map(LabAircraftEntity.init)
+    }
+
+    func suggestedEntities() async throws -> [LabAircraftEntity] {
+        let aircraft = try await APIService.shared.fetchAircraftList(limit: 24).items
+        return aircraft.map(LabAircraftEntity.init)
+    }
+
+    func entities(matching string: String) async throws -> [LabAircraftEntity] {
+        let needle = string.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+        let aircraft = try await APIService.shared.fetchAircraftList(limit: 120).items
+        return aircraft.filter { aircraft in
+            let haystack = [
+                aircraft.displayCallsign,
+                aircraft.registration ?? "",
+                aircraft.hex ?? "",
+                aircraft.model ?? "",
+                aircraft.airline ?? "",
+            ]
+            .map { $0.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current) }
+            .joined(separator: " ")
+            return haystack.contains(needle)
+        }
+        .map(LabAircraftEntity.init)
+    }
+}
+
+@available(iOS 18.0, *)
+struct LabAlertEntity: IndexedEntity {
+    static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Alerta")
+    static var defaultQuery = LabAlertQuery()
+
+    let id: String
+    let source: String
+    let title: String
+    let detail: String
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(
+            title: LocalizedStringResource(stringLiteral: "\(source) • \(title)"),
+            subtitle: LocalizedStringResource(stringLiteral: detail)
+        )
+    }
+
+    var attributeSet: CSSearchableItemAttributeSet {
+        let attributes = CSSearchableItemAttributeSet(itemContentType: UTType.text.identifier)
+        attributes.title = "\(source) • \(title)"
+        attributes.displayName = title
+        attributes.contentDescription = detail
+        attributes.keywords = [source, title, detail]
+        return attributes
+    }
+}
+
+@available(iOS 18.0, *)
+struct LabAlertQuery: EntityStringQuery {
+    private func fetchAll() async throws -> [LabAlertEntity] {
+        async let adsbAlerts = APIService.shared.fetchADSBAlerts()
+        async let acarsAlerts = APIService.shared.fetchACARSAlerts()
+        let adsb = try await adsbAlerts.alerts.map {
+            LabAlertEntity(
+                id: "adsb_\($0.id)",
+                source: "ADS-B",
+                title: $0.callsign ?? $0.registration ?? $0.aircraft,
+                detail: $0.timestamp
+            )
+        }
+        let acars = try await acarsAlerts.alerts.map {
+            LabAlertEntity(
+                id: "acars_\($0.id)",
+                source: "ACARS",
+                title: $0.id,
+                detail: $0.timestamp.toDisplayHHMM() ?? "agora"
+            )
+        }
+        return adsb + acars
+    }
+
+    func entities(for identifiers: [String]) async throws -> [LabAlertEntity] {
+        try await fetchAll().filter { identifiers.contains($0.id) }
+    }
+
+    func suggestedEntities() async throws -> [LabAlertEntity] {
+        try await Array(fetchAll().prefix(24))
+    }
+
+    func entities(matching string: String) async throws -> [LabAlertEntity] {
+        let needle = string.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+        return try await fetchAll().filter {
+            "\($0.source) \($0.title) \($0.detail)"
+                .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+                .contains(needle)
+        }
+    }
+}
+
+@available(iOS 18.0, *)
+struct LabSatellitePassEntity: IndexedEntity {
+    static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Passe de satélite")
+    static var defaultQuery = LabSatellitePassQuery()
+
+    let id: String
+    let satelliteName: String
+    let passName: String
+    let detail: String
+
+    var displayRepresentation: DisplayRepresentation {
+        DisplayRepresentation(
+            title: LocalizedStringResource(stringLiteral: satelliteName),
+            subtitle: LocalizedStringResource(stringLiteral: detail)
+        )
+    }
+
+    var attributeSet: CSSearchableItemAttributeSet {
+        let attributes = CSSearchableItemAttributeSet(itemContentType: UTType.text.identifier)
+        attributes.title = satelliteName
+        attributes.displayName = satelliteName
+        attributes.contentDescription = detail
+        attributes.keywords = [satelliteName, passName, detail]
+        return attributes
+    }
+
+    init(pass: SatellitePassExtended) {
+        id = pass.id
+        satelliteName = pass.name.replacingOccurrences(of: "_", with: " ")
+        passName = pass.name
+        detail = "\(pass.imageCount) imagens • \(String(format: "%.1f", pass.sizeMb)) MB • qualidade \(pass.qualityStars)/5"
+    }
+}
+
+@available(iOS 18.0, *)
+struct LabSatellitePassQuery: EntityStringQuery {
+    func entities(for identifiers: [String]) async throws -> [LabSatellitePassEntity] {
+        let passes = try await APIService.shared.fetchPasses(limit: 80).passes
+        return passes.filter { identifiers.contains($0.id) }.map(LabSatellitePassEntity.init)
+    }
+
+    func suggestedEntities() async throws -> [LabSatellitePassEntity] {
+        let passes = try await APIService.shared.fetchPasses(limit: 24).passes
+        return passes.map(LabSatellitePassEntity.init)
+    }
+
+    func entities(matching string: String) async throws -> [LabSatellitePassEntity] {
+        let needle = string.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+        let passes = try await APIService.shared.fetchPasses(limit: 80).passes
+        return passes.filter {
+            "\($0.name) \($0.imageFolder)"
+                .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+                .contains(needle)
+        }
+        .map(LabSatellitePassEntity.init)
+    }
+}
+
+// MARK: - Open Intents
+
+@available(iOS 18.0, *)
+struct OpenAircraftInMeuLabIntent: OpenIntent {
+    static var title: LocalizedStringResource = "Abrir aeronave no MeuLab"
+
+    @Parameter(title: "Aeronave")
+    var target: LabAircraftEntity
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        NotificationCenter.default.post(
+            name: .meulabNavigateToTab,
+            object: nil,
+            userInfo: ["tab": ContentView.Tab.map.rawValue]
+        )
+        NotificationCenter.default.post(
+            name: .meulabOpenContext,
+            object: nil,
+            userInfo: [
+                "tab": ContentView.Tab.map.rawValue,
+                "kind": "aircraft",
+                "identifier": target.id,
+                "callsign": target.callsign,
+            ]
+        )
+        return .result()
+    }
+}
+
+@available(iOS 18.0, *)
+struct OpenAlertInMeuLabIntent: OpenIntent {
+    static var title: LocalizedStringResource = "Abrir alerta no MeuLab"
+
+    @Parameter(title: "Alerta")
+    var target: LabAlertEntity
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        NotificationCenter.default.post(
+            name: .meulabNavigateToTab,
+            object: nil,
+            userInfo: ["tab": ContentView.Tab.alerts.rawValue]
+        )
+        NotificationCenter.default.post(
+            name: .meulabOpenContext,
+            object: nil,
+            userInfo: [
+                "tab": ContentView.Tab.alerts.rawValue,
+                "kind": "alert",
+                "identifier": target.id,
+            ]
+        )
+        return .result()
+    }
+}
+
+@available(iOS 18.0, *)
+struct OpenSatellitePassInMeuLabIntent: OpenIntent {
+    static var title: LocalizedStringResource = "Abrir passe de satélite no MeuLab"
+
+    @Parameter(title: "Passe")
+    var target: LabSatellitePassEntity
+
+    @MainActor
+    func perform() async throws -> some IntentResult {
+        NotificationCenter.default.post(
+            name: .meulabNavigateToTab,
+            object: nil,
+            userInfo: ["tab": ContentView.Tab.satellite.rawValue]
+        )
+        NotificationCenter.default.post(
+            name: .meulabOpenContext,
+            object: nil,
+            userInfo: [
+                "tab": ContentView.Tab.satellite.rawValue,
+                "kind": "satellite_pass",
+                "identifier": target.id,
+            ]
+        )
+        return .result()
+    }
+}
+
+// MARK: - Spotlight Indexing
+
+@available(iOS 18.0, *)
+actor LabEntityIndexer {
+    static let shared = LabEntityIndexer()
+    private var lastIndexedAt: Date?
+
+    func reindexIfNeeded() async {
+        let now = Date()
+        if let lastIndexedAt, now.timeIntervalSince(lastIndexedAt) < 900 {
+            return
+        }
+        await reindexNow()
+    }
+
+    func reindexNow() async {
+        do {
+            let aircraft = try await LabAircraftQuery().suggestedEntities()
+            let alerts = try await LabAlertQuery().suggestedEntities()
+            let passes = try await LabSatellitePassQuery().suggestedEntities()
+            let index = CSSearchableIndex.default()
+            try await index.indexAppEntities(aircraft)
+            try await index.indexAppEntities(alerts)
+            try await index.indexAppEntities(passes)
+            lastIndexedAt = Date()
+        } catch {
+            #if DEBUG
+                print("[LabEntityIndexer] index error:", error.localizedDescription)
+            #endif
+        }
     }
 }

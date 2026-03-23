@@ -30,7 +30,8 @@ enum APIError: Error, LocalizedError {
 actor APIService {
     static let shared = APIService()
 
-    private let baseURL = Secrets.apiBaseURL
+    private var baseURL = Secrets.apiBaseURL
+    private let gpsGlobeBaseURL = "https://gps.meulab.fun"
     private let apiToken = Secrets.apiToken.isEmpty ? Secrets.apiTokenAlternative : Secrets.apiToken
 
     // AviationStack (Flight Routes)
@@ -53,15 +54,20 @@ actor APIService {
 
     private init() {
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 60
-        config.timeoutIntervalForResource = 120
-        config.waitsForConnectivity = true
+        config.timeoutIntervalForRequest = 10
+        config.timeoutIntervalForResource = 30
+        config.waitsForConnectivity = false
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         self.session = URLSession(configuration: config)
         
         #if DEBUG
         Secrets.debugPrintStatus()
         #endif
+    }
+
+    /// Called from MainActor when NetworkEnvironment detects a change.
+    func updateBaseURL(_ newURL: String) {
+        self.baseURL = newURL
     }
 
     // MARK: - Request Helpers
@@ -84,7 +90,7 @@ actor APIService {
         return request
     }
 
-    private func performRequest(_ request: URLRequest, retries: Int = 2) async throws -> (Data, HTTPURLResponse) {
+    private func performRequest(_ request: URLRequest, retries: Int = 1) async throws -> (Data, HTTPURLResponse) {
         var attempt = 0
         var lastError: Error?
         let currentRequest = request
@@ -99,8 +105,7 @@ actor APIService {
                 // Retry for transient server errors
                 if transientStatusCodes.contains(http.statusCode) && attempt < retries {
                     attempt += 1
-                    let baseDelay: Double = 0.6
-                    let delay = baseDelay * pow(2.0, Double(attempt - 1)) + Double.random(in: 0...0.2)
+                    let delay = 0.3 + Double.random(in: 0...0.1)
                     try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                     continue
                 } else {
@@ -111,8 +116,7 @@ actor APIService {
                 lastError = error
                 if attempt < retries {
                     attempt += 1
-                    let baseDelay: Double = 0.6
-                    let delay = baseDelay * pow(2.0, Double(attempt - 1)) + Double.random(in: 0...0.2)
+                    let delay = 0.3 + Double.random(in: 0...0.1)
                     try await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
                     continue
                 } else {
@@ -139,6 +143,24 @@ actor APIService {
         let request = try makeRequest(path: path, requiresAuth: requiresAuth)
         let (data, _) = try await performRequest(request)
         return data
+    }
+
+    private func fetchFromURL<T: Decodable>(_ urlString: String) async throws -> T {
+        guard let url = URL(string: urlString) else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+
+        let (data, _) = try await performRequest(request)
+        do {
+            let decoder = JSONDecoder()
+            return try decoder.decode(T.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
     }
 
     // MARK: - General
@@ -171,6 +193,10 @@ actor APIService {
 
     func fetchADSBAlerts() async throws -> ADSBAlertsResponse {
         try await fetch("/api/adsb/alerts")
+    }
+
+    func fetchTuyaTemperatureHumidity(historyLimit: Int = 12) async throws -> TuyaTemperatureHumidityResponse {
+        try await fetch("/api/tuya/temperature-humidity?history_limit=\(historyLimit)")
     }
 
     func fetchADSBLolResponse() async throws -> ADSBLolResponse {
@@ -415,6 +441,10 @@ actor APIService {
 
     func fetchSatDumpLive() async throws -> SatDumpLiveResponse {
         try await fetch("/api/satdump/live")
+    }
+
+    func fetchGPSGlobeState() async throws -> GPSGlobeState {
+        try await fetchFromURL("\(gpsGlobeBaseURL)/api/state")
     }
 
     func fetchSatDumpSchedule() async throws -> Data {
@@ -907,7 +937,7 @@ actor APIService {
     // MARK: - Open-Meteo Integration
 
     func fetchWeatherOpenMeteo(lat: Double, lon: Double) async throws -> WeatherData {
-        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lon)&current=temperature_2m,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m&hourly=temperature_2m,relative_humidity_2m,weather_code,uv_index&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max&timezone=auto"
+        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lon)&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,is_day&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,uv_index,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,sunrise,sunset&timezone=auto"
 
         guard let url = URL(string: urlString) else {
             throw APIError.invalidURL
@@ -927,18 +957,21 @@ actor APIService {
     private func mapOpenMeteoToWeatherData(_ response: OpenMeteoResponse, lat: Double, lon: Double) throws -> WeatherData {
         let current = response.current
         let daily = response.daily
+        let hourly = response.hourly
 
         let locationName = String(format: "%.4f, %.4f", lat, lon)
 
         let currentWeather = CurrentWeather(
             tempC: Int(round(current.temperature_2m)),
-            feelsLikeC: Int(round(current.temperature_2m)),
+            feelsLikeC: Int(round(current.apparent_temperature ?? current.temperature_2m)),
             humidity: current.relative_humidity_2m,
             windKmh: Int(round(current.wind_speed_10m)),
             windDir: LocationManager.compassDirection(from: Double(current.wind_direction_10m)),
             description: wmoDescription(code: current.weather_code),
             precipMm: current.precipitation,
-            uvIndex: Int(round(response.hourly.uv_index.first ?? 0))
+            uvIndex: Int(round(response.hourly.uv_index.first ?? 0)),
+            weatherCode: current.weather_code,
+            isDaylight: current.is_day == 1
         )
 
         let todayWeather = TodayWeather(
@@ -946,11 +979,14 @@ actor APIService {
             minTempC: Int(round(daily.temperature_2m_min.first ?? 0)),
             rainChance: daily.precipitation_probability_max.first ?? 0,
             rainMm: daily.precipitation_sum.first ?? 0,
-            uvIndex: Int(round(daily.uv_index_max.first ?? 0))
+            uvIndex: Int(round(daily.uv_index_max.first ?? 0)),
+            description: daily.weather_code.first.map { wmoDescription(code: $0) },
+            sunrise: daily.sunrise?.first,
+            sunset: daily.sunset?.first
         )
 
         var forecastDays: [ForecastDay] = []
-        let count = min(daily.time.count, 7)
+        let count = min(daily.time.count, 11)
         for i in 1..<count {
             let day = ForecastDay(
                 date: daily.time[i],
@@ -958,9 +994,28 @@ actor APIService {
                 minTempC: Int(round(daily.temperature_2m_min[i])),
                 rainChance: daily.precipitation_probability_max[i],
                 rainMm: daily.precipitation_sum[i],
-                uvIndex: Int(round(daily.uv_index_max[i]))
+                uvIndex: Int(round(daily.uv_index_max[i])),
+                description: wmoDescription(code: daily.weather_code[i]),
+                sunrise: value(daily.sunrise, at: i),
+                sunset: value(daily.sunset, at: i)
             )
             forecastDays.append(day)
+        }
+
+        var hourlyPoints: [HourlyWeatherPoint] = []
+        for i in hourly.time.indices {
+            hourlyPoints.append(
+                HourlyWeatherPoint(
+                    time: hourly.time[i],
+                    tempC: Int(round(hourly.temperature_2m[i])),
+                    humidity: value(hourly.relative_humidity_2m, at: i),
+                    rainChance: value(hourly.precipitation_probability, at: i) ?? 0,
+                    rainMm: value(hourly.precipitation, at: i) ?? 0,
+                    uvIndex: Int(round(value(hourly.uv_index, at: i) ?? 0)),
+                    windKmh: value(hourly.wind_speed_10m, at: i).map { Int(round($0)) },
+                    description: value(hourly.weather_code, at: i).map { wmoDescription(code: $0) }
+                )
+            )
         }
 
         return WeatherData(
@@ -968,8 +1023,14 @@ actor APIService {
             location: locationName,
             current: currentWeather,
             today: todayWeather,
-            forecast: forecastDays
+            forecast: forecastDays,
+            hourly: hourlyPoints
         )
+    }
+
+    private func value<T>(_ array: [T]?, at index: Int) -> T? {
+        guard let array, array.indices.contains(index) else { return nil }
+        return array[index]
     }
 
     private func wmoDescription(code: Int) -> String {
