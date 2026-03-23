@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BIBI02 /* BibleReadingIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBI01 /* BibleReadingIntents.swift */; };
+		BIBSP02 /* BibleSpeechService.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBSP01 /* BibleSpeechService.swift */; };
+		BIBVM02 /* BibleReaderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBVM01 /* BibleReaderViewModel.swift */; };
 		BIBM02 /* BibleModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBM01 /* BibleModels.swift */; };
 		BIBL02 /* BibleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBL01 /* BibleLoader.swift */; };
 		BIBV02 /* BibleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBV01 /* BibleView.swift */; };
@@ -158,6 +161,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		BIBI01 /* BibleReadingIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleReadingIntents.swift; sourceTree = "<group>"; };
+		BIBSP01 /* BibleSpeechService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleSpeechService.swift; sourceTree = "<group>"; };
+		BIBVM01 /* BibleReaderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleReaderViewModel.swift; sourceTree = "<group>"; };
 		FMDS01 /* FoundationModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelService.swift; sourceTree = "<group>"; };
 		BIBM01 /* BibleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleModels.swift; sourceTree = "<group>"; };
 		BIBL01 /* BibleLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleLoader.swift; sourceTree = "<group>"; };
@@ -392,6 +398,7 @@
 				RR101 /* RemoteRadioAPIClient.swift */,
 				RR102 /* RemoteRadioWebRTCClient.swift */,
 				FMDS01 /* FoundationModelService.swift */,
+				BIBSP01 /* BibleSpeechService.swift */,
 				BIBL01 /* BibleLoader.swift */,
 			);
 			path = Services;
@@ -403,6 +410,7 @@
 				110 /* AppState.swift */,
 				F7E628EA2F1448E000763B43 /* LocalNowPlayingFetcher.swift */,
 				F762D6282F44164400D6BA3B /* OpenSkyService.swift */,
+				BIBVM01 /* BibleReaderViewModel.swift */,
 				RR103 /* RemoteRadioViewModel.swift */,
 			);
 			path = ViewModels;
@@ -475,6 +483,7 @@
 			children = (
 				135 /* LabIntents.swift */,
 				136 /* LabShortcuts.swift */,
+				BIBI01 /* BibleReadingIntents.swift */,
 			);
 			path = Intents;
 			sourceTree = "<group>";
@@ -732,6 +741,9 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				BIBI02 /* BibleReadingIntents.swift in Sources */,
+				BIBSP02 /* BibleSpeechService.swift in Sources */,
+				BIBVM02 /* BibleReaderViewModel.swift in Sources */,
 				001 /* MeuLabApp.swift in Sources */,
 				002 /* ContentView.swift in Sources */,
 				F7E628EB2F1448E000763B43 /* LocalNowPlayingFetcher.swift in Sources */,

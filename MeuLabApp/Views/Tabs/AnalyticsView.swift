@@ -148,6 +148,12 @@ private extension View {
 }
 
 private struct AnalyticsToolbarTitle: View {
+    let title: String
+
+    init(title: String = "Analytics") {
+        self.title = title
+    }
+
     var body: some View {
         HStack(spacing: 10) {
             ZStack {
@@ -166,7 +172,7 @@ private struct AnalyticsToolbarTitle: View {
                     .foregroundStyle(AnalyticsTheme.blue)
             }
 
-            Text("Analytics")
+            Text(title)
                 .font(.system(size: 23, weight: .black, design: .rounded))
                 .tracking(0.4)
                 .foregroundStyle(
@@ -284,7 +290,67 @@ private struct AnalyticsSectionHeader: View {
     }
 }
 
+enum AnalyticsFocusPanel: String, Identifiable {
+    case dashboard
+    case system
+    case environment
+    case traffic
+    case satellite
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .dashboard: return "Analytics"
+        case .system: return "Histórico do Sistema"
+        case .environment: return "Ambiente"
+        case .traffic: return "Tráfego Aéreo"
+        case .satellite: return "Satélite"
+        }
+    }
+
+    var headerTitle: String {
+        switch self {
+        case .dashboard: return "Console analítico"
+        case .system: return "Janela do sistema"
+        case .environment: return "Janela do ambiente"
+        case .traffic: return "Janela do radar"
+        case .satellite: return "Janela do satélite"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .dashboard:
+            return "Sistema, ambiente, ADS-B e satélite dentro da mesma janela de leitura."
+        case .system:
+            return "CPU, memória, disco e temperatura em leitura histórica."
+        case .environment:
+            return "Temperatura e umidade do sensor local com histórico recente."
+        case .traffic:
+            return "Volume horário e composição do tráfego ADS-B."
+        case .satellite:
+            return "Passes, sucesso de coleta e imagens ao longo da janela."
+        }
+    }
+
+    var sectionTint: Color {
+        switch self {
+        case .dashboard: return AnalyticsTheme.blue
+        case .system: return AnalyticsTheme.blue
+        case .environment: return AnalyticsTheme.cyan
+        case .traffic: return AnalyticsTheme.green
+        case .satellite: return AnalyticsTheme.violet
+        }
+    }
+
+    var allowsMetricPicker: Bool {
+        self == .dashboard || self == .system
+    }
+}
+
 struct AnalyticsView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var appState: AppState
     @State private var selectedPeriod: AnalyticsPeriod = .last24h
     @State private var selectedMetric: AnalyticsMetric = .cpu
@@ -295,6 +361,8 @@ struct AnalyticsView: View {
     @State private var isLoading = false
     @State private var error: String?
     @State private var analyticsLoadTask: Task<Void, Never>?
+    let focus: AnalyticsFocusPanel
+    let showsDismissButton: Bool
 
     enum AnalyticsPeriod: String, CaseIterable {
         case last5m = "5m"
@@ -358,27 +426,39 @@ struct AnalyticsView: View {
         }
     }
 
+    init(
+        focus: AnalyticsFocusPanel = .dashboard,
+        initialMetricRaw: String? = nil,
+        showsDismissButton: Bool = false
+    ) {
+        self.focus = focus
+        self.showsDismissButton = showsDismissButton
+        if let initialMetricRaw, let metric = AnalyticsMetric(rawValue: initialMetricRaw) {
+            _selectedMetric = State(initialValue: metric)
+        }
+    }
+
     var body: some View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 20) {
                     controlSection
 
-                    if let message = tuyaSensorMessage {
+                    if showsEnvironmentSection, let message = tuyaSensorMessage {
                         tuyaSensorSection(message: message)
-                    } else if let sensor = tuyaSensor, let current = sensor.current {
+                    } else if showsEnvironmentSection, let sensor = tuyaSensor, let current = sensor.current {
                         tuyaSensorSection(sensor: sensor, current: current)
                     }
 
-                    if let analytics = systemAnalytics {
+                    if showsSystemSection, let analytics = systemAnalytics {
                         systemMetricsSection(analytics)
                     }
 
-                    if let adsb = adsbAnalytics {
+                    if showsTrafficSection, let adsb = adsbAnalytics {
                         adsbAnalyticsSection(adsb)
                     }
 
-                    if let satellite = satelliteAnalytics {
+                    if showsSatelliteSection, let satellite = satelliteAnalytics {
                         satelliteAnalyticsSection(satellite)
                     }
 
@@ -422,11 +502,16 @@ struct AnalyticsView: View {
                 }
                 .ignoresSafeArea()
             }
-            .navigationTitle("Analytics")
+            .navigationTitle(focus.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
-                    AnalyticsToolbarTitle()
+                    AnalyticsToolbarTitle(title: focus.title)
+                }
+                if showsDismissButton {
+                    ToolbarItem(placement: .topBarLeading) {
+                        Button("Fechar") { dismiss() }
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if isLoading {
@@ -469,13 +554,29 @@ struct AnalyticsView: View {
         }
     }
 
+    private var showsSystemSection: Bool {
+        focus == .dashboard || focus == .system
+    }
+
+    private var showsEnvironmentSection: Bool {
+        focus == .dashboard || focus == .environment
+    }
+
+    private var showsTrafficSection: Bool {
+        focus == .dashboard || focus == .traffic
+    }
+
+    private var showsSatelliteSection: Bool {
+        focus == .dashboard || focus == .satellite
+    }
+
     @ViewBuilder
     private var controlSection: some View {
         VStack(alignment: .leading, spacing: 18) {
             HStack(alignment: .top, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 10) {
-                        Label("Console analítico", systemImage: "waveform.path.ecg.rectangle")
+                        Label(focus.headerTitle, systemImage: "waveform.path.ecg.rectangle")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(AnalyticsTheme.ink.opacity(0.82))
 
@@ -491,7 +592,7 @@ struct AnalyticsView: View {
                             )
                     }
 
-                    Text("Sistema, ambiente, ADS-B e satélite dentro da mesma janela de leitura.")
+                    Text(focus.subtitle)
                         .font(.caption)
                         .foregroundStyle(AnalyticsTheme.ink.opacity(0.56))
                 }
@@ -500,9 +601,9 @@ struct AnalyticsView: View {
 
                 AnalyticsInfoChip(
                     title: "Foco",
-                    value: selectedMetric.displayName,
-                    tint: selectedMetric.color,
-                    icon: selectedMetric.icon
+                    value: focus.allowsMetricPicker ? selectedMetric.displayName : focus.title,
+                    tint: focus.allowsMetricPicker ? selectedMetric.color : focus.sectionTint,
+                    icon: focus.allowsMetricPicker ? selectedMetric.icon : "square.stack.3d.up"
                 )
             }
 
@@ -580,29 +681,31 @@ struct AnalyticsView: View {
                 }
             }
 
-            VStack(alignment: .leading, spacing: 10) {
-                Label("Métrica do Sistema", systemImage: selectedMetric.icon)
-                    .font(.headline)
-                    .foregroundStyle(AnalyticsTheme.ink)
+            if focus.allowsMetricPicker {
+                VStack(alignment: .leading, spacing: 10) {
+                    Label("Métrica do Sistema", systemImage: selectedMetric.icon)
+                        .font(.headline)
+                        .foregroundStyle(AnalyticsTheme.ink)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(AnalyticsMetric.allCases, id: \.self) { metric in
-                            Button {
-                                withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
-                                    selectedMetric = metric
+                    ScrollView(.horizontal, showsIndicators: false) {
+                        HStack(spacing: 12) {
+                            ForEach(AnalyticsMetric.allCases, id: \.self) { metric in
+                                Button {
+                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
+                                        selectedMetric = metric
+                                    }
+                                } label: {
+                                    AnalyticsFilterChip(
+                                        title: metric.displayName,
+                                        isSelected: selectedMetric == metric,
+                                        tint: metric.color
+                                    )
                                 }
-                            } label: {
-                                AnalyticsFilterChip(
-                                    title: metric.displayName,
-                                    isSelected: selectedMetric == metric,
-                                    tint: metric.color
-                                )
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
+                        .padding(.horizontal, 2)
                     }
-                    .padding(.horizontal, 2)
                 }
             }
         }

@@ -257,10 +257,127 @@ private struct SystemQuickMetric: View {
     }
 }
 
+private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
+    case cpu
+    case memory
+    case disk
+    case temperature
+    case environment
+    case traffic
+    case satellite
+
+    var id: String { rawValue }
+
+    var title: String {
+        switch self {
+        case .cpu: return "CPU"
+        case .memory: return "Memória"
+        case .disk: return "Disco"
+        case .temperature: return "Temperatura"
+        case .environment: return "Ambiente"
+        case .traffic: return "Radar"
+        case .satellite: return "Satélite"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .cpu: return "Uso, pico e tendência"
+        case .memory: return "Consumo e disponibilidade"
+        case .disk: return "Ocupação e evolução"
+        case .temperature: return "Calor e estabilidade"
+        case .environment: return "Sensor e histórico recente"
+        case .traffic: return "Volume e leitura ADS-B"
+        case .satellite: return "Passes e desempenho"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .cpu: return "cpu"
+        case .memory: return "memorychip"
+        case .disk: return "internaldrive"
+        case .temperature: return "thermometer.medium"
+        case .environment: return "humidity.fill"
+        case .traffic: return "airplane"
+        case .satellite: return "antenna.radiowaves.left.and.right"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .cpu: return .blue
+        case .memory: return .purple
+        case .disk: return .orange
+        case .temperature: return SystemTheme.amber
+        case .environment: return .cyan
+        case .traffic: return SystemTheme.piGreen
+        case .satellite: return SystemTheme.piBlue
+        }
+    }
+
+    var analyticsFocus: AnalyticsFocusPanel {
+        switch self {
+        case .cpu, .memory, .disk, .temperature: return .system
+        case .environment: return .environment
+        case .traffic: return .traffic
+        case .satellite: return .satellite
+        }
+    }
+
+    var metricRawValue: String? {
+        switch self {
+        case .cpu, .memory, .disk, .temperature:
+            return rawValue
+        case .environment, .traffic, .satellite:
+            return nil
+        }
+    }
+}
+
+private struct SystemAnalyticsLaunchTile: View {
+    let destination: SystemAnalyticsDestination
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .fill(destination.tint.opacity(0.14))
+                        .frame(width: 34, height: 34)
+
+                    Image(systemName: destination.icon)
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundStyle(destination.tint)
+                }
+
+                Spacer()
+
+                Image(systemName: "arrow.up.right")
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(destination.tint.opacity(0.82))
+            }
+
+            Text(destination.title)
+                .font(.headline)
+                .foregroundStyle(SystemTheme.ink)
+
+            Text(destination.subtitle)
+                .font(.caption)
+                .foregroundStyle(SystemTheme.ink.opacity(0.58))
+                .lineLimit(2)
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, minHeight: 120, alignment: .leading)
+        .systemPanel(cornerRadius: 20, highlight: destination.tint)
+    }
+}
+
 struct SystemView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var snapshotTarget: FirestickSnapshotTarget?
+    @State private var analyticsDestination: SystemAnalyticsDestination?
 
     private var isCompactLayout: Bool { horizontalSizeClass == .compact }
 
@@ -313,6 +430,14 @@ struct SystemView: View {
             .sheet(item: $snapshotTarget) { target in
                 FirestickSnapshotView(deviceId: target.id, deviceName: target.name)
             }
+            .fullScreenCover(item: $analyticsDestination) { destination in
+                AnalyticsView(
+                    focus: destination.analyticsFocus,
+                    initialMetricRaw: destination.metricRawValue,
+                    showsDismissButton: true
+                )
+                .environmentObject(appState)
+            }
         }
     }
 
@@ -320,6 +445,8 @@ struct SystemView: View {
     private func systemContent(_ status: SystemStatus) -> some View {
         systemNodeBar(status)
         systemOverviewHeader(status)
+        analyticsLauncherSection
+        environmentSection
 
         // CPU
         if let cpu = status.cpu, cpu.error == nil {
@@ -951,6 +1078,66 @@ struct SystemView: View {
     private func cpuUsageHeadline(_ status: SystemStatus) -> String {
         guard let cpu = status.cpu?.usagePercent else { return "--%" }
         return String(format: "%.0f%%", cpu)
+    }
+
+    @ViewBuilder
+    private var analyticsLauncherSection: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            HStack {
+                Text("Históricos e Análises")
+                    .font(.headline)
+                    .foregroundStyle(SystemTheme.ink)
+
+                Spacer()
+
+                Text("fullscreen")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(SystemTheme.ink.opacity(0.48))
+            }
+
+            let columns = isCompactLayout
+                ? [GridItem(.flexible()), GridItem(.flexible())]
+                : [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
+
+            LazyVGrid(columns: columns, spacing: 12) {
+                ForEach(SystemAnalyticsDestination.allCases) { destination in
+                    Button {
+                        analyticsDestination = destination
+                    } label: {
+                        SystemAnalyticsLaunchTile(destination: destination)
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        }
+        .padding(20)
+        .systemPanel(cornerRadius: 24, highlight: SystemTheme.piBlue)
+    }
+
+    @ViewBuilder
+    private var environmentSection: some View {
+        if let sensor = appState.tuyaSensor, let current = sensor.current {
+            SystemCard(title: "Sensor Casa", icon: "humidity.fill", color: .cyan) {
+                VStack(alignment: .leading, spacing: 12) {
+                    TuyaSensorCard(sensor: sensor, current: current)
+                    Button {
+                        analyticsDestination = .environment
+                    } label: {
+                        Label("Abrir histórico do sensor", systemImage: "arrow.up.right")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(.cyan)
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 10)
+                            .background(.cyan.opacity(0.10), in: Capsule())
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+        } else if let message = appState.tuyaSensorError {
+            SystemCard(title: "Sensor Casa", icon: "humidity.fill", color: .cyan) {
+                TuyaSensorStatusCard(message: message)
+            }
+        }
     }
 
     private func statusUpdateText(_ status: SystemStatus) -> String {

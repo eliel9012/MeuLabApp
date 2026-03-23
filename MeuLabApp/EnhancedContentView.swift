@@ -6,6 +6,10 @@ struct EnhancedContentView: View {
     @State private var selectedTab: ContentView.Tab = .adsb
     @State private var selectedDetail: DetailItem?
 
+    private var visibleTabs: [ContentView.Tab] {
+        ContentView.Tab.allCases.filter { $0 != .analytics }
+    }
+
     var body: some View {
         NavigationSplitView {
             sidebar
@@ -20,7 +24,7 @@ struct EnhancedContentView: View {
             guard let raw = note.userInfo?["tab"] as? String,
                 let tab = ContentView.Tab(rawValue: raw)
             else { return }
-            selectedTab = tab
+            selectedTab = tab == .analytics ? .system : tab
         }
         .onReceive(NotificationCenter.default.publisher(for: .meulabOpenContext)) { note in
             let pairs = (note.userInfo ?? [:]).reduce(into: [String: String]()) { partialResult, item in
@@ -31,7 +35,7 @@ struct EnhancedContentView: View {
             guard !pairs.isEmpty else { return }
             appState.intelligenceContext = pairs
             if let raw = pairs["tab"], let tab = ContentView.Tab(rawValue: raw) {
-                selectedTab = tab
+                selectedTab = tab == .analytics ? .system : tab
             }
         }
     }
@@ -83,7 +87,7 @@ struct EnhancedContentView: View {
 
             // Navigation List
             List {
-                ForEach(ContentView.Tab.allCases, id: \.self) { tab in
+                ForEach(visibleTabs, id: \.self) { tab in
                     Button {
                         selectedTab = tab
                     } label: {
@@ -122,7 +126,7 @@ struct EnhancedContentView: View {
                 case .weather:
                     WeatherView()
                 case .analytics:
-                    AnalyticsView()
+                    SystemView()
                 case .alerts:
                     AlertsView()
                 case .flightSearch:
@@ -148,7 +152,7 @@ struct EnhancedContentView: View {
     private var tabBar: some View {
         // Tab bar for compact mode (iPhone)
         HStack(spacing: 0) {
-            ForEach(ContentView.Tab.allCases, id: \.self) { tab in
+            ForEach(visibleTabs, id: \.self) { tab in
                 Button {
                     withAnimation(.spring(response: 0.3, dampingFraction: 0.75)) {
                         UIImpactFeedbackGenerator(style: .medium).impactOccurred()

@@ -357,6 +357,8 @@ private struct WeatherAtmosphereBackground: View {
 }
 
 private struct WeatherToolbarTitle: View {
+    var compact: Bool = false
+
     var body: some View {
         HStack(spacing: 10) {
             ZStack {
@@ -368,15 +370,15 @@ private struct WeatherToolbarTitle: View {
                             endPoint: .bottomTrailing
                         )
                     )
-                    .frame(width: 28, height: 28)
+                    .frame(width: compact ? 24 : 28, height: compact ? 24 : 28)
 
                 Image(systemName: "cloud.sun.fill")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(.system(size: compact ? 12 : 14, weight: .bold))
                     .foregroundStyle(WeatherTheme.skyBlue)
             }
 
             Text("Clima")
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .font(.system(size: compact ? 20 : 23, weight: .black, design: .rounded))
                 .tracking(0.4)
                 .foregroundStyle(
                     LinearGradient(
@@ -386,6 +388,7 @@ private struct WeatherToolbarTitle: View {
                     )
                 )
         }
+        .frame(maxWidth: compact ? .infinity : nil, alignment: .leading)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Clima")
     }
@@ -759,7 +762,13 @@ private enum WeatherClock {
 
 struct WeatherView: View {
     @EnvironmentObject var appState: AppState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedDayID: String?
+    @State private var didRequestInitialLoad = false
+
+    private var isCompactLayout: Bool {
+        horizontalSizeClass == .compact
+    }
 
     var body: some View {
         NavigationStack {
@@ -770,7 +779,7 @@ struct WeatherView: View {
                     } else if let error = appState.weatherError {
                         ErrorCard(message: error)
                     } else {
-                        LoadingCard()
+                        weatherLoadingState
                     }
                 }
                 .padding(.horizontal)
@@ -784,8 +793,14 @@ struct WeatherView: View {
             .navigationTitle("Clima")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .principal) {
-                    WeatherToolbarTitle()
+                if isCompactLayout {
+                    ToolbarItem(placement: .topBarLeading) {
+                        WeatherToolbarTitle(compact: true)
+                    }
+                } else {
+                    ToolbarItem(placement: .principal) {
+                        WeatherToolbarTitle()
+                    }
                 }
                 ToolbarItem(placement: .topBarTrailing) {
                     if appState.weatherLoading {
@@ -816,9 +831,13 @@ struct WeatherView: View {
         }
         .onAppear {
             syncSelectedDay()
+            triggerInitialLoadIfNeeded()
         }
         .onChange(of: appState.weather?.timestamp) { _, _ in
             syncSelectedDay()
+        }
+        .task {
+            triggerInitialLoadIfNeeded()
         }
         .onChange(of: appState.intelligenceContext) { _, context in
             guard
@@ -834,6 +853,66 @@ struct WeatherView: View {
                 selectedDayID = identifier
                 appState.intelligenceContext = nil
             }
+        }
+    }
+
+    @ViewBuilder
+    private var weatherLoadingState: some View {
+        VStack(spacing: 14) {
+            if appState.weatherLoading {
+                ProgressView()
+                    .controlSize(.regular)
+
+                Text("Carregando clima...")
+                    .font(.headline.weight(.medium))
+                    .foregroundStyle(WeatherTheme.ink.opacity(0.72))
+            } else {
+                Image(systemName: "cloud.sun")
+                    .font(.system(size: 24, weight: .semibold))
+                    .foregroundStyle(WeatherTheme.skyBlue)
+
+                Text("Atualize a previsão")
+                    .font(.headline.weight(.semibold))
+                    .foregroundStyle(WeatherTheme.ink)
+
+                Text("Se o clima não entrou sozinho, toque para buscar a leitura agora.")
+                    .font(.subheadline)
+                    .foregroundStyle(WeatherTheme.ink.opacity(0.65))
+                    .multilineTextAlignment(.center)
+
+                Button {
+                    Task { await appState.refreshWeather() }
+                } label: {
+                    Label("Buscar agora", systemImage: "arrow.clockwise")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(WeatherTheme.skyBlue)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(WeatherTheme.toolbarBubble, in: Capsule())
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 28)
+        .padding(.horizontal, 20)
+        .weatherPanel(cornerRadius: 28, highlight: WeatherTheme.sunAmber)
+    }
+
+    private func triggerInitialLoadIfNeeded() {
+        guard !didRequestInitialLoad else { return }
+        guard appState.weather == nil else { return }
+
+        didRequestInitialLoad = true
+
+        Task { @MainActor in
+            await appState.refreshWeather()
+
+            try? await Task.sleep(nanoseconds: 1_500_000_000)
+            guard appState.weather == nil, appState.weatherError == nil, !appState.weatherLoading else {
+                return
+            }
+            await appState.refreshWeather()
         }
     }
 

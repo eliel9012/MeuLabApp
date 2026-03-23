@@ -95,7 +95,7 @@ struct ContentView: View {
         /// Tabs secundárias acessíveis via menu "Mais"
         static var secondaryTabs: [Tab] {
             [
-                .map, .acars, .infra, .weather, .analytics, .alerts, .flightSearch, .export,
+                .map, .acars, .infra, .weather, .alerts, .flightSearch, .export,
                 .remote, .remoteRadio, .intelligence, .bible,
             ]
         }
@@ -158,12 +158,6 @@ struct ContentView: View {
                         tabView(for: .weather)
                     } label: {
                         Label(Tab.weather.title, systemImage: Tab.weather.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.analytics) {
-                        tabView(for: .analytics)
-                    } label: {
-                        Label(Tab.analytics.title, systemImage: Tab.analytics.icon)
                     }
 
                     SwiftUI.Tab(value: Tab.alerts) {
@@ -232,8 +226,9 @@ struct ContentView: View {
             guard let raw = note.userInfo?["tab"] as? String,
                 let tab = Tab(rawValue: raw)
             else { return }
-            selectedTab = tab
-            appState.setActiveTab(tab.rawValue)
+            let resolvedTab: Tab = tab == .analytics ? .system : tab
+            selectedTab = resolvedTab
+            appState.setActiveTab(resolvedTab.rawValue)
         }
         .onReceive(NotificationCenter.default.publisher(for: .meulabOpenContext)) { note in
             let pairs = (note.userInfo ?? [:]).reduce(into: [String: String]()) { partialResult, item in
@@ -245,8 +240,9 @@ struct ContentView: View {
             appState.intelligenceContext = pairs
 
             if let tabRaw = pairs["tab"], let tab = Tab(rawValue: tabRaw) {
-                selectedTab = tab
-                appState.setActiveTab(tab.rawValue)
+                let resolvedTab: Tab = tab == .analytics ? .system : tab
+                selectedTab = resolvedTab
+                appState.setActiveTab(resolvedTab.rawValue)
             }
 
             if pairs["kind"] == "aircraft" {
@@ -284,7 +280,7 @@ struct ContentView: View {
         case .infra: InfraView()
         case .radio: RadioView()
         case .weather: WeatherView()
-        case .analytics: AnalyticsView()
+        case .analytics: SystemView()
         case .alerts: AlertsView()
         case .flightSearch: FlightSearchView()
         case .export: DataExportView()

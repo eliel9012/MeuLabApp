@@ -357,6 +357,9 @@ class AppState: ObservableObject {
         let doSatdump = shouldRefresh(
             last: lastSatDumpStatusRefresh, interval: satDumpStatusInterval, now: now)
         let doMetrics = shouldRefresh(last: lastMetricsRefresh, interval: metricsInterval, now: now)
+        let doTuya =
+            shouldRefresh(last: lastTuyaSensorRefresh, interval: tuyaSensorInterval, now: now)
+            || tuyaSensor == nil
 
         if doSys { lastSystemRefresh = now }
         if doFire { lastFirestickRefresh = now }
@@ -368,6 +371,7 @@ class AppState: ObservableObject {
         if doSysd { lastSystemdRefresh = now }
         if doSatdump { lastSatDumpStatusRefresh = now }
         if doMetrics { lastMetricsRefresh = now }
+        if doTuya { lastTuyaSensorRefresh = now }
 
         async let sys: () = doSys ? refreshSystem() : ()
         async let fire: () = doFire ? refreshFirestick() : ()
@@ -379,7 +383,8 @@ class AppState: ObservableObject {
         async let sysd: () = doSysd ? refreshSystemd() : ()
         async let satdump: () = doSatdump ? refreshSatDumpStatus() : ()
         async let metrics: () = doMetrics ? refreshMetrics() : ()
-        _ = await (sys, fire, proc, parts, net, dkStatus, dkVersion, sysd, satdump, metrics)
+        async let tuya: () = doTuya ? refreshTuyaSensor() : ()
+        _ = await (sys, fire, proc, parts, net, dkStatus, dkVersion, sysd, satdump, metrics, tuya)
     }
 
     private func tickRadio(_ now: Date, background: Bool = false) async {
@@ -2000,8 +2005,8 @@ actor LabIntelligenceService {
                 .init(
                     id: "healthy",
                     title: "Operação estável",
-                    detail: "Sem ação crítica agora. Recomendado: checar Analytics.",
-                    targetTab: "analytics"
+                    detail: "Sem ação crítica agora. Recomendado: abrir Sistema e revisar históricos.",
+                    targetTab: "system"
                 ))
         }
         return list
