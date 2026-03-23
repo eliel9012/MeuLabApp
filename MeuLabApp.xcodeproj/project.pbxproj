@@ -7,6 +7,13 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		BIBM02 /* BibleModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBM01 /* BibleModels.swift */; };
+		BIBL02 /* BibleLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBL01 /* BibleLoader.swift */; };
+		BIBV02 /* BibleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBV01 /* BibleView.swift */; };
+		BIBN02 /* BibleNavigateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBN01 /* BibleNavigateView.swift */; };
+		BIBS02 /* BibleSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBS01 /* BibleSearchView.swift */; };
+		BIBR02 /* BibleRandomView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BIBR01 /* BibleRandomView.swift */; };
+		LGM02 /* LiquidGlass+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = LGM01 /* LiquidGlass+Modifiers.swift */; };
 		FMDS02 /* FoundationModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMDS01 /* FoundationModelService.swift */; };
 		INTV02 /* IntelligenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = INTV01 /* IntelligenceView.swift */; };
 		001 /* MeuLabApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 101 /* MeuLabApp.swift */; };
@@ -31,8 +38,6 @@
 		020 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 121 /* MapView.swift */; };
 		021 /* PushNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 122 /* PushNotificationManager.swift */; };
 		022 /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 123 /* LocationManager.swift */; };
-		023 /* RadarWebView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 124 /* RadarWebView.swift */; };
-		024 /* RadarHTML.swift in Sources */ = {isa = PBXBuildFile; fileRef = 125 /* RadarHTML.swift */; };
 		025 /* SystemExtrasModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 126 /* SystemExtrasModels.swift */; };
 		026 /* InfraView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 127 /* InfraView.swift */; };
 		027 /* RadarSplashOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = 128 /* RadarSplashOverlay.swift */; };
@@ -59,18 +64,32 @@
 		050 /* HealthCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151 /* HealthCheckView.swift */; };
 		051 /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152 /* StatCard.swift */; };
 		052 /* FirestickModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153 /* FirestickModels.swift */; };
+		053 /* NativeRadarMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154 /* NativeRadarMapView.swift */; };
+		3909786604B94EE5BE1AD25A /* MeuLabWatch/Services/WatchSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E181A3D935D7491286930152 /* MeuLabWatch/Services/WatchSecrets.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* MeuLabApp/Core/Secrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7A0C1B2D3E4F5A6B7C8D9E0 /* MeuLabApp/Core/Secrets.swift */; };
+		AC100 /* MeuLabApp/Core/Utils/AircraftClassification.swift in Sources */ = {isa = PBXBuildFile; fileRef = AC200 /* MeuLabApp/Core/Utils/AircraftClassification.swift */; };
+		B1C2D3E4F5A6B7C8D9E0F1A2 /* MeuLabApp/Core/NetworkEnvironment.swift in Sources */ = {isa = PBXBuildFile; fileRef = C2D3E4F5A6B7C8D9E0F1A2B3 /* MeuLabApp/Core/NetworkEnvironment.swift */; };
 		F703A8C12F40352B007B6FD3 /* MeuLabNotificationService.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F703A8BA2F40352B007B6FD3 /* MeuLabNotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F71A10242F2FB5780048CED8 /* WatchRadioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F71A10232F2FB5780048CED8 /* WatchRadioView.swift */; };
 		F762D6292F44164400D6BA3B /* OpenSkyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = F762D6282F44164400D6BA3B /* OpenSkyService.swift */; };
 		F76A68C22F19CBB90081D8D9 /* BinaryCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = F76A68C12F19CBB80081D8D9 /* BinaryCache.swift */; };
+		7F0B7866E4944B48AAFB4F3A /* bible.json in Resources */ = {isa = PBXBuildFile; fileRef = EB2CCDD5B45142E9817882CE /* bible.json */; };
+		F7803D5F2F4A9A7B001C8722 /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = D916AD0964D84EF1A89E02C6 /* Secrets.plist */; };
+		F7803D602F4A9A7B001C8722 /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = D916AD0964D84EF1A89E02C6 /* Secrets.plist */; };
+		F7803D612F4A9A7B001C8722 /* Secrets.plist in Resources */ = {isa = PBXBuildFile; fileRef = D916AD0964D84EF1A89E02C6 /* Secrets.plist */; };
 		F79572102F1347AB0058B81B /* WidgetKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F795720F2F1347AB0058B81B /* WidgetKit.framework */; };
 		F79572122F1347AB0058B81B /* SwiftUI.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F79572112F1347AB0058B81B /* SwiftUI.framework */; };
 		F79572232F1347AC0058B81B /* MeuLabWidgetsExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = F795720D2F1347AB0058B81B /* MeuLabWidgetsExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		F7CE38A92F14AF0B00EF7A25 /* EnhancedWatchContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7CE38A82F14AF0B00EF7A25 /* EnhancedWatchContentView.swift */; };
 		F7CE39022F14BDBA00EF7A25 /* SatellitePassPredictor.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7CE39012F14BDBA00EF7A25 /* SatellitePassPredictor.swift */; };
 		F7E628DE2F142B7100763B43 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 116 /* Assets.xcassets */; };
-		F7E628E92F1430BA00763B43 /* LegacyRadarWebViewStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E628E82F1430BA00763B43 /* LegacyRadarWebViewStore.swift */; };
 		F7E628EB2F1448E000763B43 /* LocalNowPlayingFetcher.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7E628EA2F1448E000763B43 /* LocalNowPlayingFetcher.swift */; };
+		FM100 /* MeuLabApp/Core/Services/FavoritesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = FM200 /* MeuLabApp/Core/Services/FavoritesManager.swift */; };
+		RR200 /* RemoteRadioModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR100 /* RemoteRadioModels.swift */; };
+		RR201 /* RemoteRadioAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR101 /* RemoteRadioAPIClient.swift */; };
+		RR202 /* RemoteRadioWebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR102 /* RemoteRadioWebRTCClient.swift */; };
+		RR203 /* RemoteRadioViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR103 /* RemoteRadioViewModel.swift */; };
+		RR204 /* RemoteRadioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR104 /* RemoteRadioView.swift */; };
 		W001 /* MeuLabWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = W101 /* MeuLabWatchApp.swift */; };
 		W002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W102 /* ContentView.swift */; };
 		W003 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W103 /* HomeView.swift */; };
@@ -86,8 +105,7 @@
 		W013 /* WatchAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = W113 /* WatchAPIService.swift */; };
 		W014 /* WatchModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = W114 /* WatchModels.swift */; };
 
-			8E67D5B72FC44490AD989D19 /* Secrets.plist in Sources */ = {isa = PBXBuildFile; fileRef = D916AD0964D84EF1A89E02C6 /* Secrets.plist */; };
-			3909786604B94EE5BE1AD25A /* WatchSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E181A3D935D7491286930152 /* WatchSecrets.swift */; };/* End PBXBuildFile section */
+			EAFD3BB6506D4F608EF69453 /* Secrets.plist in Sources */ = {isa = PBXBuildFile; fileRef = 51ADBBAD15B948D0924D9825 /* Secrets.plist */; };/* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
 		F703A8BF2F40352B007B6FD3 /* PBXContainerItemProxy */ = {
@@ -141,6 +159,12 @@
 
 /* Begin PBXFileReference section */
 		FMDS01 /* FoundationModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelService.swift; sourceTree = "<group>"; };
+		BIBM01 /* BibleModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleModels.swift; sourceTree = "<group>"; };
+		BIBL01 /* BibleLoader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleLoader.swift; sourceTree = "<group>"; };
+		BIBV01 /* BibleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleView.swift; sourceTree = "<group>"; };
+		BIBN01 /* BibleNavigateView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleNavigateView.swift; sourceTree = "<group>"; };
+		BIBS01 /* BibleSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleSearchView.swift; sourceTree = "<group>"; };
+		BIBR01 /* BibleRandomView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleRandomView.swift; sourceTree = "<group>"; };
 		INTV01 /* IntelligenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceView.swift; sourceTree = "<group>"; };
 		100 /* MeuLabApp.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeuLabApp.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		101 /* MeuLabApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp.swift; sourceTree = "<group>"; };
@@ -166,8 +190,6 @@
 		121 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
 		122 /* PushNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationManager.swift; sourceTree = "<group>"; };
 		123 /* LocationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocationManager.swift; sourceTree = "<group>"; };
-		124 /* RadarWebView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarWebView.swift; sourceTree = "<group>"; };
-		125 /* RadarHTML.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarHTML.swift; sourceTree = "<group>"; };
 		126 /* SystemExtrasModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemExtrasModels.swift; sourceTree = "<group>"; };
 		127 /* InfraView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InfraView.swift; sourceTree = "<group>"; };
 		128 /* RadarSplashOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarSplashOverlay.swift; sourceTree = "<group>"; };
@@ -194,6 +216,12 @@
 		151 /* HealthCheckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthCheckView.swift; sourceTree = "<group>"; };
 		152 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
 		153 /* FirestickModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestickModels.swift; sourceTree = "<group>"; };
+		154 /* NativeRadarMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeRadarMapView.swift; sourceTree = "<group>"; };
+		AC200 /* MeuLabApp/Core/Utils/AircraftClassification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Core/Utils/AircraftClassification.swift; sourceTree = SOURCE_ROOT; };
+		C2D3E4F5A6B7C8D9E0F1A2B3 /* MeuLabApp/Core/NetworkEnvironment.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Core/NetworkEnvironment.swift; sourceTree = SOURCE_ROOT; };
+		EB2CCDD5B45142E9817882CE /* bible.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = bible.json; sourceTree = "<group>"; };
+		D916AD0964D84EF1A89E02C6 /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Secrets.plist; sourceTree = "<group>"; };
+		E181A3D935D7491286930152 /* MeuLabWatch/Services/WatchSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWatch/Services/WatchSecrets.swift; sourceTree = "<group>"; };
 		F703A8BA2F40352B007B6FD3 /* MeuLabNotificationService.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MeuLabNotificationService.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F71A10232F2FB5780048CED8 /* WatchRadioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRadioView.swift; sourceTree = "<group>"; };
 		F71E1C3F2F11A10C00728C53 /* MeuLabApp.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = MeuLabApp.entitlements; sourceTree = "<group>"; };
@@ -202,10 +230,17 @@
 		F795720D2F1347AB0058B81B /* MeuLabWidgetsExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = MeuLabWidgetsExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		F795720F2F1347AB0058B81B /* WidgetKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = WidgetKit.framework; path = System/Library/Frameworks/WidgetKit.framework; sourceTree = SDKROOT; };
 		F79572112F1347AB0058B81B /* SwiftUI.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SwiftUI.framework; path = System/Library/Frameworks/SwiftUI.framework; sourceTree = SDKROOT; };
+		F7A0C1B2D3E4F5A6B7C8D9E0 /* MeuLabApp/Core/Secrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Core/Secrets.swift; sourceTree = SOURCE_ROOT; };
 		F7CE38A82F14AF0B00EF7A25 /* EnhancedWatchContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedWatchContentView.swift; sourceTree = "<group>"; };
 		F7CE39012F14BDBA00EF7A25 /* SatellitePassPredictor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatellitePassPredictor.swift; sourceTree = "<group>"; };
-		F7E628E82F1430BA00763B43 /* LegacyRadarWebViewStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LegacyRadarWebViewStore.swift; sourceTree = "<group>"; };
 		F7E628EA2F1448E000763B43 /* LocalNowPlayingFetcher.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalNowPlayingFetcher.swift; sourceTree = "<group>"; };
+		FM200 /* MeuLabApp/Core/Services/FavoritesManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Core/Services/FavoritesManager.swift; sourceTree = SOURCE_ROOT; };
+		LGM01 /* LiquidGlass+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/Extensions/LiquidGlass+Modifiers.swift"; sourceTree = SOURCE_ROOT; };
+		RR100 /* RemoteRadioModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioModels.swift; sourceTree = "<group>"; };
+		RR101 /* RemoteRadioAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioAPIClient.swift; sourceTree = "<group>"; };
+		RR102 /* RemoteRadioWebRTCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioWebRTCClient.swift; sourceTree = "<group>"; };
+		RR103 /* RemoteRadioViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioViewModel.swift; sourceTree = "<group>"; };
+		RR104 /* RemoteRadioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioView.swift; sourceTree = "<group>"; };
 		W100 /* MeuLabWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeuLabWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		W101 /* MeuLabWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWatchApp.swift; sourceTree = "<group>"; };
 		W102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
@@ -221,9 +256,7 @@
 		W112 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		W113 /* WatchAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAPIService.swift; sourceTree = "<group>"; };
 		W114 /* WatchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchModels.swift; sourceTree = "<group>"; };
-
-			D916AD0964D84EF1A89E02C6 /* Secrets.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Secrets.plist; sourceTree = "<group>"; };
-			E181A3D935D7491286930152 /* WatchSecrets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWatch/Services/WatchSecrets.swift; sourceTree = "<group>"; };/* End PBXFileReference section */
+/* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
 		F703A8C42F40352B007B6FD3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
@@ -284,12 +317,14 @@
 		300 = {
 			isa = PBXGroup;
 			children = (
+				D916AD0964D84EF1A89E02C6 /* Secrets.plist */,
 				301 /* MeuLabApp */,
 				W301 /* MeuLabWatch */,
 				F79572132F1347AB0058B81B /* MeuLabWidgets */,
 				F703A8BB2F40352B007B6FD3 /* MeuLabNotificationService */,
 				F795720E2F1347AB0058B81B /* Frameworks */,
 				302 /* Products */,
+				F7803D532F4A99BE001C8722 /* Recovered References */,
 			);
 			sourceTree = "<group>";
 		};
@@ -338,6 +373,8 @@
 				134 /* OpenMeteoModels.swift */,
 				137 /* AviationStackModels.swift */,
 				139 /* AnalyticsModels.swift */,
+				RR100 /* RemoteRadioModels.swift */,
+				BIBM01 /* BibleModels.swift */,
 			);
 			path = Models;
 			sourceTree = "<group>";
@@ -347,12 +384,15 @@
 			children = (
 				108 /* APIService.swift */,
 				109 /* AudioPlayer.swift */,
-				FMDS01 /* FoundationModelService.swift */,
 				122 /* PushNotificationManager.swift */,
 				123 /* LocationManager.swift */,
 				132 /* NotificationFeedManager.swift */,
 				133 /* Formatters.swift */,
 				138 /* WidgetDataManager.swift */,
+				RR101 /* RemoteRadioAPIClient.swift */,
+				RR102 /* RemoteRadioWebRTCClient.swift */,
+				FMDS01 /* FoundationModelService.swift */,
+				BIBL01 /* BibleLoader.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -363,6 +403,7 @@
 				110 /* AppState.swift */,
 				F7E628EA2F1448E000763B43 /* LocalNowPlayingFetcher.swift */,
 				F762D6282F44164400D6BA3B /* OpenSkyService.swift */,
+				RR103 /* RemoteRadioViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -382,6 +423,7 @@
 			children = (
 				116 /* Assets.xcassets */,
 				130 /* LaunchScreen.storyboard */,
+				EB2CCDD5B45142E9817882CE /* bible.json */,
 			);
 			path = Resources;
 			sourceTree = "<group>";
@@ -391,7 +433,6 @@
 			children = (
 				111 /* ADSBView.swift */,
 				120 /* ACARSView.swift */,
-				INTV01 /* IntelligenceView.swift */,
 				112 /* SystemView.swift */,
 				127 /* InfraView.swift */,
 				113 /* RadioView.swift */,
@@ -406,6 +447,12 @@
 				151 /* HealthCheckView.swift */,
 				F7CE39012F14BDBA00EF7A25 /* SatellitePassPredictor.swift */,
 				F76A68C12F19CBB80081D8D9 /* BinaryCache.swift */,
+				RR104 /* RemoteRadioView.swift */,
+				INTV01 /* IntelligenceView.swift */,
+				BIBV01 /* BibleView.swift */,
+				BIBN01 /* BibleNavigateView.swift */,
+				BIBS01 /* BibleSearchView.swift */,
+				BIBR01 /* BibleRandomView.swift */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -415,11 +462,9 @@
 			children = (
 				118 /* AircraftMapView.swift */,
 				121 /* MapView.swift */,
-				124 /* RadarWebView.swift */,
-				125 /* RadarHTML.swift */,
 				128 /* RadarSplashOverlay.swift */,
 				129 /* RadarSplashSwiftUI.swift */,
-				F7E628E82F1430BA00763B43 /* LegacyRadarWebViewStore.swift */,
+				154 /* NativeRadarMapView.swift */,
 				152 /* StatCard.swift */,
 			);
 			path = Components;
@@ -440,6 +485,19 @@
 				142 /* ThemeManagerView.swift */,
 			);
 			path = Settings;
+			sourceTree = "<group>";
+		};
+		F7803D532F4A99BE001C8722 /* Recovered References */ = {
+			isa = PBXGroup;
+			children = (
+				F7A0C1B2D3E4F5A6B7C8D9E0 /* MeuLabApp/Core/Secrets.swift */,
+				C2D3E4F5A6B7C8D9E0F1A2B3 /* MeuLabApp/Core/NetworkEnvironment.swift */,
+				AC200 /* MeuLabApp/Core/Utils/AircraftClassification.swift */,
+				FM200 /* MeuLabApp/Core/Services/FavoritesManager.swift */,
+				LGM01 /* LiquidGlass+Modifiers.swift */,
+				E181A3D935D7491286930152 /* MeuLabWatch/Services/WatchSecrets.swift */,
+			);
+			name = "Recovered References";
 			sourceTree = "<group>";
 		};
 		F795720E2F1347AB0058B81B /* Frameworks */ = {
@@ -636,7 +694,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				F7E628DE2F142B7100763B43 /* Assets.xcassets in Resources */,
+				F7803D5F2F4A9A7B001C8722 /* Secrets.plist in Resources */,
 				029 /* LaunchScreen.storyboard in Resources */,
+				7F0B7866E4944B48AAFB4F3A /* bible.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -651,6 +711,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F7803D612F4A9A7B001C8722 /* Secrets.plist in Resources */,
 				016 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -659,6 +720,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				F7803D602F4A9A7B001C8722 /* Secrets.plist in Resources */,
 				W011 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -672,7 +734,6 @@
 			files = (
 				001 /* MeuLabApp.swift in Sources */,
 				002 /* ContentView.swift in Sources */,
-				FMDS02 /* FoundationModelService.swift in Sources */,
 				F7E628EB2F1448E000763B43 /* LocalNowPlayingFetcher.swift in Sources */,
 				003 /* ADSBModels.swift in Sources */,
 				004 /* SystemModels.swift in Sources */,
@@ -687,23 +748,27 @@
 				011 /* ADSBView.swift in Sources */,
 				012 /* SystemView.swift in Sources */,
 				013 /* RadioView.swift in Sources */,
+				FMDS02 /* FoundationModelService.swift in Sources */,
+				INTV02 /* IntelligenceView.swift in Sources */,
+				BIBM02 /* BibleModels.swift in Sources */,
+				BIBL02 /* BibleLoader.swift in Sources */,
+				BIBV02 /* BibleView.swift in Sources */,
+				BIBN02 /* BibleNavigateView.swift in Sources */,
+				BIBS02 /* BibleSearchView.swift in Sources */,
+				BIBR02 /* BibleRandomView.swift in Sources */,
 				014 /* WeatherView.swift in Sources */,
 				015 /* SatelliteView.swift in Sources */,
 				017 /* AircraftMapView.swift in Sources */,
 				F7CE39022F14BDBA00EF7A25 /* SatellitePassPredictor.swift in Sources */,
 				018 /* ACARSModels.swift in Sources */,
 				019 /* ACARSView.swift in Sources */,
-				INTV02 /* IntelligenceView.swift in Sources */,
 				F762D6292F44164400D6BA3B /* OpenSkyService.swift in Sources */,
 				020 /* MapView.swift in Sources */,
 				021 /* PushNotificationManager.swift in Sources */,
 				022 /* LocationManager.swift in Sources */,
-				023 /* RadarWebView.swift in Sources */,
-				024 /* RadarHTML.swift in Sources */,
 				025 /* SystemExtrasModels.swift in Sources */,
 				026 /* InfraView.swift in Sources */,
 				027 /* RadarSplashOverlay.swift in Sources */,
-				F7E628E92F1430BA00763B43 /* LegacyRadarWebViewStore.swift in Sources */,
 				028 /* RadarSplashSwiftUI.swift in Sources */,
 				030 /* NotificationModels.swift in Sources */,
 				031 /* NotificationFeedManager.swift in Sources */,
@@ -725,6 +790,17 @@
 				049 /* ContainerLogsView.swift in Sources */,
 				050 /* HealthCheckView.swift in Sources */,
 				051 /* StatCard.swift in Sources */,
+				053 /* NativeRadarMapView.swift in Sources */,
+				A1B2C3D4E5F6A7B8C9D0E1F2 /* MeuLabApp/Core/Secrets.swift in Sources */,
+				B1C2D3E4F5A6B7C8D9E0F1A2 /* MeuLabApp/Core/NetworkEnvironment.swift in Sources */,
+				AC100 /* MeuLabApp/Core/Utils/AircraftClassification.swift in Sources */,
+				FM100 /* MeuLabApp/Core/Services/FavoritesManager.swift in Sources */,
+				RR200 /* RemoteRadioModels.swift in Sources */,
+				RR201 /* RemoteRadioAPIClient.swift in Sources */,
+				RR202 /* RemoteRadioWebRTCClient.swift in Sources */,
+				RR203 /* RemoteRadioViewModel.swift in Sources */,
+				RR204 /* RemoteRadioView.swift in Sources */,
+				LGM02 /* LiquidGlass+Modifiers.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -760,6 +836,7 @@
 				W010 /* WatchSatDumpView.swift in Sources */,
 				W013 /* WatchAPIService.swift in Sources */,
 				W014 /* WatchModels.swift in Sources */,
+				3909786604B94EE5BE1AD25A /* MeuLabWatch/Services/WatchSecrets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -838,7 +915,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -899,7 +976,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -951,7 +1028,7 @@
 				REGISTER_APP_GROUPS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
@@ -999,7 +1076,7 @@
 				REGISTER_APP_GROUPS = YES;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator";
 				SUPPORTS_MACCATALYST = NO;
-				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO;
+				SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = YES;
 				SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD = NO;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_VERSION = 5.0;
