@@ -1,298 +1,191 @@
 import SwiftUI
 
-/// Detalhes do SatDump para watchOS com previsao de passes
 struct WatchSatDumpView: View {
     @State private var isLoading = true
     @State private var status: WatchSatDumpData?
     @State private var passes: [WatchPass] = []
+    @State private var predictions: [WatchMeteorPass] = []
     @State private var error: String?
-    @State private var nextPasses: [WatchPredictedPass] = []
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                if isLoading {
-                    Spacer()
-                    ProgressView()
-                    Text("Carregando...")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                } else if let error {
-                    ErrorView(message: error) {
-                        Task { await loadData() }
+        WatchLabScreen(
+            title: "Satélite", icon: "antenna.radiowaves.left.and.right", tint: WatchLabTheme.violet
+        ) {
+            if isLoading {
+                WatchLabPanel(tint: WatchLabTheme.violet) {
+                    WatchLabStateView(
+                        icon: "satellite",
+                        title: "Atualizando",
+                        subtitle: "Buscando últimos passes e previsões.",
+                        tint: WatchLabTheme.violet,
+                        actionTitle: nil,
+                        action: nil
+                    )
+                }
+            } else if let error {
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    WatchLabStateView(
+                        icon: "wifi.exclamationmark",
+                        title: "Falha",
+                        subtitle: error,
+                        tint: WatchLabTheme.red,
+                        actionTitle: "Tentar",
+                        action: { Task { await loadData() } }
+                    )
+                }
+            } else {
+                // Status atual
+                WatchLabPanel(tint: WatchLabTheme.violet) {
+                    Text(status?.status?.running == true ? "Recebendo sinais" : "Aguardando passe")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WatchLabTheme.ink)
+
+                    if let currentPass = status?.status?.currentPass {
+                        Text(currentPass)
+                            .font(.caption2)
+                            .foregroundStyle(WatchLabTheme.secondary)
+                    } else if let lastSat = status?.status?.lastPass?.satellite {
+                        Text("Último: \(lastSat)")
+                            .font(.caption2)
+                            .foregroundStyle(WatchLabTheme.secondary)
                     }
-                } else {
-                    // Status atual
-                    if let sat = status?.status {
-                        StatusCard(isRunning: sat.running == true, currentPass: sat.currentPass)
-                    }
+                }
 
-                    // Proximo passe previsto
-                    if !nextPasses.isEmpty {
-                        VStack(alignment: .leading, spacing: 6) {
-                            HStack {
-                                Image(systemName: "satellite")
-                                    .foregroundStyle(.orange)
-                                Text("Proximos")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
+                // Próximo passe previsto
+                if let nextPass = predictions.first(where: { $0.isUpcoming }) {
+                    WatchLabPanel(tint: WatchLabTheme.green) {
+                        HStack {
+                            VStack(alignment: .leading, spacing: 3) {
+                                Text("Próximo passe")
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundStyle(WatchLabTheme.secondary)
+
+                                Text(nextPass.timeUntil)
+                                    .font(.system(size: 22, weight: .black, design: .rounded))
+                                    .foregroundStyle(WatchLabTheme.green)
+
+                                Text(nextPass.satellite ?? "Meteor M2-x")
+                                    .font(.caption2.weight(.medium))
+                                    .foregroundStyle(WatchLabTheme.ink)
                             }
 
-                            ForEach(nextPasses.prefix(3)) { pass in
-                                NextPassRow(pass: pass)
-                            }
-                        }
-                        .padding(.top, 4)
-                    }
+                            Spacer()
 
-                    // Ultimo passe
-                    if let sat = status?.status, let last = sat.lastPass {
-                        VStack(alignment: .leading, spacing: 4) {
-                            HStack {
-                                Image(systemName: "satellite.fill")
-                                    .foregroundStyle(.blue)
-                                Text("Ultimo Passe")
-                                    .font(.caption)
-                                    .fontWeight(.semibold)
-                            }
-
-                            if let satellite = last.satellite {
-                                Text(satellite)
-                                    .font(.caption2)
-                                    .fontWeight(.medium)
-                            }
-                            if let timestamp = last.timestamp {
-                                Text(formatTimestamp(timestamp))
-                                    .font(.caption2)
-                                    .foregroundStyle(.secondary)
-                            }
-                        }
-                        .padding(.top, 4)
-                    }
-
-                    // Passes recentes
-                    if !passes.isEmpty {
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text("Historico")
-                                .font(.caption)
-                                .fontWeight(.semibold)
-                                .foregroundStyle(.secondary)
-
-                            ForEach(passes.prefix(4)) { pass in
-                                HStack {
-                                    Text(pass.satellite)
-                                        .font(.caption2)
-                                    Spacer()
-                                    Text(formatTimestamp(pass.timestamp))
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
+                            VStack(alignment: .trailing, spacing: 4) {
+                                if let el = nextPass.maxElevation {
+                                    WatchLabMetricPill(
+                                        title: "Elevação",
+                                        value: "\(Int(el))°",
+                                        tint: el >= 30 ? WatchLabTheme.green : WatchLabTheme.orange,
+                                        icon: "arrow.up.right"
+                                    )
                                 }
-                                .padding(.vertical, 2)
+                                Text(nextPass.durationMinutes)
+                                    .font(.system(size: 10, weight: .medium))
+                                    .foregroundStyle(WatchLabTheme.secondary)
                             }
                         }
-                        .padding(.top, 4)
+
+                        // Quality indicator
+                        HStack(spacing: 2) {
+                            ForEach(0..<5, id: \.self) { i in
+                                Image(systemName: i < nextPass.qualityStars ? "star.fill" : "star")
+                                    .font(.system(size: 8))
+                                    .foregroundStyle(
+                                        i < nextPass.qualityStars
+                                            ? WatchLabTheme.green : WatchLabTheme.tertiary)
+                            }
+                            Spacer()
+                        }
+                    }
+                }
+
+                // Previsões futuras
+                let upcomingPasses = predictions.filter { $0.isUpcoming }.dropFirst().prefix(3)
+                if !upcomingPasses.isEmpty {
+                    WatchLabPanel(tint: WatchLabTheme.cyan) {
+                        Text("Previsões")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(WatchLabTheme.ink)
+
+                        ForEach(Array(upcomingPasses)) { pass in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(pass.satellite ?? "Sat")
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(WatchLabTheme.ink)
+                                        .lineLimit(1)
+                                    Text(pass.timeUntil)
+                                        .font(.system(size: 10))
+                                        .foregroundStyle(WatchLabTheme.secondary)
+                                }
+                                Spacer()
+                                if let el = pass.maxElevation {
+                                    Text("\(Int(el))°")
+                                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                                        .foregroundStyle(
+                                            el >= 30 ? WatchLabTheme.green : WatchLabTheme.orange)
+                                }
+                            }
+                            .padding(.vertical, 2)
+                        }
+                    }
+                }
+
+                // Histórico recente
+                if !passes.isEmpty {
+                    WatchLabPanel(tint: WatchLabTheme.blue) {
+                        Text("Histórico recente")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(WatchLabTheme.ink)
+
+                        ForEach(passes.prefix(4)) { pass in
+                            HStack {
+                                Text(pass.satellite)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(WatchLabTheme.ink)
+                                    .lineLimit(1)
+                                Spacer()
+                                Text(formatTimestamp(pass.timestamp))
+                                    .font(.caption2)
+                                    .foregroundStyle(WatchLabTheme.secondary)
+                            }
+                            .padding(.vertical, 3)
+                        }
                     }
                 }
             }
-            .padding(.horizontal, 6)
         }
-        .navigationTitle("Satelite")
-        .task {
-            await loadData()
-        }
-        .refreshable {
-            await loadData()
-        }
+        .task { await loadData() }
+        .refreshable { await loadData() }
     }
 
     private func loadData() async {
         isLoading = true
         error = nil
-
         do {
             async let statusTask = WatchAPIService.shared.fetchSatDumpStatus()
             async let passesTask = WatchAPIService.shared.fetchPasses()
-
             status = try await statusTask
-            let list = try await passesTask
-            passes = list.passes
+            passes = try await passesTask.passes
 
-            // Gera previsao de proximos passes (simplificado)
-            generateNextPasses()
+            // Predictions - best effort
+            if let meteorResponse = try? await WatchAPIService.shared.fetchMeteorPasses() {
+                predictions = meteorResponse.passes ?? []
+            }
         } catch {
             self.error = error.localizedDescription
         }
-
         isLoading = false
     }
 
-    private func generateNextPasses() {
-        // Gera previsao simplificada de passes do Meteor M2-X
-        // Em producao, isso viria da API ou calculo TLE
-        let now = Date()
-        nextPasses = [
-            WatchPredictedPass(
-                id: "1",
-                satellite: "Meteor M2-x",
-                time: now.addingTimeInterval(3600 * 4), // +4h
-                elevation: 65,
-                quality: .excellent
-            ),
-            WatchPredictedPass(
-                id: "2",
-                satellite: "Meteor M2-x",
-                time: now.addingTimeInterval(3600 * 10), // +10h
-                elevation: 42,
-                quality: .good
-            ),
-            WatchPredictedPass(
-                id: "3",
-                satellite: "Meteor M2-x",
-                time: now.addingTimeInterval(3600 * 16), // +16h
-                elevation: 78,
-                quality: .excellent
-            )
-        ]
-    }
-
     private func formatTimestamp(_ timestamp: String) -> String {
-        // Simplifica o timestamp para exibicao compacta
         if timestamp.count > 16 {
             let start = timestamp.index(timestamp.startIndex, offsetBy: 11)
             let end = timestamp.index(timestamp.startIndex, offsetBy: 16)
             return String(timestamp[start..<end])
         }
         return timestamp
-    }
-}
-
-// MARK: - Status Card
-
-struct StatusCard: View {
-    let isRunning: Bool
-    let currentPass: String?
-
-    var body: some View {
-        HStack(spacing: 8) {
-            ZStack {
-                Circle()
-                    .fill(isRunning ? Color.green.opacity(0.2) : Color.gray.opacity(0.2))
-                    .frame(width: 36, height: 36)
-
-                Image(systemName: isRunning ? "satellite.fill" : "satellite")
-                    .font(.system(size: 16))
-                    .foregroundStyle(isRunning ? .green : .secondary)
-            }
-
-            VStack(alignment: .leading, spacing: 2) {
-                Text(isRunning ? "Recebendo" : "Aguardando")
-                    .font(.caption)
-                    .fontWeight(.semibold)
-
-                if let current = currentPass {
-                    Text(current)
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                } else {
-                    Text("Proximo passe em breve")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                }
-            }
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(8)
-        .background(Color.white.opacity(0.1))
-        .cornerRadius(10)
-    }
-}
-
-// MARK: - Next Pass Row
-
-struct NextPassRow: View {
-    let pass: WatchPredictedPass
-
-    var body: some View {
-        HStack(spacing: 8) {
-            // Indicador de qualidade
-            Circle()
-                .fill(pass.quality.color)
-                .frame(width: 8, height: 8)
-
-            VStack(alignment: .leading, spacing: 1) {
-                Text(pass.satellite)
-                    .font(.caption2)
-                    .fontWeight(.medium)
-
-                Text(pass.formattedTime)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-            }
-
-            Spacer()
-
-            VStack(alignment: .trailing, spacing: 1) {
-                Text("\(pass.elevation)°")
-                    .font(.caption2)
-                    .fontWeight(.medium)
-
-                Text(pass.timeUntil)
-                    .font(.caption2)
-                    .foregroundStyle(.orange)
-            }
-
-            Image(systemName: "arrow.up.right.circle.fill")
-                .font(.system(size: 10))
-                .foregroundStyle(pass.quality.color.opacity(0.85))
-        }
-        .padding(.vertical, 4)
-        .padding(.horizontal, 6)
-        .background(Color.white.opacity(0.05))
-        .cornerRadius(6)
-    }
-}
-
-// MARK: - Predicted Pass Model
-
-struct WatchPredictedPass: Identifiable {
-    let id: String
-    let satellite: String
-    let time: Date
-    let elevation: Int
-    let quality: PassQuality
-
-    var formattedTime: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        return formatter.string(from: time)
-    }
-
-    var timeUntil: String {
-        let interval = time.timeIntervalSince(Date())
-        if interval < 0 { return "Agora" }
-
-        let hours = Int(interval) / 3600
-        let minutes = (Int(interval) % 3600) / 60
-
-        if hours > 0 {
-            return "\(hours)h \(minutes)m"
-        }
-        return "\(minutes)m"
-    }
-
-    enum PassQuality {
-        case excellent
-        case good
-        case fair
-
-        var color: Color {
-            switch self {
-            case .excellent: return .green
-            case .good: return .orange
-            case .fair: return .gray
-            }
-        }
     }
 }
 

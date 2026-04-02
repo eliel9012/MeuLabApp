@@ -1,5 +1,5 @@
-import SwiftUI
 import CoreLocation
+import SwiftUI
 
 struct AircraftDetailView: View {
     @EnvironmentObject var appState: AppState
@@ -9,7 +9,7 @@ struct AircraftDetailView: View {
     @State private var faFlight: FlightAwareFlight?
     @State private var faLoading = false
     @State private var faError: String?
-    
+
     @State private var registration: String?
     @State private var isLookingUp = false
     @State private var classifiedAirlineName: String?
@@ -17,7 +17,7 @@ struct AircraftDetailView: View {
     @State private var classificationMessage: String?
     @State private var isLoadingClassification = false
     @State private var nearbyCity: String?
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 20) {
@@ -42,7 +42,7 @@ struct AircraftDetailView: View {
                         .clipShape(RoundedRectangle(cornerRadius: 16))
                         .shadow(color: .black.opacity(0.1), radius: 4)
                     }
-                    
+
                     VStack(alignment: .leading, spacing: 4) {
                         Text(ac.displayCallsign)
                             .font(.system(size: 34, weight: .black, design: .monospaced))
@@ -56,27 +56,24 @@ struct AircraftDetailView: View {
                     Spacer()
                 }
                 .padding()
-                .background(Color(.secondarySystemGroupedBackground))
-                .cornerRadius(24)
-                
+                .glassCard(cornerRadius: 24)
+
                 // Route Visualizer (FlightAware)
                 if let faFlight {
                     AircraftRouteView(flight: faFlight)
                         .padding()
-                        .background(Color(.secondarySystemGroupedBackground))
-                        .cornerRadius(20)
+                        .glassCard(cornerRadius: 20)
                 }
-                
+
                 // Aircraft Photo (PlaneSpotters with OpenSky Fallback)
                 AircraftPhotoView(aircraft: ac)
                     .frame(height: 250)
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
+                    .glassCard(cornerRadius: 12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.white.opacity(0.2), lineWidth: 1)
                     )
-                
+
                 // Flight Data Grid
                 VStack(spacing: 16) {
                     // Classification Section
@@ -84,8 +81,10 @@ struct AircraftDetailView: View {
                         showClassificationSheet = true
                     } label: {
                         HStack {
-                            Label("Classificar empresa aérea", systemImage: "building.2.crop.circle")
-                                .font(.subheadline.weight(.semibold))
+                            Label(
+                                "Classificar empresa aérea", systemImage: "building.2.crop.circle"
+                            )
+                            .font(.subheadline.weight(.semibold))
                             Spacer()
                             Image(systemName: "chevron.right")
                                 .font(.caption)
@@ -116,20 +115,32 @@ struct AircraftDetailView: View {
                     Divider()
 
                     DetailRow(icon: "airplane", title: "Modelo", value: ac.model ?? "N/A")
-                    DetailRow(icon: "number", title: "Matrícula", value: registration ?? ac.registration ?? "N/A")
-                    DetailRow(icon: "arrow.up.forward", title: "Altitude", value: "\(ac.altitudeFt) ft")
-                    DetailRow(icon: "speedometer", title: "Velocidade", value: "\(ac.speedKt) kt (\(ac.speedKmh) km/h)")
-                    DetailRow(icon: "arrow.up.and.down", title: "Razão Vertical", value: "\(ac.verticalRateFpm) fpm")
+                    DetailRow(
+                        icon: "number", title: "Matrícula",
+                        value: registration ?? ac.registration ?? "N/A")
+                    DetailRow(
+                        icon: "arrow.up.forward", title: "Altitude", value: "\(ac.altitudeFt) ft")
+                    DetailRow(
+                        icon: "speedometer", title: "Velocidade",
+                        value: "\(ac.speedKt) kt (\(ac.speedKmh) km/h)")
+                    DetailRow(
+                        icon: "arrow.up.and.down", title: "Razão Vertical",
+                        value: "\(ac.verticalRateFpm) fpm")
                     if let track = ac.track {
-                        DetailRow(icon: "compass.drawing", title: "Proa", value: String(format: "%.0f°", track))
+                        DetailRow(
+                            icon: "compass.drawing", title: "Proa",
+                            value: String(format: "%.0f°", track))
                     }
                     if let lat = ac.lat, let lon = ac.lon {
                         let coordinates = String(format: "%.4f, %.4f", lat, lon)
-                        let locationValue = nearbyCity.map { "\(coordinates) • próximo a \($0)" } ?? coordinates
+                        let locationValue =
+                            nearbyCity.map { "\(coordinates) • próximo a \($0)" } ?? coordinates
                         DetailRow(icon: "location.fill", title: "Coordenadas", value: locationValue)
                     }
                     if let dist = ac.distanceNm {
-                        DetailRow(icon: "location.fill", title: "Distância", value: String(format: "%.1f nm", dist))
+                        DetailRow(
+                            icon: "location.fill", title: "Distância",
+                            value: String(format: "%.1f nm", dist))
                     }
 
                     // Open in Map Button
@@ -156,8 +167,7 @@ struct AircraftDetailView: View {
                     .padding(.top, 8)
                 }
                 .padding()
-                .background(Color(.secondarySystemGroupedBackground))
-                .cornerRadius(24)
+                .glassCard(cornerRadius: 24)
 
                 // FlightAware block (gate/terminal/schedule)
                 VStack(alignment: .leading, spacing: 12) {
@@ -197,14 +207,18 @@ struct AircraftDetailView: View {
                                 Text("Saída")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                Text(FlightAwareTime.short(faFlight.actualOut)
-                                     ?? FlightAwareTime.short(faFlight.estimatedOut)
-                                     ?? FlightAwareTime.short(faFlight.scheduledOut)
-                                     ?? "-")
-                                    .font(.headline.monospacedDigit())
-                                Text("T\(faFlight.terminalOrigin ?? "-") • G\(faFlight.gateOrigin ?? "-")")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                Text(
+                                    FlightAwareTime.short(faFlight.actualOut)
+                                        ?? FlightAwareTime.short(faFlight.estimatedOut)
+                                        ?? FlightAwareTime.short(faFlight.scheduledOut)
+                                        ?? "-"
+                                )
+                                .font(.headline.monospacedDigit())
+                                Text(
+                                    "T\(faFlight.terminalOrigin ?? "-") • G\(faFlight.gateOrigin ?? "-")"
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                             }
 
                             Spacer()
@@ -213,14 +227,18 @@ struct AircraftDetailView: View {
                                 Text("Chegada")
                                     .font(.caption)
                                     .foregroundStyle(.secondary)
-                                Text(FlightAwareTime.short(faFlight.actualIn)
-                                     ?? FlightAwareTime.short(faFlight.estimatedIn)
-                                     ?? FlightAwareTime.short(faFlight.scheduledIn)
-                                     ?? "-")
-                                    .font(.headline.monospacedDigit())
-                                Text("T\(faFlight.terminalDestination ?? "-") • G\(faFlight.gateDestination ?? "-")")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                Text(
+                                    FlightAwareTime.short(faFlight.actualIn)
+                                        ?? FlightAwareTime.short(faFlight.estimatedIn)
+                                        ?? FlightAwareTime.short(faFlight.scheduledIn)
+                                        ?? "-"
+                                )
+                                .font(.headline.monospacedDigit())
+                                Text(
+                                    "T\(faFlight.terminalDestination ?? "-") • G\(faFlight.gateDestination ?? "-")"
+                                )
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
                             }
                         }
                     } else if let faError {
@@ -234,8 +252,7 @@ struct AircraftDetailView: View {
                     }
                 }
                 .padding()
-                .background(Color(.secondarySystemGroupedBackground))
-                .cornerRadius(16)
+                .glassCard(cornerRadius: 16)
             }
             .padding()
         }
@@ -339,7 +356,9 @@ struct AircraftDetailView: View {
         do {
             let response = try await APIService.shared.saveAirlineClassification(payload)
             await MainActor.run {
-                if let name = response.classification?.airlineName ?? response.message, !name.isEmpty {
+                if let name = response.classification?.airlineName ?? response.message,
+                    !name.isEmpty
+                {
                     classifiedAirlineName = response.classification?.airlineName ?? airlineName
                 } else {
                     classifiedAirlineName = airlineName
@@ -349,7 +368,8 @@ struct AircraftDetailView: View {
             }
         } catch {
             await MainActor.run {
-                classificationMessage = "Não foi possível salvar. Verifique se o backend já tem os endpoints."
+                classificationMessage =
+                    "Não foi possível salvar. Verifique se o backend já tem os endpoints."
             }
         }
     }
@@ -396,7 +416,7 @@ private struct AirlineClassificationSheet: View {
                     }
                 }
                 .padding()
-                .background(Color(.secondarySystemGroupedBackground))
+                .background(.ultraThinMaterial)
 
                 // Search
                 HStack {
@@ -459,7 +479,7 @@ private struct AirlineClassificationSheet: View {
 
 struct AircraftRouteView: View {
     let flight: FlightAwareFlight
-    
+
     var body: some View {
         HStack {
             AirportBlock(
@@ -467,14 +487,14 @@ struct AircraftRouteView: View {
                 city: flight.origin?.city ?? "Origem",
                 alignment: .leading
             )
-            
+
             Spacer()
-            
+
             VStack(spacing: 8) {
                 Image(systemName: "airplane")
                     .font(.title3)
                     .foregroundStyle(.blue)
-                
+
                 HStack(spacing: 4) {
                     ForEach(0..<8) { _ in
                         Circle()
@@ -484,9 +504,9 @@ struct AircraftRouteView: View {
                 }
             }
             .padding(.horizontal, 10)
-            
+
             Spacer()
-            
+
             AirportBlock(
                 code: flight.destination?.bestCode ?? "???",
                 city: flight.destination?.city ?? "Destino",
@@ -500,7 +520,7 @@ struct AirportBlock: View {
     let code: String
     let city: String
     let alignment: HorizontalAlignment
-    
+
     var body: some View {
         VStack(alignment: alignment, spacing: 4) {
             Text(code)
@@ -519,7 +539,7 @@ struct DetailRow: View {
     let icon: String
     let title: String
     let value: String
-    
+
     var body: some View {
         HStack {
             Image(systemName: icon)

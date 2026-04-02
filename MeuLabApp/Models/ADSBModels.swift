@@ -1,9 +1,9 @@
-import Foundation
 import CoreLocation
+import Foundation
 
 // MARK: - Aircraft Source
 enum AircraftSource: String, Codable {
-    case local = "local"      // Detectado pelo seu radar
+    case local = "local"  // Detectado pelo seu radar
     case network = "network"  // Via API ADSB.lol
     case opensky = "opensky"  // Via OpenSky Network
 
@@ -101,7 +101,7 @@ struct Airline: Codable, Identifiable, Equatable {
     let count: Int
 
     var id: String { name }
-    
+
     var logoURL: URL? {
         AirlineLogo.url(for: name)
     }
@@ -352,7 +352,8 @@ struct Aircraft: Codable, Identifiable, Equatable {
     let distanceNm: Double?
     let verticalRateFpm: Int  // Keep required - API always provides
     var source: AircraftSource = .local  // Origem dos dados
-    var isDualTracked: Bool = false      // Detectado por ambas as fontes
+    var isDualTracked: Bool = false  // Detectado por ambas as fontes
+    let squawk: String?  // Código transponder (e.g. 7700 = emergência)
 
     enum CodingKeys: String, CodingKey {
         case id, hex, callsign, model, registration, airline, lat, lon, track
@@ -361,13 +362,14 @@ struct Aircraft: Codable, Identifiable, Equatable {
         case speedKmh = "speed_kmh"
         case distanceNm = "distance_nm"
         case verticalRateFpm = "vertical_rate_fpm"
+        case squawk
         // Note: source and isDualTracked are NOT in CodingKeys because they're not provided by the API
     }
-    
+
     // Custom decoder to handle fields not in API response
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
-        
+
         id = try container.decode(String.self, forKey: .id)
         hex = try container.decodeIfPresent(String.self, forKey: .hex)
         callsign = try container.decode(String.self, forKey: .callsign)
@@ -381,12 +383,13 @@ struct Aircraft: Codable, Identifiable, Equatable {
         speedKmh = try container.decode(Int.self, forKey: .speedKmh)
         distanceNm = try container.decodeIfPresent(Double.self, forKey: .distanceNm)
         verticalRateFpm = try container.decode(Int.self, forKey: .verticalRateFpm)
-        
+
         registration = try container.decodeIfPresent(String.self, forKey: .registration)
+        squawk = try container.decodeIfPresent(String.self, forKey: .squawk)
         source = .local
         isDualTracked = false
     }
-    
+
     // Memberwise initializer for manual creation
     init(
         id: String,
@@ -403,6 +406,7 @@ struct Aircraft: Codable, Identifiable, Equatable {
         speedKmh: Int,
         distanceNm: Double?,
         verticalRateFpm: Int,
+        squawk: String? = nil,
         source: AircraftSource = .local,
         isDualTracked: Bool = false
     ) {
@@ -420,6 +424,7 @@ struct Aircraft: Codable, Identifiable, Equatable {
         self.speedKmh = speedKmh
         self.distanceNm = distanceNm
         self.verticalRateFpm = verticalRateFpm
+        self.squawk = squawk
         self.source = source
         self.isDualTracked = isDualTracked
     }
@@ -441,12 +446,12 @@ struct Aircraft: Codable, Identifiable, Equatable {
         if let url = AirlineLogo.url(fromCallsign: callsign) {
             return url
         }
-        
+
         // 2. Tenta pelo nome da companhia se disponível
         if let airlineName = airline, let url = AirlineLogo.url(for: airlineName) {
             return url
         }
-        
+
         return nil
     }
 
@@ -477,14 +482,15 @@ struct Aircraft: Codable, Identifiable, Equatable {
         copy.isDualTracked = dualTracked
         return copy
     }
-    
+
     // Calcular distância dinâmica se não vier da API
     @MainActor
     var computedDistanceNm: Double {
         if let d = distanceNm { return d }
         // Calcular baseado na localização do usuário
         if let lat = lat, let lon = lon,
-           let userLoc = LocationManager.shared.userLocation {
+            let userLoc = LocationManager.shared.userLocation
+        {
             let acLoc = CLLocation(latitude: lat, longitude: lon)
             return userLoc.distance(from: acLoc) / 1852.0
         }
@@ -504,13 +510,13 @@ struct ADSBLolResponse: Codable {
 struct ADSBLolAircraft: Codable {
     let hex: String?
     let flight: String?
-    let t: String?           // Tipo de aeronave
-    let r: String?           // Registro
+    let t: String?  // Tipo de aeronave
+    let r: String?  // Registro
     let lat: Double?
     let lon: Double?
     let alt_baro: IntOrString?
     let alt_geom: Int?
-    let gs: Double?          // Ground speed
+    let gs: Double?  // Ground speed
     let track: Double?
     let baro_rate: Int?
     let squawk: String?
@@ -558,8 +564,200 @@ struct ADSBLolAircraft: Codable {
             speedKmh: Int((gs ?? 0) * 1.852),
             distanceNm: nil,
             verticalRateFpm: baro_rate ?? 0,
+            squawk: squawk,
             source: .network
         )
+    }
+}
+
+// MARK: - Tuya Sensor
+
+struct TuyaTemperatureHumidityResponse: Codable, Equatable {
+    let ok: Bool
+    let timestamp: String
+    let source: String?
+    let device: TuyaSensorDevice?
+    let current: TuyaSensorCurrent?
+    let history: [TuyaSensorHistoryEntry]?
+    let historyIntervalSeconds: Int?
+    let raw: TuyaSensorRaw?
+    let degraded: Bool
+    let degradedReason: String?
+    let localError: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ok, timestamp, source, device, current, history, raw, degraded
+        case degradedReason = "degraded_reason"
+        case historyIntervalSeconds = "history_interval_seconds"
+        case localError = "local_error"
+    }
+
+    var friendlyErrorMessage: String? {
+        guard !ok || degraded else { return nil }
+
+        if let reason = degradedReason?.trimmedNonEmpty {
+            return "Leitura parcial do sensor: \(reason)."
+        }
+
+        if let localError = localError?.trimmedNonEmpty {
+            return "Sensor indisponível no momento: \(localError)."
+        }
+
+        return "Sensor Tuya indisponível no momento."
+    }
+
+    var lastUpdatedAt: Date? {
+        Formatters.isoDate.date(from: timestamp) ?? Formatters.isoDateNoFrac.date(from: timestamp)
+    }
+}
+
+struct TuyaSensorHistoryEntry: Codable, Equatable, Identifiable {
+    let timestamp: String
+    let temperatureC: Double?
+    let humidityPct: Double?
+    let batteryPct: Int?
+    let source: String?
+    let deviceID: String?
+    let deviceName: String?
+
+    var id: String { timestamp }
+
+    enum CodingKeys: String, CodingKey {
+        case timestamp, source
+        case temperatureC = "temperature_c"
+        case humidityPct = "humidity_pct"
+        case batteryPct = "battery_pct"
+        case deviceID = "device_id"
+        case deviceName = "device_name"
+    }
+
+    var date: Date? {
+        Formatters.isoDate.date(from: timestamp) ?? Formatters.isoDateNoFrac.date(from: timestamp)
+    }
+}
+
+struct TuyaSensorDevice: Codable, Equatable {
+    let id: String
+    let name: String
+    let localIP: String?
+    let productID: String?
+    let category: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, category
+        case localIP = "local_ip"
+        case productID = "product_id"
+    }
+}
+
+struct TuyaSensorCurrent: Codable, Equatable {
+    let temperatureC: Double?
+    let humidityPct: Double?
+    let batteryPct: Int?
+    let temperatureUnit: String?
+    let temperatureAlarm: String?
+    let humidityAlarm: String?
+
+    enum CodingKeys: String, CodingKey {
+        case temperatureC = "temperature_c"
+        case humidityPct = "humidity_pct"
+        case batteryPct = "battery_pct"
+        case temperatureUnit = "temperature_unit"
+        case temperatureAlarm = "temperature_alarm"
+        case humidityAlarm = "humidity_alarm"
+    }
+}
+
+struct TuyaSensorRaw: Codable, Equatable {
+    let status: TuyaSensorStatus?
+}
+
+struct TuyaSensorStatus: Codable, Equatable {
+    let result: [TuyaSensorStatusEntry]?
+    let success: Bool?
+}
+
+struct TuyaSensorStatusEntry: Codable, Equatable {
+    let code: String
+    let value: TuyaSensorStatusValue
+}
+
+enum TuyaSensorStatusValue: Codable, Equatable {
+    case int(Int)
+    case double(Double)
+    case string(String)
+    case bool(Bool)
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let value = try? container.decode(Int.self) {
+            self = .int(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .double(value)
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else {
+            throw DecodingError.typeMismatch(
+                TuyaSensorStatusValue.self,
+                .init(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Unsupported Tuya status value")
+            )
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .int(let value):
+            try container.encode(value)
+        case .double(let value):
+            try container.encode(value)
+        case .string(let value):
+            try container.encode(value)
+        case .bool(let value):
+            try container.encode(value)
+        }
+    }
+}
+
+extension String {
+    fileprivate var trimmedNonEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+}
+
+// MARK: - Tuya Status (API2)
+
+struct TuyaStatusResponse: Codable {
+    let service: String
+    let running: Bool
+    let deviceId: String?
+    let deviceName: String?
+    let sourceMode: String?
+    let historyPath: String?
+    let historyItems: Int?
+    let backgroundRefreshSeconds: Int?
+    let cacheTtlSeconds: Double?
+    let lastRefreshAt: String?
+    let lastError: String?
+    let hasStalePayload: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case service, running
+        case deviceId = "device_id"
+        case deviceName = "device_name"
+        case sourceMode = "source_mode"
+        case historyPath = "history_path"
+        case historyItems = "history_items"
+        case backgroundRefreshSeconds = "background_refresh_seconds"
+        case cacheTtlSeconds = "cache_ttl_seconds"
+        case lastRefreshAt = "last_refresh_at"
+        case lastError = "last_error"
+        case hasStalePayload = "has_stale_payload"
     }
 }
 

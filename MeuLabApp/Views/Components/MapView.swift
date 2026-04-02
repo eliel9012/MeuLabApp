@@ -70,33 +70,8 @@ struct MapView: View {
     }
 
     var body: some View {
-        RadarWebView(
-            aircraft: aircraftWithPosition, 
-            isInteractive: true, 
-            forcePanelClosed: true,
-            selectedAircraftID: $selectedAircraftID,
-            onMapChange: { bounds in
-                appState.updateRadarBounds(bounds)
-            }
-        )
-        .onChange(of: appState.mapFocusAircraft) { _, newFocus in
-            if let aircraft = newFocus {
-                centerOnAircraft(aircraft)
-                // Clear the focus in appState so it can be triggered again if needed
-                // But wait, if we clear it immediately, the value might be lost before processing?
-                // Better to leave it for now or clear it on disappear.
-                // Resetting to nil here causes a loop if not careful.
-                // Let's just consume it.
-                appState.mapFocusAircraft = nil 
-            }
-        }
-        .onAppear {
-            if let aircraft = appState.mapFocusAircraft {
-                // Initial check in case the value was set before this view appeared
-                centerOnAircraft(aircraft)
-                appState.mapFocusAircraft = nil
-            }
-        }
+        NativeRadarMapView()
+            .environmentObject(appState)
     }
 
     private var aircraftWithPosition: [Aircraft] {
@@ -153,8 +128,7 @@ struct MapView: View {
             }
         }
         .padding(8)
-        .background(.ultraThinMaterial)
-        .cornerRadius(8)
+        .glassCard(cornerRadius: 8)
     }
 
     private var closestAircraftToUser: (callsign: String, distance: Double)? {
@@ -386,9 +360,7 @@ struct MapAircraftInfoCard: View {
             }
         }
         .padding()
-        .background(.ultraThinMaterial)
-        .cornerRadius(16)
-        .shadow(radius: 10)
+        .glassCard(cornerRadius: 16)
     }
 }
 
@@ -497,7 +469,7 @@ struct MapSettingsSheet: View {
                             Button("Permitir") {
                                 locationManager.requestPermission()
                             }
-                            .buttonStyle(.bordered)
+                            .adaptiveGlassButton()
                         }
                     }
 

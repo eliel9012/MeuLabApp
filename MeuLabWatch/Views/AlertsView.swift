@@ -1,79 +1,89 @@
 import SwiftUI
 
-/// Feed de alertas recentes
 struct AlertsView: View {
     @State private var isLoading = true
     @State private var alerts: [WatchAlert] = []
     @State private var error: String?
-    
+
     var body: some View {
-        Group {
+        WatchLabScreen(title: "Alertas", icon: "bell.badge.fill", tint: WatchLabTheme.red) {
             if isLoading {
-                ProgressView("Carregando...")
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    WatchLabStateView(
+                        icon: "bell",
+                        title: "Atualizando",
+                        subtitle: "Buscando feed recente de alertas.",
+                        tint: WatchLabTheme.red,
+                        actionTitle: nil,
+                        action: nil
+                    )
+                }
             } else if let error {
-                VStack(spacing: 8) {
-                    Image(systemName: "wifi.exclamationmark")
-                        .foregroundStyle(.orange)
-                    Text(error)
-                        .font(.caption2)
-                    Button("Tentar novamente") {
-                        Task { await loadData() }
-                    }
-                    .font(.caption)
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    WatchLabStateView(
+                        icon: "wifi.exclamationmark",
+                        title: "Falha",
+                        subtitle: error,
+                        tint: WatchLabTheme.red,
+                        actionTitle: "Tentar",
+                        action: { Task { await loadData() } }
+                    )
                 }
             } else if alerts.isEmpty {
-                ContentUnavailableView(
-                    "Sem Alertas",
-                    systemImage: "bell.slash",
-                    description: Text("Nenhum alerta recente")
-                )
+                WatchLabPanel(tint: WatchLabTheme.green) {
+                    WatchLabStateView(
+                        icon: "bell.slash",
+                        title: "Sem alertas",
+                        subtitle: "Nenhum evento recente no feed.",
+                        tint: WatchLabTheme.green,
+                        actionTitle: nil,
+                        action: nil
+                    )
+                }
             } else {
-                List(alerts) { alert in
-                    VStack(alignment: .leading, spacing: 2) {
-                        HStack {
-                            Image(systemName: iconForCategory(alert.category))
-                                .foregroundStyle(colorForCategory(alert.category))
-                                .font(.caption2)
-                            Text(alert.title)
-                                .font(.caption)
-                                .fontWeight(.medium)
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    Text("Feed recente")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WatchLabTheme.ink)
+
+                    ForEach(alerts.prefix(6)) { alert in
+                        VStack(alignment: .leading, spacing: 2) {
+                            HStack {
+                                Image(systemName: iconForCategory(alert.category))
+                                    .foregroundStyle(colorForCategory(alert.category))
+                                    .font(.caption2)
+                                Text(alert.title)
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(WatchLabTheme.ink)
+                                    .lineLimit(1)
+                            }
+                            if let message = alert.message {
+                                Text(message)
+                                    .font(.caption2)
+                                    .foregroundStyle(WatchLabTheme.secondary)
+                                    .lineLimit(2)
+                            }
                         }
-                        if let message = alert.message {
-                            Text(message)
-                                .font(.caption2)
-                                .foregroundStyle(.secondary)
-                                .lineLimit(2)
-                        }
-                        Text(alert.timestamp)
-                            .font(.caption2)
-                            .foregroundStyle(.tertiary)
+                        .padding(.vertical, 3)
                     }
-                    .padding(.vertical, 2)
                 }
             }
         }
-        .navigationTitle("Alertas")
-        .task {
-            await loadData()
-        }
-        .refreshable {
-            await loadData()
-        }
+        .task { await loadData() }
+        .refreshable { await loadData() }
     }
-    
+
     private func loadData() async {
         isLoading = true
         error = nil
-        
         do {
             alerts = try await WatchAPIService.shared.fetchAlerts()
         } catch {
             self.error = error.localizedDescription
         }
-        
         isLoading = false
     }
-    
+
     private func iconForCategory(_ category: String?) -> String {
         switch category {
         case "adsb_alert": return "airplane"
@@ -83,14 +93,14 @@ struct AlertsView: View {
         default: return "bell"
         }
     }
-    
+
     private func colorForCategory(_ category: String?) -> Color {
         switch category {
-        case "adsb_alert": return .blue
-        case "acars_alert": return .orange
-        case "weather_alert": return .yellow
-        case "satellite": return .pink
-        default: return .gray
+        case "adsb_alert": return WatchLabTheme.blue
+        case "acars_alert": return WatchLabTheme.orange
+        case "weather_alert": return WatchLabTheme.cyan
+        case "satellite": return WatchLabTheme.violet
+        default: return WatchLabTheme.secondary
         }
     }
 }

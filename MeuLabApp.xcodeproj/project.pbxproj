@@ -107,6 +107,13 @@
 		W012 /* MeuLabWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = W100 /* MeuLabWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		W013 /* WatchAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = W113 /* WatchAPIService.swift */; };
 		W014 /* WatchModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = W114 /* WatchModels.swift */; };
+		WN02 /* WatchAudioPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN01 /* WatchAudioPlayer.swift */; };
+		WN04 /* WatchRemoteControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN03 /* WatchRemoteControlView.swift */; };
+		WN06 /* WatchAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN05 /* WatchAnalyticsView.swift */; };
+		WN08 /* WatchBibleView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN07 /* WatchBibleView.swift */; };
+		WN10 /* WatchTuyaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN09 /* WatchTuyaView.swift */; };
+		WN12 /* MeuLabComplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN11 /* MeuLabComplications.swift */; };
+		WN14 /* MeuLabSmartStackWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN15 /* MeuLabSmartStackWidgets.swift */; };
 
 			EAFD3BB6506D4F608EF69453 /* Secrets.plist in Sources */ = {isa = PBXBuildFile; fileRef = 51ADBBAD15B948D0924D9825 /* Secrets.plist */; };/* End PBXBuildFile section */
 
@@ -159,6 +166,28 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXCopyFilesBuildPhase section */
+
+/* Begin PBXShellScriptBuildPhase section */
+		WW901 /* Normalize Embedded Watch Info */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Normalize Embedded Watch Info";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "WATCH_PLIST=\"${TARGET_BUILD_DIR}/${WRAPPER_NAME}/Watch/MeuLabWatch.app/Info.plist\"\nif [ -f \"$WATCH_PLIST\" ]; then\n  /usr/libexec/PlistBuddy -c \"Delete :UIDeviceFamily\" \"$WATCH_PLIST\" >/dev/null 2>&1 || true\n  /usr/libexec/PlistBuddy -c \"Add :UIDeviceFamily array\" \"$WATCH_PLIST\"\n  /usr/libexec/PlistBuddy -c \"Add :UIDeviceFamily:0 integer 4\" \"$WATCH_PLIST\"\nfi\n";
+		};
+/* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXFileReference section */
 		BIBI01 /* BibleReadingIntents.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BibleReadingIntents.swift; sourceTree = "<group>"; };
@@ -262,6 +291,13 @@
 		W112 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		W113 /* WatchAPIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAPIService.swift; sourceTree = "<group>"; };
 		W114 /* WatchModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchModels.swift; sourceTree = "<group>"; };
+		WN01 /* WatchAudioPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAudioPlayer.swift; sourceTree = "<group>"; };
+		WN03 /* WatchRemoteControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchRemoteControlView.swift; sourceTree = "<group>"; };
+		WN05 /* WatchAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchAnalyticsView.swift; sourceTree = "<group>"; };
+		WN07 /* WatchBibleView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchBibleView.swift; sourceTree = "<group>"; };
+		WN09 /* WatchTuyaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTuyaView.swift; sourceTree = "<group>"; };
+		WN11 /* MeuLabComplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabComplications.swift; sourceTree = "<group>"; };
+		WN15 /* MeuLabSmartStackWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabSmartStackWidgets.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -528,10 +564,20 @@
 				W302 /* Views */,
 				W303 /* Services */,
 				W304 /* Models */,
+				WN13 /* Complications */,
 				F7CE38A82F14AF0B00EF7A25 /* EnhancedWatchContentView.swift */,
 				F71A10232F2FB5780048CED8 /* WatchRadioView.swift */,
 			);
 			path = MeuLabWatch;
+			sourceTree = "<group>";
+		};
+		WN13 /* Complications */ = {
+			isa = PBXGroup;
+			children = (
+				WN11 /* MeuLabComplications.swift */,
+				WN15 /* MeuLabSmartStackWidgets.swift */,
+			);
+			path = Complications;
 			sourceTree = "<group>";
 		};
 		W302 /* Views */ = {
@@ -545,6 +591,10 @@
 				W108 /* WatchInfraView.swift */,
 				W109 /* WatchWeatherView.swift */,
 				W110 /* WatchSatDumpView.swift */,
+				WN03 /* WatchRemoteControlView.swift */,
+				WN05 /* WatchAnalyticsView.swift */,
+				WN07 /* WatchBibleView.swift */,
+				WN09 /* WatchTuyaView.swift */,
 			);
 			path = Views;
 			sourceTree = "<group>";
@@ -553,6 +603,7 @@
 			isa = PBXGroup;
 			children = (
 				W113 /* WatchAPIService.swift */,
+				WN01 /* WatchAudioPlayer.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -576,6 +627,7 @@
 				200 /* Frameworks */,
 				402 /* Resources */,
 				W300 /* Embed Watch Content */,
+				WW901 /* Normalize Embedded Watch Info */,
 				F79572282F1347AC0058B81B /* Embed Foundation Extensions */,
 			);
 			buildRules = (
@@ -721,7 +773,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				F7803D612F4A9A7B001C8722 /* Secrets.plist in Resources */,
-				016 /* Assets.xcassets in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -849,6 +900,13 @@
 				W013 /* WatchAPIService.swift in Sources */,
 				W014 /* WatchModels.swift in Sources */,
 				3909786604B94EE5BE1AD25A /* MeuLabWatch/Services/WatchSecrets.swift in Sources */,
+				WN02 /* WatchAudioPlayer.swift in Sources */,
+				WN04 /* WatchRemoteControlView.swift in Sources */,
+				WN06 /* WatchAnalyticsView.swift in Sources */,
+				WN08 /* WatchBibleView.swift in Sources */,
+				WN10 /* WatchTuyaView.swift in Sources */,
+				WN12 /* MeuLabComplications.swift in Sources */,
+				WN14 /* MeuLabSmartStackWidgets.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -912,7 +970,7 @@
 				DEVELOPMENT_TEAM = 7KGNMD6RBY;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
@@ -979,7 +1037,7 @@
 				DEVELOPMENT_TEAM = 7KGNMD6RBY;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
-				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
 				GCC_C_LANGUAGE_STANDARD = gnu17;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
@@ -1217,7 +1275,7 @@
 		W702 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = WatchHostIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
@@ -1246,7 +1304,7 @@
 		W703 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_APPICON_NAME = WatchHostIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;

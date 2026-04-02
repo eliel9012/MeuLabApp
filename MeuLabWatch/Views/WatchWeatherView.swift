@@ -1,92 +1,124 @@
 import SwiftUI
 
-/// Detalhes do Clima para watchOS
 struct WatchWeatherView: View {
     @State private var isLoading = true
     @State private var weather: WatchWeatherData?
     @State private var error: String?
-    
+
     var body: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                if isLoading {
-                    ProgressView("Carregando...")
-                } else if let error {
-                    ErrorView(message: error) {
-                        Task { await loadData() }
-                    }
-                } else if let weather {
-                    // Clima atual
-                    if let current = weather.current {
-                        VStack(spacing: 4) {
+        WatchLabScreen(title: "Clima", icon: "cloud.sun.fill", tint: WatchLabTheme.cyan) {
+            if isLoading {
+                WatchLabPanel(tint: WatchLabTheme.cyan) {
+                    WatchLabStateView(
+                        icon: "cloud.sun",
+                        title: "Atualizando",
+                        subtitle: "Buscando condição atual e previsão.",
+                        tint: WatchLabTheme.cyan,
+                        actionTitle: nil,
+                        action: nil
+                    )
+                }
+            } else if let error {
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    WatchLabStateView(
+                        icon: "wifi.exclamationmark",
+                        title: "Falha",
+                        subtitle: error,
+                        tint: WatchLabTheme.red,
+                        actionTitle: "Tentar",
+                        action: { Task { await loadData() } }
+                    )
+                }
+            } else if let weather {
+                if let current = weather.current {
+                    WatchLabPanel(tint: weatherTint(current.condition)) {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Agora")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(WatchLabTheme.ink)
+                                Text("\(Int(current.temperature))°C")
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundStyle(WatchLabTheme.ink)
+                                Text(current.condition)
+                                    .font(.caption2)
+                                    .foregroundStyle(WatchLabTheme.secondary)
+                            }
+
+                            Spacer()
+
                             Image(systemName: iconForCondition(current.condition))
-                                .font(.largeTitle)
-                                .foregroundStyle(colorForCondition(current.condition))
-                            
-                            Text("\(Int(current.temperature))°C")
-                                .font(.title2)
-                                .fontWeight(.bold)
-                            
-                            Text(current.condition)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .font(.system(size: 22, weight: .semibold))
+                                .foregroundStyle(weatherTint(current.condition))
                         }
-                        
-                        // Detalhes
-                        VStack(spacing: 6) {
+
+                        HStack(spacing: 8) {
                             if let humidity = current.humidity {
-                                WeatherDetailRow(icon: "humidity", label: "Umidade", value: "\(humidity)%")
+                                WatchLabMetricPill(
+                                    title: "Umidade",
+                                    value: "\(humidity)%",
+                                    tint: WatchLabTheme.blue,
+                                    icon: "humidity"
+                                )
                             }
-                            if let wind = current.windSpeed {
-                                WeatherDetailRow(icon: "wind", label: "Vento", value: String(format: "%.0f km/h", wind))
-                            }
-                        }
-                    }
-                    
-                    // Previsão
-                    if let forecast = weather.forecast, !forecast.isEmpty {
-                        Divider()
-                        
-                        Text("Previsão")
-                            .font(.caption)
-                            .fontWeight(.semibold)
-                        
-                        ForEach(forecast.prefix(3)) { day in
-                            HStack {
-                                Text(day.date)
-                                    .font(.caption2)
-                                Spacer()
-                                Text("\(Int(day.tempMin))° / \(Int(day.tempMax))°")
-                                    .font(.caption2)
+
+                            if let wind = current.windKmh {
+                                WatchLabMetricPill(
+                                    title: "Vento",
+                                    value: "\(wind) km/h",
+                                    tint: WatchLabTheme.cyan,
+                                    icon: "wind"
+                                )
                             }
                         }
                     }
                 }
+
+                if let forecast = weather.forecast, !forecast.isEmpty {
+                    WatchLabPanel(tint: WatchLabTheme.blue) {
+                        Text("Próximos dias")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(WatchLabTheme.ink)
+
+                        ForEach(forecast.prefix(3)) { day in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(day.date)
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(WatchLabTheme.ink)
+                                    Text(day.condition)
+                                        .font(.system(size: 10, weight: .medium))
+                                        .foregroundStyle(WatchLabTheme.secondary)
+                                        .lineLimit(1)
+                                }
+
+                                Spacer()
+
+                                Text("\(Int(day.tempMin))° / \(Int(day.tempMax))°")
+                                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .foregroundStyle(WatchLabTheme.ink)
+                            }
+                            .padding(.vertical, 3)
+                        }
+                    }
+                }
             }
-            .padding(.horizontal)
         }
-        .navigationTitle("Clima")
-        .task {
-            await loadData()
-        }
-        .refreshable {
-            await loadData()
-        }
+        .task { await loadData() }
+        .refreshable { await loadData() }
     }
-    
+
     private func loadData() async {
         isLoading = true
         error = nil
-        
         do {
             weather = try await WatchAPIService.shared.fetchWeather()
         } catch {
             self.error = error.localizedDescription
         }
-        
         isLoading = false
     }
-    
+
     private func iconForCondition(_ condition: String) -> String {
         let c = condition.lowercased()
         if c.contains("sun") || c.contains("clear") || c.contains("limpo") { return "sun.max.fill" }
@@ -95,34 +127,15 @@ struct WatchWeatherView: View {
         if c.contains("storm") || c.contains("tempest") { return "cloud.bolt.fill" }
         return "cloud.sun.fill"
     }
-    
-    private func colorForCondition(_ condition: String) -> Color {
-        let c = condition.lowercased()
-        if c.contains("sun") || c.contains("clear") || c.contains("limpo") { return .yellow }
-        if c.contains("rain") || c.contains("chuva") { return .blue }
-        if c.contains("storm") { return .purple }
-        return .gray
-    }
-}
 
-/// Linha de detalhe do clima
-struct WeatherDetailRow: View {
-    let icon: String
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .frame(width: 20)
-                .foregroundStyle(.blue)
-            Text(label)
-                .font(.caption)
-            Spacer()
-            Text(value)
-                .font(.caption)
-                .fontWeight(.medium)
+    private func weatherTint(_ condition: String) -> Color {
+        let c = condition.lowercased()
+        if c.contains("sun") || c.contains("clear") || c.contains("limpo") {
+            return WatchLabTheme.orange
         }
+        if c.contains("rain") || c.contains("chuva") { return WatchLabTheme.blue }
+        if c.contains("storm") || c.contains("tempest") { return WatchLabTheme.violet }
+        return WatchLabTheme.cyan
     }
 }
 

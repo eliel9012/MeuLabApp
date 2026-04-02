@@ -1,100 +1,152 @@
 import SwiftUI
 
-/// Detalhes ADS-B para watchOS
 struct WatchADSBView: View {
     @State private var isLoading = true
     @State private var summary: WatchADSBData?
     @State private var aircraft: [WatchAircraft] = []
+    @State private var highlights: WatchADSBHighlights?
     @State private var error: String?
-    
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                if isLoading {
-                    ProgressView("Carregando...")
-                        .frame(maxWidth: .infinity)
-                } else if let error {
-                    ErrorView(message: error) {
-                        Task { await loadData() }
-                    }
-                } else {
-                    // Contadores
-                    if let summary {
-                        HStack {
-                            StatItem(value: "\(summary.totalNow)", label: "No ar")
-                            StatItem(value: "\(summary.withPos)", label: "Com pos.")
-                        }
-                        
-                        Divider()
-                    }
-                    
-                    // Lista de aeronaves
-                    Text("Próximas")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                    
-                    if aircraft.isEmpty {
-                        Text("Nenhuma aeronave")
-                            .font(.caption2)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        ForEach(aircraft) { ac in
-                            HStack(spacing: 8) {
-                                // Logo
-                                if let logoURL = WatchAirlineLogo.url(fromCallsign: ac.callsign) ?? (ac.airline != nil ? WatchAirlineLogo.url(for: ac.airline!) : nil) {
-                                    AsyncImage(url: logoURL) { phase in
-                                        if let image = phase.image {
-                                            image.resizable().aspectRatio(contentMode: .fit)
-                                        } else {
-                                            Color.clear
-                                        }
-                                    }
-                                    .frame(width: 24, height: 24)
-                                    .clipShape(RoundedRectangle(cornerRadius: 4))
-                                } else {
-                                    Image(systemName: "airplane.circle.fill")
-                                        .font(.caption2)
-                                        .foregroundStyle(.blue)
-                                        .frame(width: 24, height: 24)
-                                }
-                                
-                                VStack(alignment: .leading) {
-                                    Text(ac.displayCallsign)
-                                        .font(.caption)
-                                        .fontWeight(.medium)
-                                    
-                                    HStack(spacing: 4) {
-                                        if let airline = ac.airline {
-                                            Text(airline)
-                                                .font(.system(size: 8))
-                                                .foregroundStyle(.blue)
-                                        }
-                                        if let model = ac.model {
-                                            Text(model)
-                                                .font(.caption2)
-                                                .foregroundStyle(.secondary)
-                                        }
-                                    }
-                                }
-                                Spacer()
-                                VStack(alignment: .trailing) {
-                                    Text("\(ac.altitudeFt) ft")
-                                        .font(.caption2)
-                                    if let dist = ac.distanceNm {
-                                        Text(String(format: "%.0f nm", dist))
-                                            .font(.caption2)
-                                            .foregroundStyle(.secondary)
-                                    }
+        WatchLabScreen(title: "ADS-B", icon: "airplane", tint: WatchLabTheme.blue) {
+            if isLoading {
+                WatchLabPanel(tint: WatchLabTheme.blue) {
+                    WatchLabStateView(
+                        icon: "arrow.triangle.2.circlepath",
+                        title: "Atualizando",
+                        subtitle: "Buscando radar local e aeronaves próximas.",
+                        tint: WatchLabTheme.blue,
+                        actionTitle: nil,
+                        action: nil
+                    )
+                }
+            } else if let error {
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    WatchLabStateView(
+                        icon: "wifi.exclamationmark",
+                        title: "Falha",
+                        subtitle: error,
+                        tint: WatchLabTheme.red,
+                        actionTitle: "Tentar",
+                        action: { Task { await loadData() } }
+                    )
+                }
+            } else {
+                if let summary {
+                    WatchLabPanel(tint: WatchLabTheme.blue) {
+                        HStack(alignment: .top) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Radar ao vivo")
+                                    .font(.caption.weight(.semibold))
+                                    .foregroundStyle(WatchLabTheme.ink)
+                                Text("\(summary.totalNow)")
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundStyle(WatchLabTheme.ink)
+                                Text("aeronaves no ar")
+                                    .font(.caption2)
+                                    .foregroundStyle(WatchLabTheme.secondary)
+                            }
+
+                            Spacer()
+
+                            VStack(alignment: .trailing, spacing: 6) {
+                                WatchLabMetricPill(
+                                    title: "Com posição",
+                                    value: "\(summary.withPos)",
+                                    tint: WatchLabTheme.green,
+                                    icon: "location"
+                                )
+
+                                if let nonCivil = summary.nonCivilNow, nonCivil > 0 {
+                                    WatchLabMetricPill(
+                                        title: "Não civil",
+                                        value: "\(nonCivil)",
+                                        tint: WatchLabTheme.violet,
+                                        icon: "shield"
+                                    )
                                 }
                             }
-                            .padding(.vertical, 4)
+                        }
+                    }
+                }
+
+                // Highlights section
+                if let highlights, let highlightList = highlights.highlights, !highlightList.isEmpty
+                {
+                    WatchLabPanel(tint: WatchLabTheme.orange) {
+                        HStack {
+                            Text("Destaques")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(WatchLabTheme.ink)
+                            Spacer()
+                            if let mil = highlights.militaryCount, mil > 0 {
+                                Text("\(mil) militar")
+                                    .font(.system(size: 9, weight: .bold))
+                                    .foregroundStyle(WatchLabTheme.red)
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 2)
+                                    .background(Capsule().fill(WatchLabTheme.red.opacity(0.14)))
+                            }
+                        }
+
+                        ForEach(highlightList.prefix(3)) { hl in
+                            HStack(spacing: 8) {
+                                Circle()
+                                    .fill(highlightColor(hl.category).opacity(0.14))
+                                    .frame(width: 24, height: 24)
+                                    .overlay {
+                                        Image(systemName: highlightIcon(hl.category))
+                                            .font(.system(size: 10, weight: .bold))
+                                            .foregroundStyle(highlightColor(hl.category))
+                                    }
+
+                                VStack(alignment: .leading, spacing: 1) {
+                                    Text(hl.callsign ?? hl.registration ?? hl.id)
+                                        .font(.caption.weight(.semibold))
+                                        .foregroundStyle(WatchLabTheme.ink)
+                                        .lineLimit(1)
+                                    if let reason = hl.reason {
+                                        Text(reason)
+                                            .font(.system(size: 9))
+                                            .foregroundStyle(WatchLabTheme.secondary)
+                                            .lineLimit(1)
+                                    }
+                                }
+
+                                Spacer()
+
+                                if let dist = hl.distanceNm {
+                                    Text(String(format: "%.0f nm", dist))
+                                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                                        .foregroundStyle(WatchLabTheme.secondary)
+                                }
+                            }
+                            .padding(6)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(Color.white.opacity(0.04))
+                            )
+                        }
+                    }
+                }
+
+                WatchLabPanel(tint: WatchLabTheme.cyan) {
+                    Text("Próximas aeronaves")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WatchLabTheme.ink)
+
+                    if aircraft.isEmpty {
+                        Text("Nenhuma aeronave próxima.")
+                            .font(.caption2)
+                            .foregroundStyle(WatchLabTheme.secondary)
+                    } else {
+                        ForEach(aircraft.prefix(5)) { ac in
+                            WatchAircraftRow(aircraft: ac)
                         }
                     }
                 }
             }
-            .padding(.horizontal)
         }
-        .navigationTitle("ADS-B")
         .task {
             await loadData()
         }
@@ -102,60 +154,94 @@ struct WatchADSBView: View {
             await loadData()
         }
     }
-    
+
     private func loadData() async {
         isLoading = true
         error = nil
-        
+
         do {
             async let summaryTask = WatchAPIService.shared.fetchADSBSummary()
             async let aircraftTask = WatchAPIService.shared.fetchAircraftList()
-            
+
             summary = try await summaryTask
-            let list = try await aircraftTask
-            aircraft = list.items
+            aircraft = try await aircraftTask.items
+
+            // Highlights - best effort
+            highlights = try? await WatchAPIService.shared.fetchADSBHighlights()
         } catch {
             self.error = error.localizedDescription
         }
-        
+
         isLoading = false
     }
-}
 
-/// Item de estatística compacto
-struct StatItem: View {
-    let value: String
-    let label: String
-    
-    var body: some View {
-        VStack {
-            Text(value)
-                .font(.title3)
-                .fontWeight(.bold)
-            Text(label)
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+    private func highlightColor(_ category: String?) -> Color {
+        switch category {
+        case "military": return WatchLabTheme.red
+        case "government": return WatchLabTheme.orange
+        case "interesting": return WatchLabTheme.violet
+        case "closest": return WatchLabTheme.green
+        default: return WatchLabTheme.cyan
         }
-        .frame(maxWidth: .infinity)
+    }
+
+    private func highlightIcon(_ category: String?) -> String {
+        switch category {
+        case "military": return "shield.fill"
+        case "government": return "building.columns"
+        case "interesting": return "star.fill"
+        case "closest": return "location.fill"
+        default: return "airplane"
+        }
     }
 }
 
-/// View de erro reutilizável
-struct ErrorView: View {
-    let message: String
-    let retry: () -> Void
-    
+struct WatchAircraftRow: View {
+    let aircraft: WatchAircraft
+
     var body: some View {
-        VStack(spacing: 8) {
-            Image(systemName: "exclamationmark.triangle")
-                .foregroundStyle(.orange)
-            Text(message)
-                .font(.caption2)
-                .multilineTextAlignment(.center)
-            Button("Tentar novamente", action: retry)
-                .font(.caption)
+        HStack(spacing: 8) {
+            Circle()
+                .fill(WatchLabTheme.blue.opacity(0.14))
+                .frame(width: 24, height: 24)
+                .overlay {
+                    Image(systemName: "airplane")
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(WatchLabTheme.blue)
+                }
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(aircraft.displayCallsign)
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(WatchLabTheme.ink)
+                    .lineLimit(1)
+
+                Text(aircraft.model ?? aircraft.airline ?? "Sem modelo")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(WatchLabTheme.secondary)
+                    .lineLimit(1)
+            }
+
+            Spacer()
+
+            VStack(alignment: .trailing, spacing: 1) {
+                Text("\(aircraft.altitudeFt) ft")
+                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .foregroundStyle(WatchLabTheme.ink)
+                Text(aircraft.distanceNm.map { String(format: "%.0f nm", $0) } ?? "--")
+                    .font(.system(size: 10, weight: .medium))
+                    .foregroundStyle(WatchLabTheme.secondary)
+            }
         }
-        .frame(maxWidth: .infinity)
+        .padding(8)
+        .background(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14, style: .continuous)
+                        .strokeBorder(WatchLabTheme.blue.opacity(0.14), lineWidth: 1)
+                )
+        )
     }
 }
 

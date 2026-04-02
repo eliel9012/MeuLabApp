@@ -114,8 +114,10 @@ private struct ADSBPanelBackground: View {
     }
 }
 
-private extension View {
-    func adsbPanel(cornerRadius: CGFloat = 18, highlight: Color = ADSBTheme.radarBlue) -> some View {
+extension View {
+    fileprivate func adsbPanel(cornerRadius: CGFloat = 18, highlight: Color = ADSBTheme.radarBlue)
+        -> some View
+    {
         background(ADSBPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
     }
 }
@@ -127,7 +129,10 @@ private struct ADSBToolbarTitle: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [ADSBTheme.radarGreen.opacity(0.22), ADSBTheme.radarBlue.opacity(0.12)],
+                            colors: [
+                                ADSBTheme.radarGreen.opacity(0.22),
+                                ADSBTheme.radarBlue.opacity(0.12),
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -197,9 +202,13 @@ private struct ADSBSourceChip: View {
 
 struct ADSBView: View {
     @EnvironmentObject var appState: AppState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showAircraftList = false
     @State private var movementSheet: MovementFilter?
     @State private var selectedHighlightAircraft: Aircraft?
+    @State private var selectedAirline: Airline?
+
+    private var isCompactLayout: Bool { horizontalSizeClass == .compact }
 
     var body: some View {
         NavigationStack {
@@ -305,12 +314,12 @@ struct ADSBView: View {
                         Toggle(isOn: $appState.isOpenSkyEnabled) {
                             Label("Tráfego Global (OpenSky)", systemImage: "globe")
                         }
-                        } label: {
-                            Image(systemName: "slider.horizontal.3")
-                                .foregroundStyle(ADSBTheme.radarBlue)
-                                .padding(8)
-                                .background(Circle().fill(ADSBTheme.toolbarBubble))
-                        }
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                            .foregroundStyle(ADSBTheme.radarBlue)
+                            .padding(8)
+                            .background(Circle().fill(ADSBTheme.toolbarBubble))
+                    }
                 }
             }
             .sheet(isPresented: $showAircraftList) {
@@ -337,37 +346,59 @@ struct ADSBView: View {
                 }
                 .presentationDetents([.medium, .large])
             }
+            .fullScreenCover(item: $selectedAirline) { airline in
+                ADSBAirlineFullscreenView(
+                    airline: airline,
+                    aircraft: selectedAirlineAircraft
+                )
+            }
         }
     }
 
     private var trafficScopeBar: some View {
-        HStack(alignment: .center, spacing: 16) {
-            VStack(alignment: .leading, spacing: 10) {
-                HStack(spacing: 10) {
-                    Label("Fonte do Radar", systemImage: "antenna.radiowaves.left.and.right")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(ADSBTheme.ink.opacity(0.82))
+        Group {
+            if isCompactLayout {
+                VStack(alignment: .leading, spacing: 14) {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 10) {
+                                Label(
+                                    "Fonte do Radar",
+                                    systemImage: "antenna.radiowaves.left.and.right"
+                                )
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(ADSBTheme.ink.opacity(0.82))
 
-                    Text(appState.isOpenSkyEnabled ? "EXPANDIDO" : "LOCAL")
-                        .font(.system(size: 10, weight: .black, design: .rounded))
-                        .tracking(1.0)
-                        .foregroundStyle(
-                            appState.isOpenSkyEnabled ? ADSBTheme.radarGreen : ADSBTheme.radarBlue
-                        )
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 5)
-                        .background(
-                            (appState.isOpenSkyEnabled ? ADSBTheme.radarGreen : ADSBTheme.radarBlue)
-                                .opacity(0.14),
-                            in: Capsule()
-                        )
-                }
+                                Text(appState.isOpenSkyEnabled ? "EXPANDIDO" : "LOCAL")
+                                    .font(.system(size: 10, weight: .black, design: .rounded))
+                                    .tracking(1.0)
+                                    .foregroundStyle(
+                                        appState.isOpenSkyEnabled
+                                            ? ADSBTheme.radarGreen : ADSBTheme.radarBlue
+                                    )
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 5)
+                                    .background(
+                                        (appState.isOpenSkyEnabled
+                                            ? ADSBTheme.radarGreen : ADSBTheme.radarBlue)
+                                            .opacity(0.14),
+                                        in: Capsule()
+                                    )
+                            }
 
-                Text("Controle de cobertura e origem dos dados")
-                    .font(.caption)
-                    .foregroundStyle(ADSBTheme.secondaryInk)
+                            Text("Escolha entre radar local e leitura global.")
+                                .font(.caption)
+                                .foregroundStyle(ADSBTheme.secondaryInk)
+                        }
 
-                ViewThatFits(in: .horizontal) {
+                        Spacer(minLength: 0)
+
+                        Toggle("", isOn: $appState.isOpenSkyEnabled)
+                            .labelsHidden()
+                            .tint(ADSBTheme.radarGreen)
+                            .scaleEffect(0.95)
+                    }
+
                     HStack(spacing: 10) {
                         ADSBSourceChip(
                             title: "Radar local",
@@ -383,33 +414,65 @@ struct ADSBView: View {
                             isActive: appState.isOpenSkyEnabled
                         )
                     }
+                }
+            } else {
+                HStack(alignment: .center, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack(spacing: 10) {
+                            Label(
+                                "Fonte do Radar", systemImage: "antenna.radiowaves.left.and.right"
+                            )
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(ADSBTheme.ink.opacity(0.82))
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        ADSBSourceChip(
-                            title: "Radar local",
-                            value: localSourceDetail,
-                            tint: ADSBTheme.radarGreen,
-                            isActive: !appState.isOpenSkyEnabled
-                        )
+                            Text(appState.isOpenSkyEnabled ? "EXPANDIDO" : "LOCAL")
+                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .tracking(1.0)
+                                .foregroundStyle(
+                                    appState.isOpenSkyEnabled
+                                        ? ADSBTheme.radarGreen : ADSBTheme.radarBlue
+                                )
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    (appState.isOpenSkyEnabled
+                                        ? ADSBTheme.radarGreen : ADSBTheme.radarBlue)
+                                        .opacity(0.14),
+                                    in: Capsule()
+                                )
+                        }
 
-                        ADSBSourceChip(
-                            title: "OpenSky",
-                            value: openSkySourceDetail,
-                            tint: ADSBTheme.radarBlue,
-                            isActive: appState.isOpenSkyEnabled
-                        )
+                        Text("Controle de cobertura e origem dos dados")
+                            .font(.caption)
+                            .foregroundStyle(ADSBTheme.secondaryInk)
+
+                        HStack(spacing: 10) {
+                            ADSBSourceChip(
+                                title: "Radar local",
+                                value: localSourceDetail,
+                                tint: ADSBTheme.radarGreen,
+                                isActive: !appState.isOpenSkyEnabled
+                            )
+
+                            ADSBSourceChip(
+                                title: "OpenSky",
+                                value: openSkySourceDetail,
+                                tint: ADSBTheme.radarBlue,
+                                isActive: appState.isOpenSkyEnabled
+                            )
+                        }
                     }
+
+                    Spacer()
+
+                    Toggle("", isOn: $appState.isOpenSkyEnabled)
+                        .labelsHidden()
+                        .tint(ADSBTheme.radarGreen)
+                        .scaleEffect(1.02)
                 }
             }
-
-            Spacer()
-
-            Toggle("", isOn: $appState.isOpenSkyEnabled)
-                .labelsHidden()
-                .tint(ADSBTheme.radarGreen)
-                .scaleEffect(1.02)
         }
-        .padding(18)
+        .padding(isCompactLayout ? 16 : 18)
         .adsbPanel(
             cornerRadius: 22,
             highlight: appState.isOpenSkyEnabled ? ADSBTheme.radarGreen : ADSBTheme.radarBlue
@@ -434,6 +497,18 @@ struct ADSBView: View {
         return appState.adsbSummary?.airlines ?? []
     }
 
+    private var selectedAirlineAircraft: [Aircraft] {
+        guard let selectedAirline else { return [] }
+        let selectedName = selectedAirline.name.trimmingCharacters(in: .whitespacesAndNewlines)
+            .uppercased()
+        guard !selectedName.isEmpty else { return [] }
+
+        return appState.aircraftList.filter { aircraft in
+            aircraft.airline?.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
+                == selectedName
+        }
+    }
+
     private func resolveAircraft(for callsign: String?) -> Aircraft? {
         guard let callsign else { return nil }
         let key = callsign.trimmingCharacters(in: .whitespacesAndNewlines).uppercased()
@@ -450,68 +525,86 @@ struct ADSBView: View {
 
     @ViewBuilder
     private func liveStatsHeader(_ summary: ADSBSummary, countOverride: Int? = nil) -> some View {
-        HStack(spacing: 16) {
-            // Main count with pulse animation
-            VStack(alignment: .leading, spacing: 6) {
-                Text("Radar ao vivo")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(ADSBTheme.radarBlueDeep.opacity(0.62))
-                    .textCase(.uppercase)
+        let total = countOverride ?? summary.totalNow
 
-                HStack(spacing: 8) {
+        VStack(spacing: 0) {
+            HStack(alignment: .center, spacing: 14) {
+                // Large number
+                Text("\(total)")
+                    .font(.system(size: isCompactLayout ? 44 : 52, weight: .bold, design: .rounded))
+                    .monospacedDigit()
+                    .foregroundStyle(ADSBTheme.ink)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    Text("Aeronaves")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(ADSBTheme.ink)
+                    Text("no ar agora")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(ADSBTheme.secondaryInk)
+                }
+
+                Spacer()
+
+                // Live indicator
+                HStack(spacing: 6) {
                     Circle()
                         .fill(ADSBTheme.radarGreen)
-                        .frame(width: 10, height: 10)
-                        .overlay(
-                            Circle()
-                                .stroke(ADSBTheme.radarGreen.opacity(0.35), lineWidth: 10)
-                                .scaleEffect(1.5)
-                        )
-
-                    Text("\(countOverride ?? summary.totalNow)")
-                        .font(.system(size: 42, weight: .bold, design: .rounded))
-                        .monospacedDigit()
-                        .foregroundStyle(ADSBTheme.ink)
+                        .frame(width: 8, height: 8)
+                        .shadow(color: ADSBTheme.radarGreen.opacity(0.6), radius: 4)
+                    Text("LIVE")
+                        .font(.system(size: 10, weight: .black, design: .rounded))
+                        .tracking(1.2)
+                        .foregroundStyle(ADSBTheme.radarGreen)
                 }
-
-                Text("aeronaves no ar")
-                    .font(.subheadline)
-                    .foregroundStyle(ADSBTheme.ink.opacity(0.65))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(ADSBTheme.radarGreen.opacity(0.12), in: Capsule())
             }
 
-            Spacer()
+            Divider()
+                .padding(.vertical, 12)
 
-            // Mini stats
-            VStack(alignment: .trailing, spacing: 8) {
-                HStack(spacing: 4) {
-                    Image(systemName: "location.fill")
-                        .font(.caption)
-                        .foregroundStyle(ADSBTheme.radarGreen)
-                    Text("\(summary.withPos)")
-                        .font(.callout.bold())
-                        .monospacedDigit()
-                        .foregroundStyle(ADSBTheme.ink)
-                    Text("rastreadas")
-                        .font(.caption)
-                        .foregroundStyle(ADSBTheme.ink.opacity(0.55))
-                }
-
-                HStack(spacing: 4) {
-                    Image(systemName: "shield.fill")
-                        .font(.caption)
-                        .foregroundStyle(ADSBTheme.radarBlue)
-                    Text("\(summary.nonCivilNow)")
-                        .font(.callout.bold())
-                        .monospacedDigit()
-                        .foregroundStyle(ADSBTheme.ink)
-                    Text("Não Civil")
-                        .font(.caption)
-                        .foregroundStyle(ADSBTheme.ink.opacity(0.55))
-                }
+            HStack(spacing: 0) {
+                liveMetaPill(icon: "location.north.fill", text: "\(summary.withPos) rastreadas")
+                Spacer()
+                liveMetaPill(icon: "shield.fill", text: "\(summary.nonCivilNow) não civil")
+                Spacer()
+                ADSBSourceChip(
+                    title: "Radar local",
+                    value: localSourceDetail,
+                    tint: ADSBTheme.radarGreen,
+                    isActive: !appState.isOpenSkyEnabled
+                )
             }
         }
-        .padding(20)
-        .adsbPanel(cornerRadius: 24, highlight: ADSBTheme.radarGreen)
+        .padding(isCompactLayout ? 16 : 20)
+        .background {
+            RoundedRectangle(cornerRadius: 24, style: .continuous)
+                .fill(.ultraThinMaterial)
+                .overlay {
+                    LinearGradient(
+                        colors: [
+                            ADSBTheme.radarGreen.opacity(0.08),
+                            ADSBTheme.radarBlue.opacity(0.05),
+                            .clear,
+                        ],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
+                }
+                .overlay {
+                    RoundedRectangle(cornerRadius: 24, style: .continuous)
+                        .strokeBorder(Color.white.opacity(0.35), lineWidth: 1)
+                }
+        }
+    }
+
+    private func liveMetaPill(icon: String, text: String) -> some View {
+        Label(text, systemImage: icon)
+            .font(.caption2.weight(.semibold))
+            .foregroundStyle(ADSBTheme.secondaryInk)
     }
 
     // MARK: - Stats Grid
@@ -532,7 +625,8 @@ struct ADSBView: View {
                     icon: "arrow.up.circle.fill",
                     value: "\(summary.movement.climbing)",
                     label: "Subindo",
-                    color: .green
+                    color: .green,
+                    compact: isCompactLayout
                 )
             }
             .buttonStyle(.plain)
@@ -544,7 +638,8 @@ struct ADSBView: View {
                     icon: "arrow.down.circle.fill",
                     value: "\(summary.movement.descending)",
                     label: "Descendo",
-                    color: .orange
+                    color: .orange,
+                    compact: isCompactLayout
                 )
             }
             .buttonStyle(.plain)
@@ -556,14 +651,15 @@ struct ADSBView: View {
                     icon: "arrow.right.circle.fill",
                     value: "\(summary.movement.cruising)",
                     label: "Cruzeiro",
-                    color: .blue
+                    color: .blue,
+                    compact: isCompactLayout
                 )
             }
             .buttonStyle(.plain)
         }
 
         // Averages row
-        HStack(spacing: 12) {
+        HStack(spacing: 10) {
             AverageStatCard(
                 icon: "airplane.departure",
                 title: "Altitude Média",
@@ -653,7 +749,15 @@ struct ADSBView: View {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 10) {
                     ForEach(airlines) { airline in
-                        AirlineChip(airline: airline)
+                        Button {
+                            selectedAirline = airline
+                        } label: {
+                            AirlineChip(
+                                airline: airline,
+                                isSelected: selectedAirline?.id == airline.id
+                            )
+                        }
+                        .buttonStyle(.plain)
                     }
                 }
             }
@@ -1189,31 +1293,54 @@ struct MiniStatCard: View {
     let value: String
     let label: String
     let color: Color
+    var compact = false
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: compact ? 6 : 10) {
             ZStack {
                 Circle()
-                    .fill(color.opacity(0.14))
-                    .frame(width: 42, height: 42)
+                    .fill(
+                        LinearGradient(
+                            colors: [color.opacity(0.20), color.opacity(0.08)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: compact ? 36 : 44, height: compact ? 36 : 44)
 
                 Image(systemName: icon)
-                    .font(.title3.weight(.semibold))
+                    .font(.system(size: compact ? 15 : 18, weight: .semibold))
                     .foregroundStyle(color)
             }
 
             Text(value)
-                .font(.title2.bold())
+                .font(.system(size: compact ? 22 : 26, weight: .bold, design: .rounded))
                 .monospacedDigit()
                 .foregroundStyle(ADSBTheme.ink)
+                .minimumScaleFactor(0.8)
 
             Text(label)
-                .font(.caption)
+                .font(.caption2.weight(.medium))
                 .foregroundStyle(ADSBTheme.secondaryInk)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 16)
-        .adsbPanel(cornerRadius: 18, highlight: color)
+        .padding(.vertical, compact ? 12 : 16)
+        .padding(.horizontal, compact ? 6 : 8)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(.secondarySystemGroupedBackground),
+                    color.opacity(compact ? 0.06 : 0.04),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .strokeBorder(color.opacity(compact ? 0.18 : 0.10), lineWidth: 1)
+        )
     }
 }
 
@@ -1226,36 +1353,86 @@ struct AverageStatCard: View {
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
-                Circle()
-                    .fill(ADSBTheme.radarBlue.opacity(0.12))
+                RoundedRectangle(cornerRadius: 12, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                ADSBTheme.radarBlue.opacity(0.14),
+                                ADSBTheme.radarBlue.opacity(0.06),
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
                     .frame(width: 40, height: 40)
 
                 Image(systemName: icon)
-                    .font(.title3.weight(.semibold))
+                    .font(.system(size: 16, weight: .semibold))
                     .foregroundStyle(ADSBTheme.radarBlue)
             }
-            .frame(width: 40)
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption)
-                    .foregroundStyle(ADSBTheme.secondaryInk)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(ADSBTheme.tertiaryInk)
 
                 Text(value)
-                    .font(.headline)
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
                     .monospacedDigit()
                     .foregroundStyle(ADSBTheme.ink)
+                    .minimumScaleFactor(0.7)
+                    .lineLimit(1)
 
                 Text(subtitle)
-                    .font(.caption2)
+                    .font(.caption2.weight(.medium))
                     .foregroundStyle(ADSBTheme.tertiaryInk)
+                    .lineLimit(1)
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
         .padding(14)
         .frame(maxWidth: .infinity)
-        .adsbPanel(cornerRadius: 18, highlight: ADSBTheme.radarBlue)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .strokeBorder(ADSBTheme.radarBlue.opacity(0.08), lineWidth: 1)
+        )
+    }
+}
+
+private struct ADSBStatusPill: View {
+    let title: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Circle()
+                .fill(tint)
+                .frame(width: 8, height: 8)
+
+            VStack(alignment: .leading, spacing: 1) {
+                Text(title)
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(ADSBTheme.secondaryInk)
+
+                Text(value)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(ADSBTheme.ink)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 10)
+        .background(
+            Capsule()
+                .fill(tint.opacity(0.12))
+        )
+        .overlay(
+            Capsule()
+                .strokeBorder(tint.opacity(0.18), lineWidth: 1)
+        )
     }
 }
 
@@ -1303,6 +1480,7 @@ struct HighlightRowApple: View {
 
 struct AirlineChip: View {
     let airline: Airline
+    var isSelected: Bool = false
 
     var body: some View {
         HStack(spacing: 8) {
@@ -1348,7 +1526,18 @@ struct AirlineChip: View {
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .adsbPanel(cornerRadius: 14, highlight: ADSBTheme.radarBlue)
+        .scaleEffect(isSelected ? 1.02 : 1)
+        .adsbPanel(
+            cornerRadius: 14, highlight: isSelected ? ADSBTheme.radarGreen : ADSBTheme.radarBlue
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(
+                    (isSelected ? ADSBTheme.radarGreen : ADSBTheme.radarBlue).opacity(
+                        isSelected ? 0.34 : 0),
+                    lineWidth: 1.2
+                )
+        )
     }
 }
 
@@ -1510,6 +1699,254 @@ struct AircraftListSheet: View {
                 }
             }
         }
+    }
+}
+
+struct ADSBAirlineFullscreenView: View {
+    let airline: Airline
+    let aircraft: [Aircraft]
+
+    @Environment(\.dismiss) private var dismiss
+    @State private var selectedAircraft: Aircraft?
+
+    private var climbingCount: Int {
+        aircraft.filter { $0.verticalRateFpm > 256 }.count
+    }
+
+    private var descendingCount: Int {
+        aircraft.filter { $0.verticalRateFpm < -256 }.count
+    }
+
+    private var cruisingCount: Int {
+        aircraft.filter { abs($0.verticalRateFpm) <= 256 }.count
+    }
+
+    private var averageAltitude: Int {
+        guard !aircraft.isEmpty else { return 0 }
+        return aircraft.map(\.altitudeFt).reduce(0, +) / aircraft.count
+    }
+
+    private var averageSpeed: Int {
+        guard !aircraft.isEmpty else { return 0 }
+        return aircraft.map(\.speedKt).reduce(0, +) / aircraft.count
+    }
+
+    private var sortedAircraft: [Aircraft] {
+        aircraft.sorted { lhs, rhs in
+            let left =
+                lhs.computedDistanceNm < 900000
+                ? lhs.computedDistanceNm : Double.greatestFiniteMagnitude
+            let right =
+                rhs.computedDistanceNm < 900000
+                ? rhs.computedDistanceNm : Double.greatestFiniteMagnitude
+            if left != right { return left < right }
+            return lhs.displayCallsign < rhs.displayCallsign
+        }
+    }
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                LazyVStack(spacing: 20) {
+                    VStack(alignment: .leading, spacing: 18) {
+                        HStack(alignment: .center, spacing: 14) {
+                            AirlineHeaderBadge(airline: airline, size: 54)
+
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(airline.name)
+                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .foregroundStyle(ADSBTheme.ink)
+
+                                Text("\(sortedAircraft.count) aeronaves monitoradas agora")
+                                    .font(.subheadline)
+                                    .foregroundStyle(ADSBTheme.secondaryInk)
+                            }
+
+                            Spacer(minLength: 0)
+                        }
+
+                        LazyVGrid(
+                            columns: [
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12),
+                                GridItem(.flexible(), spacing: 12),
+                            ],
+                            spacing: 12
+                        ) {
+                            MiniStatCard(
+                                icon: "arrow.up.circle.fill",
+                                value: "\(climbingCount)",
+                                label: "Subindo",
+                                color: .green
+                            )
+
+                            MiniStatCard(
+                                icon: "arrow.down.circle.fill",
+                                value: "\(descendingCount)",
+                                label: "Descendo",
+                                color: .orange
+                            )
+
+                            MiniStatCard(
+                                icon: "arrow.right.circle.fill",
+                                value: "\(cruisingCount)",
+                                label: "Cruzeiro",
+                                color: .blue
+                            )
+                        }
+
+                        HStack(spacing: 12) {
+                            AverageStatCard(
+                                icon: "airplane.departure",
+                                title: "Altitude Média",
+                                value: Formatters.altitudeDual(averageAltitude).aviation,
+                                subtitle: Formatters.altitudeDual(averageAltitude).metric
+                            )
+
+                            AverageStatCard(
+                                icon: "gauge.with.needle.fill",
+                                title: "Velocidade Média",
+                                value: Formatters.speedDual(averageSpeed).aviation,
+                                subtitle: Formatters.speedDual(averageSpeed).metric
+                            )
+                        }
+                    }
+                    .padding(20)
+                    .adsbPanel(cornerRadius: 24, highlight: ADSBTheme.radarBlue)
+
+                    VStack(alignment: .leading, spacing: 12) {
+                        HStack {
+                            SectionHeader(title: "Aeronaves da Companhia", icon: "airplane")
+                            Spacer()
+                            Text("\(sortedAircraft.count)")
+                                .font(.subheadline.weight(.bold))
+                                .foregroundStyle(ADSBTheme.radarBlue)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(
+                                    Capsule()
+                                        .fill(ADSBTheme.radarBlue.opacity(0.10))
+                                )
+                        }
+
+                        if sortedAircraft.isEmpty {
+                            ContentUnavailableView(
+                                "Sem aeronaves ativas",
+                                systemImage: "airplane.circle",
+                                description: Text(
+                                    "A companhia não tem voos monitorados neste momento.")
+                            )
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 40)
+                            .adsbPanel(cornerRadius: 20, highlight: ADSBTheme.radarBlue)
+                        } else {
+                            VStack(spacing: 0) {
+                                ForEach(Array(sortedAircraft.enumerated()), id: \.element.id) {
+                                    index, aircraft in
+                                    Button {
+                                        selectedAircraft = aircraft
+                                    } label: {
+                                        AircraftRowApple(aircraft: aircraft)
+                                            .contentShape(Rectangle())
+                                    }
+                                    .buttonStyle(.plain)
+
+                                    if index < sortedAircraft.count - 1 {
+                                        Divider().padding(.leading, 56)
+                                    }
+                                }
+                            }
+                            .padding(16)
+                            .adsbPanel(cornerRadius: 20, highlight: ADSBTheme.radarBlue)
+                        }
+                    }
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 24)
+            }
+            .background {
+                ZStack {
+                    LinearGradient(
+                        colors: [ADSBTheme.cloud, ADSBTheme.canvasMid, ADSBTheme.canvasEnd],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+
+                    RadialGradient(
+                        colors: [ADSBTheme.radarBlue.opacity(0.12), .clear],
+                        center: .topLeading,
+                        startRadius: 20,
+                        endRadius: 420
+                    )
+
+                    RadialGradient(
+                        colors: [ADSBTheme.radarGreen.opacity(0.10), .clear],
+                        center: .topTrailing,
+                        startRadius: 30,
+                        endRadius: 360
+                    )
+                }
+                .ignoresSafeArea()
+            }
+            .navigationTitle(airline.name)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button("Fechar") {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .sheet(item: $selectedAircraft) { aircraft in
+            NavigationStack {
+                AircraftDetailView(ac: aircraft)
+                    .navigationTitle(aircraft.displayCallsign)
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Fechar") {
+                                selectedAircraft = nil
+                            }
+                        }
+                    }
+            }
+            .presentationDetents([.medium, .large])
+        }
+    }
+}
+
+private struct AirlineHeaderBadge: View {
+    let airline: Airline
+    let size: CGFloat
+
+    var body: some View {
+        if let logoURL = airline.logoURL {
+            AsyncImage(url: logoURL) { phase in
+                switch phase {
+                case .success(let image):
+                    image
+                        .resizable()
+                        .aspectRatio(contentMode: .fit)
+                default:
+                    fallback
+                }
+            }
+            .frame(width: size, height: size)
+        } else {
+            fallback
+                .frame(width: size, height: size)
+        }
+    }
+
+    private var fallback: some View {
+        Circle()
+            .fill(ADSBTheme.radarBlue.opacity(0.12))
+            .overlay(
+                Text(String(airline.name.prefix(1)))
+                    .font(.headline.bold())
+                    .foregroundStyle(ADSBTheme.radarBlue)
+            )
     }
 }
 

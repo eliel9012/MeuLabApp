@@ -1,5 +1,5 @@
-import Foundation
 import CoreLocation
+import Foundation
 
 enum APIError: Error, LocalizedError {
     case invalidURL
@@ -34,6 +34,10 @@ actor APIService {
     private let gpsGlobeBaseURL = "https://gps.meulab.fun"
     private let apiToken = Secrets.apiToken.isEmpty ? Secrets.apiTokenAlternative : Secrets.apiToken
 
+    // API2 (app2.meulab.fun - satellite/orbcomm dedicated server)
+    private let api2BaseURL = Secrets.api2BaseURL
+    private let api2Token = Secrets.api2Token
+
     // AviationStack (Flight Routes)
     private let aviationStackBaseURL = "http://api.aviationstack.com/v1"
     private let aviationStackKey = "SUA_KEY_AQUI"
@@ -59,9 +63,9 @@ actor APIService {
         config.waitsForConnectivity = false
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         self.session = URLSession(configuration: config)
-        
+
         #if DEBUG
-        Secrets.debugPrintStatus()
+            Secrets.debugPrintStatus()
         #endif
     }
 
@@ -90,7 +94,9 @@ actor APIService {
         return request
     }
 
-    private func performRequest(_ request: URLRequest, retries: Int = 1) async throws -> (Data, HTTPURLResponse) {
+    private func performRequest(_ request: URLRequest, retries: Int = 1) async throws -> (
+        Data, HTTPURLResponse
+    ) {
         var attempt = 0
         var lastError: Error?
         let currentRequest = request
@@ -163,6 +169,54 @@ actor APIService {
         }
     }
 
+    // MARK: - API2 Request Helpers
+
+    private func makeAPI2Request(path: String) throws -> URLRequest {
+        guard let url = URL(string: "\(api2BaseURL)\(path)") else {
+            throw APIError.invalidURL
+        }
+
+        var request = URLRequest(url: url)
+        if !api2Token.isEmpty {
+            request.setValue("Bearer \(api2Token)", forHTTPHeaderField: "Authorization")
+        }
+        request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        return request
+    }
+
+    private func fetchAPI2<T: Decodable>(_ path: String) async throws -> T {
+        let request = try makeAPI2Request(path: path)
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    private func postAPI2<T: Decodable>(_ path: String) async throws -> T {
+        var request = try makeAPI2Request(path: path)
+        request.httpMethod = "POST"
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
+    private func deleteAPI2<T: Decodable>(_ path: String) async throws -> T {
+        var request = try makeAPI2Request(path: path)
+        request.httpMethod = "DELETE"
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
     // MARK: - General
 
     func fetchHealth() async throws -> HealthResponse {
@@ -195,8 +249,14 @@ actor APIService {
         try await fetch("/api/adsb/alerts")
     }
 
-    func fetchTuyaTemperatureHumidity(historyLimit: Int = 12) async throws -> TuyaTemperatureHumidityResponse {
-        try await fetch("/api/tuya/temperature-humidity?history_limit=\(historyLimit)")
+    func fetchTuyaTemperatureHumidity(historyLimit: Int = 12) async throws
+        -> TuyaTemperatureHumidityResponse
+    {
+        try await fetchAPI2("/api/tuya/temperature-humidity?history_limit=\(historyLimit)")
+    }
+
+    func fetchTuyaStatus() async throws -> TuyaStatusResponse {
+        try await fetchAPI2("/api/tuya/status")
     }
 
     func fetchADSBLolResponse() async throws -> ADSBLolResponse {
@@ -215,22 +275,28 @@ actor APIService {
             query.append("hex=\(encoded)")
         }
         if let registration, !registration.isEmpty {
-            let encoded = registration.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? registration
+            let encoded =
+                registration.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+                ?? registration
             query.append("registration=\(encoded)")
         }
         if let callsign, !callsign.isEmpty {
-            let encoded = callsign.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? callsign
+            let encoded =
+                callsign.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? callsign
             query.append("callsign=\(encoded)")
         }
         if let model, !model.isEmpty {
-            let encoded = model.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? model
+            let encoded =
+                model.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? model
             query.append("model=\(encoded)")
         }
         let suffix = query.isEmpty ? "" : "?" + query.joined(separator: "&")
         return try await fetch("/api/adsb/airline_classification\(suffix)")
     }
 
-    func saveAirlineClassification(_ payload: AirlineClassificationUpsertRequest) async throws -> AirlineClassificationUpsertResponse {
+    func saveAirlineClassification(_ payload: AirlineClassificationUpsertRequest) async throws
+        -> AirlineClassificationUpsertResponse
+    {
         var request = try makeRequest(path: "/api/adsb/airline_classification")
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
@@ -238,7 +304,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+            (200...299).contains(httpResponse.statusCode)
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
         return try JSONDecoder().decode(AirlineClassificationUpsertResponse.self, from: data)
@@ -256,7 +323,9 @@ actor APIService {
         try await fetch("/api/firestick/devices")
     }
 
-    func fetchFirestickStatus(id: String? = nil, force: Bool = false) async throws -> FirestickStatusResponse {
+    func fetchFirestickStatus(id: String? = nil, force: Bool = false) async throws
+        -> FirestickStatusResponse
+    {
         var path = "/api/firestick/status"
         var query: [String] = []
         if let id, !id.isEmpty {
@@ -310,15 +379,21 @@ actor APIService {
         return try await fetch("/api/docker/status?health=\(healthValue)")
     }
 
-    func fetchDockerLogs(container: String, tail: Int = 200, since: Int = 0) async throws -> DockerLogsResponse {
-        guard let encoded = container.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+    func fetchDockerLogs(container: String, tail: Int = 200, since: Int = 0) async throws
+        -> DockerLogsResponse
+    {
+        guard let encoded = container.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             throw APIError.invalidURL
         }
         return try await fetch("/api/docker/logs?container=\(encoded)&tail=\(tail)&since=\(since)")
     }
 
-    func fetchDockerLogsRaw(container: String, tail: Int = 200, since: Int = 3600) async throws -> String {
-        guard let encoded = container.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+    func fetchDockerLogsRaw(container: String, tail: Int = 200, since: Int = 3600) async throws
+        -> String
+    {
+        guard let encoded = container.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             throw APIError.invalidURL
         }
         let path = "/api/docker/logs?container=\(encoded)&tail=\(tail)&since=\(since)"
@@ -336,15 +411,23 @@ actor APIService {
         try await fetch("/api/weather/current?lat=\(lat)&lon=\(lon)")
     }
 
-    // MARK: - Radio
+    // MARK: - Radio (via API2)
 
     func fetchNowPlaying() async throws -> NowPlaying {
-        try await fetch("/api/radio/now-playing")
+        try await fetchAPI2("/api/radio/now-playing")
     }
 
     func fetchRadioHistory(limit: Int = 50) async throws -> RadioHistoryResponse {
         let clamped = max(1, min(200, limit))
-        return try await fetch("/api/radio/history?limit=\(clamped)")
+        return try await fetchAPI2("/api/radio/history?limit=\(clamped)")
+    }
+
+    func fetchRadioStatus() async throws -> RadioStatusResponse {
+        try await fetchAPI2("/api/radio/status")
+    }
+
+    func fetchRadioStats() async throws -> RadioStatsResponse {
+        try await fetchAPI2("/api/radio/stats")
     }
 
     // MARK: - ACARS
@@ -353,19 +436,26 @@ actor APIService {
         try await fetch("/api/acars/summary")
     }
 
-    func fetchACARSMessages(limit: Int = 20, details: Bool = true, libacars: Bool = true) async throws -> ACARSMessageList {
+    func fetchACARSMessages(limit: Int = 20, details: Bool = true, libacars: Bool = true)
+        async throws -> ACARSMessageList
+    {
         let detailsVal = details ? "1" : "0"
         let libacarsVal = libacars ? "1" : "0"
-        return try await fetch("/api/acars/messages?limit=\(limit)&details=\(detailsVal)&libacars=\(libacarsVal)")
+        return try await fetch(
+            "/api/acars/messages?limit=\(limit)&details=\(detailsVal)&libacars=\(libacarsVal)")
     }
 
-    func searchACARSMessages(query: String, details: Bool = true, libacars: Bool = true) async throws -> ACARSSearchResult {
-        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+    func searchACARSMessages(query: String, details: Bool = true, libacars: Bool = true)
+        async throws -> ACARSSearchResult
+    {
+        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             throw APIError.invalidURL
         }
         let detailsVal = details ? "1" : "0"
         let libacarsVal = libacars ? "1" : "0"
-        return try await fetch("/api/acars/search?q=\(encoded)&details=\(detailsVal)&libacars=\(libacarsVal)")
+        return try await fetch(
+            "/api/acars/search?q=\(encoded)&details=\(detailsVal)&libacars=\(libacarsVal)")
     }
 
     func fetchACARSMessage(id: Int, libacars: Bool = true) async throws -> ACARSMessageResponse {
@@ -400,14 +490,16 @@ actor APIService {
     }
 
     func fetchPassImages(passName: String) async throws -> LastImages {
-        guard let encoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        guard let encoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             throw APIError.invalidURL
         }
         return try await fetch("/api/satdump/pass/images?pass=\(encoded)")
     }
 
     func fetchPassImagesLossless(passName: String) async throws -> LastImages {
-        guard let encoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        guard let encoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             throw APIError.invalidURL
         }
         return try await fetch("/api/satdump/pass/images_lossless?pass=\(encoded)")
@@ -417,7 +509,9 @@ actor APIService {
         try await fetch("/api/satdump/status")
     }
 
-    func cleanupPasses(thresholdMb: Double = 1.0, dryRun: Bool = true) async throws -> PassCleanupResult {
+    func cleanupPasses(thresholdMb: Double = 1.0, dryRun: Bool = true) async throws
+        -> PassCleanupResult
+    {
         let path = "/api/satdump/cleanup?threshold_mb=\(thresholdMb)&dry_run=\(dryRun)"
         var request = try makeRequest(path: path)
         request.httpMethod = "POST"
@@ -425,7 +519,8 @@ actor APIService {
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -448,7 +543,9 @@ actor APIService {
     }
 
     func fetchSatDumpSchedule() async throws -> Data {
-        if let cached = BinaryCache.shared.cachedData(forPath: "/api/satdump/schedule") { return cached }
+        if let cached = BinaryCache.shared.cachedData(forPath: "/api/satdump/schedule") {
+            return cached
+        }
         let data = try await fetchData("/api/satdump/schedule")
         BinaryCache.shared.store(data, forPath: "/api/satdump/schedule")
         return data
@@ -456,18 +553,25 @@ actor APIService {
 
     // MARK: - Meteor Passes
 
-    func fetchMeteorPasses(count: Int = 100, minElevation: Int = 10) async throws -> SatellitePassesResponse {
+    func fetchMeteorPasses(count: Int = 100, minElevation: Int = 10) async throws
+        -> SatellitePassesResponse
+    {
         try await fetch("/api/satdump/meteor/passes?count=\(count)&min_elevation=\(minElevation)")
     }
 
     // MARK: - Orbcomm
 
-    func fetchOrbcommPasses(count: Int = 100, minElevation: Int = 10) async throws -> SatellitePassesResponse {
+    func fetchOrbcommPasses(count: Int = 100, minElevation: Int = 10) async throws
+        -> SatellitePassesResponse
+    {
         try await fetch("/api/satdump/orbcomm/passes?count=\(count)&min_elevation=\(minElevation)")
     }
 
-    func fetchOrbcommNextPasses(count: Int = 10, minElevation: Int = 40) async throws -> SatellitePassesResponse {
-        try await fetch("/api/satdump/orbcomm/next_passes?count=\(count)&min_elevation=\(minElevation)")
+    func fetchOrbcommNextPasses(count: Int = 10, minElevation: Int = 40) async throws
+        -> SatellitePassesResponse
+    {
+        try await fetch(
+            "/api/satdump/orbcomm/next_passes?count=\(count)&min_elevation=\(minElevation)")
     }
 
     func fetchOrbcommRuns(limit: Int = 30) async throws -> OrbcommRunsResponse {
@@ -478,10 +582,13 @@ actor APIService {
         try await fetch("/api/satdump/orbcomm/runs_nonempty?limit=\(limit)")
     }
 
-    func fetchOrbcommDecoded(run: String? = nil, limit: Int = 200) async throws -> OrbcommDecodedResponse {
+    func fetchOrbcommDecoded(run: String? = nil, limit: Int = 200) async throws
+        -> OrbcommDecodedResponse
+    {
         var path = "/api/satdump/orbcomm/decoded?limit=\(limit)"
         if let run, !run.isEmpty {
-            guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            else {
                 throw APIError.invalidURL
             }
             path += "&run=\(encoded)"
@@ -492,7 +599,8 @@ actor APIService {
     func fetchOrbcommDecodedFile(run: String? = nil) async throws -> Data {
         var path = "/api/satdump/orbcomm/decoded_file"
         if let run, !run.isEmpty {
-            guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            else {
                 throw APIError.invalidURL
             }
             path += "?run=\(encoded)"
@@ -500,10 +608,12 @@ actor APIService {
         return try await fetchData(path)
     }
 
-    func fetchOrbcommLogs(run: String? = nil, limit: Int = 500) async throws -> OrbcommLogsResponse {
+    func fetchOrbcommLogs(run: String? = nil, limit: Int = 500) async throws -> OrbcommLogsResponse
+    {
         var path = "/api/satdump/orbcomm/logs?limit=\(limit)"
         if let run, !run.isEmpty {
-            guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+            guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+            else {
                 throw APIError.invalidURL
             }
             path += "&run=\(encoded)"
@@ -512,7 +622,8 @@ actor APIService {
     }
 
     func fetchOrbcommLastEvent(run: String) async throws -> OrbcommLastEventResponse {
-        guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        guard let encoded = run.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             throw APIError.invalidURL
         }
         return try await fetch("/api/satdump/orbcomm/last_event?run=\(encoded)")
@@ -520,7 +631,9 @@ actor APIService {
 
     // MARK: - Satellite Positions
 
-    func fetchSatellitePositions(minElevation: Int = 0, token: String? = nil) async throws -> SatellitePositionsResponse {
+    func fetchSatellitePositions(minElevation: Int = 0, token: String? = nil) async throws
+        -> SatellitePositionsResponse
+    {
         var path = "/api/satdump/positions?min_elevation=\(minElevation)"
         if let token = token {
             path += "&token=\(token)"
@@ -529,11 +642,15 @@ actor APIService {
         return try await fetch(path)
     }
 
-    func fetchSatelliteStatus(norad: Int? = nil, name: String? = nil, token: String? = nil) async throws -> SatelliteStatusResponse {
+    func fetchSatelliteStatus(norad: Int? = nil, name: String? = nil, token: String? = nil)
+        async throws -> SatelliteStatusResponse
+    {
         var path = "/api/satdump/satellite_status?"
         if let norad = norad {
             path += "norad=\(norad)"
-        } else if let name = name, let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+        } else if let name = name,
+            let encoded = name.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        {
             path += "name=\(encoded)"
         } else {
             throw APIError.invalidURL
@@ -550,97 +667,143 @@ actor APIService {
     func imageURL(passName: String, folderName: String, imageName: String) -> URL? {
         let path = "/api/satdump/image?pass=\(passName)&folder=\(folderName)&image=\(imageName)"
         guard let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let components = URLComponents(string: "\(baseURL)\(encodedPath)") else {
+            let components = URLComponents(string: "\(baseURL)\(encodedPath)")
+        else {
             return nil
         }
         return components.url
     }
 
-    func imageLightURL(passName: String, folderName: String, imageName: String, max: Int = 1280, quality: Int = 75, format: String = "webp") -> URL? {
-        let path = "/api/satdump/image_light?pass=\(passName)&folder=\(folderName)&image=\(imageName)&max=\(max)&quality=\(quality)&format=\(format)"
+    func imageLightURL(
+        passName: String, folderName: String, imageName: String, max: Int = 1280, quality: Int = 75,
+        format: String = "webp"
+    ) -> URL? {
+        let path =
+            "/api/satdump/image_light?pass=\(passName)&folder=\(folderName)&image=\(imageName)&max=\(max)&quality=\(quality)&format=\(format)"
         guard let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let components = URLComponents(string: "\(baseURL)\(encodedPath)") else {
+            let components = URLComponents(string: "\(baseURL)\(encodedPath)")
+        else {
             return nil
         }
         return components.url
     }
 
     func imageFastURL(passName: String, folderName: String, imageName: String) -> URL? {
-        let path = "/api/satdump/image_fast?pass=\(passName)&folder=\(folderName)&image=\(imageName)"
+        let path =
+            "/api/satdump/image_fast?pass=\(passName)&folder=\(folderName)&image=\(imageName)"
         guard let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let components = URLComponents(string: "\(baseURL)\(encodedPath)") else {
+            let components = URLComponents(string: "\(baseURL)\(encodedPath)")
+        else {
             return nil
         }
         return components.url
     }
 
     func imageLosslessURL(passName: String, folderName: String, imageName: String) -> URL? {
-        let path = "/api/satdump/image_lossless?pass=\(passName)&folder=\(folderName)&image=\(imageName)"
+        let path =
+            "/api/satdump/image_lossless?pass=\(passName)&folder=\(folderName)&image=\(imageName)"
         guard let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let components = URLComponents(string: "\(baseURL)\(encodedPath)") else {
+            let components = URLComponents(string: "\(baseURL)\(encodedPath)")
+        else {
             return nil
         }
         return components.url
     }
 
-    func imageLegendURL(passName: String, folderName: String, imageName: String, format: String = "jpeg", quality: Int = 90) -> URL? {
-        let path = "/api/satdump/image_legend?pass=\(passName)&folder=\(folderName)&image=\(imageName)&format=\(format)&quality=\(quality)"
+    func imageLegendURL(
+        passName: String, folderName: String, imageName: String, format: String = "jpeg",
+        quality: Int = 90
+    ) -> URL? {
+        let path =
+            "/api/satdump/image_legend?pass=\(passName)&folder=\(folderName)&image=\(imageName)&format=\(format)&quality=\(quality)"
         guard let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              let components = URLComponents(string: "\(baseURL)\(encodedPath)") else {
+            let components = URLComponents(string: "\(baseURL)\(encodedPath)")
+        else {
             return nil
         }
         return components.url
     }
 
-    func fetchImageData(passName: String, folderName: String, imageName: String) async throws -> Data {
-        let passEncoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
-        let folderEncoded = folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
-        let imageEncoded = imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
-        let path = "/api/satdump/image?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)"
+    func fetchImageData(passName: String, folderName: String, imageName: String) async throws
+        -> Data
+    {
+        let passEncoded =
+            passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
+        let folderEncoded =
+            folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
+        let imageEncoded =
+            imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
+        let path =
+            "/api/satdump/image?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)"
         if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
     }
 
-    func fetchImageLightData(passName: String, folderName: String, imageName: String, max: Int = 1280) async throws -> Data {
-        let passEncoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
-        let folderEncoded = folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
-        let imageEncoded = imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
-        let path = "/api/satdump/image_light?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&max=\(max)"
+    func fetchImageLightData(
+        passName: String, folderName: String, imageName: String, max: Int = 1280
+    ) async throws -> Data {
+        let passEncoded =
+            passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
+        let folderEncoded =
+            folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
+        let imageEncoded =
+            imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
+        let path =
+            "/api/satdump/image_light?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&max=\(max)"
         if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
     }
 
-    func fetchImageLosslessData(passName: String, folderName: String, imageName: String) async throws -> Data {
-        let passEncoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
-        let folderEncoded = folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
-        let imageEncoded = imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
-        let path = "/api/satdump/image_lossless?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)"
+    func fetchImageLosslessData(passName: String, folderName: String, imageName: String)
+        async throws -> Data
+    {
+        let passEncoded =
+            passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
+        let folderEncoded =
+            folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
+        let imageEncoded =
+            imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
+        let path =
+            "/api/satdump/image_lossless?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)"
         if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
     }
 
-    func fetchImageLightJPEG(passName: String, folderName: String, imageName: String, max: Int = 1280, quality: Int = 85) async throws -> Data {
-        let passEncoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
-        let folderEncoded = folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
-        let imageEncoded = imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
-        let path = "/api/satdump/image_light?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&max=\(max)&format=jpeg&quality=\(quality)"
+    func fetchImageLightJPEG(
+        passName: String, folderName: String, imageName: String, max: Int = 1280, quality: Int = 85
+    ) async throws -> Data {
+        let passEncoded =
+            passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
+        let folderEncoded =
+            folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
+        let imageEncoded =
+            imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
+        let path =
+            "/api/satdump/image_light?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&max=\(max)&format=jpeg&quality=\(quality)"
         if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
     }
 
-    func fetchImageWithLegend(passName: String, folderName: String, imageName: String, format: String = "jpeg", quality: Int = 90) async throws -> Data {
-        let passEncoded = passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
-        let folderEncoded = folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
-        let imageEncoded = imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
-        let path = "/api/satdump/image_legend?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&format=\(format)&quality=\(quality)"
+    func fetchImageWithLegend(
+        passName: String, folderName: String, imageName: String, format: String = "jpeg",
+        quality: Int = 90
+    ) async throws -> Data {
+        let passEncoded =
+            passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName
+        let folderEncoded =
+            folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName
+        let imageEncoded =
+            imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
+        let path =
+            "/api/satdump/image_legend?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&format=\(format)&quality=\(quality)"
         if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
@@ -649,7 +812,9 @@ actor APIService {
 
     // MARK: - Notifications
 
-    func registerDeviceToken(token: String, deviceInfo: [String: Any]) async throws -> NotificationRegisterResponse {
+    func registerDeviceToken(token: String, deviceInfo: [String: Any]) async throws
+        -> NotificationRegisterResponse
+    {
         let path = "/api/notifications/register"
         var request = try makeRequest(path: path)
         request.httpMethod = "POST"
@@ -657,14 +822,15 @@ actor APIService {
 
         let body: [String: Any] = [
             "device_token": token,
-            "device_info": deviceInfo
+            "device_info": deviceInfo,
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -683,7 +849,8 @@ actor APIService {
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -694,7 +861,9 @@ actor APIService {
         try await fetch("/api/notifications")
     }
 
-    func fetchNotificationFeed(sinceId: Int = 0, limit: Int = 50) async throws -> NotificationFeedResponse {
+    func fetchNotificationFeed(sinceId: Int = 0, limit: Int = 50) async throws
+        -> NotificationFeedResponse
+    {
         try await fetch("/api/notifications/feed?since_id=\(sinceId)&limit=\(limit)")
     }
 
@@ -707,7 +876,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+            (200...299).contains(httpResponse.statusCode)
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -728,7 +898,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 201 else {
+            httpResponse.statusCode == 201
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -743,7 +914,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -756,7 +928,8 @@ actor APIService {
 
         let (_, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+            (200...299).contains(httpResponse.statusCode)
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
     }
@@ -771,7 +944,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -785,8 +959,11 @@ actor APIService {
 
     // MARK: - Analytics (no auth, mock data)
 
-    func fetchSystemAnalytics(period: String = "24h", interval: String = "5m") async throws -> SystemAnalytics {
-        try await fetch("/api/analytics/system?period=\(period)&interval=\(interval)", requiresAuth: false)
+    func fetchSystemAnalytics(period: String = "24h", interval: String = "5m") async throws
+        -> SystemAnalytics
+    {
+        try await fetch(
+            "/api/analytics/system?period=\(period)&interval=\(interval)", requiresAuth: false)
     }
 
     func fetchADSBAnalytics(period: String = "24h") async throws -> ADSBAnalytics {
@@ -809,7 +986,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: urlRequest)
         guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+            (200...299).contains(httpResponse.statusCode)
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -837,31 +1015,40 @@ actor APIService {
         type: FlightAwareTrafficType = .airline,
         maxPages: Int = 1
     ) async throws -> FlightAwareAirportBoardResponse {
-        let airportEncoded = airport.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? airport
-        let path = "/api/flightaware/airport/board?airport=\(airportEncoded)&kind=\(kind.rawValue)&type=\(type.rawValue)&max_pages=\(maxPages)"
+        let airportEncoded =
+            airport.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? airport
+        let path =
+            "/api/flightaware/airport/board?airport=\(airportEncoded)&kind=\(kind.rawValue)&type=\(type.rawValue)&max_pages=\(maxPages)"
         return try await fetch(path)
     }
 
-    func fetchFlightAwareFlight(ident: String, maxPages: Int = 1) async throws -> FlightAwareFlightResponse {
+    func fetchFlightAwareFlight(ident: String, maxPages: Int = 1) async throws
+        -> FlightAwareFlightResponse
+    {
         let trimmed = ident.trimmingCharacters(in: .whitespacesAndNewlines)
-        let encoded = trimmed.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? trimmed
+        let encoded =
+            trimmed.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? trimmed
         return try await fetch("/api/flightaware/flight?ident=\(encoded)&max_pages=\(maxPages)")
     }
 
     // MARK: - Remote (no auth)
 
     func executeRemoteCommand(_ command: RemoteCommand) async throws -> RemoteCommand {
-        try await executeRemoteCommand(command: command.command, target: command.target ?? "", parameters: command.parameters?.value)
+        try await executeRemoteCommand(
+            command: command.command, target: command.target ?? "",
+            parameters: command.parameters?.value)
     }
 
-    func executeRemoteCommand(command: CommandType, target: String, parameters: Any? = nil) async throws -> RemoteCommand {
+    func executeRemoteCommand(command: CommandType, target: String, parameters: Any? = nil)
+        async throws -> RemoteCommand
+    {
         var request = try makeRequest(path: "/api/remote/execute", requiresAuth: false)
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
         var body: [String: Any] = [
             "command": command.rawValue,
-            "target": target
+            "target": target,
         ]
         if let parameters = parameters {
             body["parameters"] = parameters
@@ -870,7 +1057,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 202 else {
+            httpResponse.statusCode == 202
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -886,12 +1074,14 @@ actor APIService {
     }
 
     func cancelRemoteCommand(id: String) async throws -> RemoteCommand {
-        var request = try makeRequest(path: "/api/remote/commands/\(id)/cancel", requiresAuth: false)
+        var request = try makeRequest(
+            path: "/api/remote/commands/\(id)/cancel", requiresAuth: false)
         request.httpMethod = "POST"
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+            (200...299).contains(httpResponse.statusCode)
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -912,7 +1102,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -927,7 +1118,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -937,7 +1129,8 @@ actor APIService {
     // MARK: - Open-Meteo Integration
 
     func fetchWeatherOpenMeteo(lat: Double, lon: Double) async throws -> WeatherData {
-        let urlString = "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lon)&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,is_day&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,uv_index,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,sunrise,sunset&timezone=auto"
+        let urlString =
+            "https://api.open-meteo.com/v1/forecast?latitude=\(lat)&longitude=\(lon)&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation,weather_code,wind_speed_10m,wind_direction_10m,is_day&hourly=temperature_2m,relative_humidity_2m,precipitation_probability,precipitation,weather_code,uv_index,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_sum,precipitation_probability_max,uv_index_max,sunrise,sunset&timezone=auto"
 
         guard let url = URL(string: urlString) else {
             throw APIError.invalidURL
@@ -946,7 +1139,8 @@ actor APIService {
         let (data, response) = try await session.data(from: url)
 
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -954,7 +1148,9 @@ actor APIService {
         return try mapOpenMeteoToWeatherData(openMeteo, lat: lat, lon: lon)
     }
 
-    private func mapOpenMeteoToWeatherData(_ response: OpenMeteoResponse, lat: Double, lon: Double) throws -> WeatherData {
+    private func mapOpenMeteoToWeatherData(_ response: OpenMeteoResponse, lat: Double, lon: Double)
+        throws -> WeatherData
+    {
         let current = response.current
         let daily = response.daily
         let hourly = response.hourly
@@ -1057,12 +1253,14 @@ actor APIService {
     func fetchFlightRoute(flightIATA: String) async throws -> AviationStackFlightData? {
         if aviationStackKey == "SUA_KEY_AQUI" || aviationStackKey.isEmpty { return nil }
 
-        let urlString = "\(aviationStackBaseURL)/flights?access_key=\(aviationStackKey)&flight_iata=\(flightIATA)&limit=1"
+        let urlString =
+            "\(aviationStackBaseURL)/flights?access_key=\(aviationStackKey)&flight_iata=\(flightIATA)&limit=1"
         guard let url = URL(string: urlString) else { throw APIError.invalidURL }
 
         let (data, response) = try await session.data(from: url)
 
-        guard let httpResponse = response as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode else {
+        guard let httpResponse = response as? HTTPURLResponse, 200...299 ~= httpResponse.statusCode
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -1076,7 +1274,7 @@ actor APIService {
         var components = URLComponents(string: "\(baseURL)/api/export")
         components?.queryItems = [
             URLQueryItem(name: "data_type", value: request.dataType.rawValue),
-            URLQueryItem(name: "format", value: request.format.rawValue)
+            URLQueryItem(name: "format", value: request.format.rawValue),
         ]
 
         if let from = request.dateFrom {
@@ -1093,7 +1291,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: urlRequest)
         guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
+            (200...299).contains(httpResponse.statusCode)
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -1108,7 +1307,8 @@ actor APIService {
 
         let (data, response) = try await session.data(for: request)
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 
@@ -1121,12 +1321,18 @@ actor APIService {
 
     // MARK: - Satellite Passes by Filter
 
-    func fetchSatellitePassesByDateRange(from: String, to: String, page: Int = 1, limit: Int = 50) async throws -> PassesListPaginated {
-        try await fetch("/api/satdump/passes_by_date?from=\(from)&to=\(to)&page=\(page)&limit=\(limit)")
+    func fetchSatellitePassesByDateRange(from: String, to: String, page: Int = 1, limit: Int = 50)
+        async throws -> PassesListPaginated
+    {
+        try await fetch(
+            "/api/satdump/passes_by_date?from=\(from)&to=\(to)&page=\(page)&limit=\(limit)")
     }
 
-    func fetchSatellitePassesBySatellite(satellite: String, page: Int = 1, limit: Int = 50) async throws -> PassesListPaginated {
-        try await fetch("/api/satdump/passes_by_satellite?satellite=\(satellite)&page=\(page)&limit=\(limit)")
+    func fetchSatellitePassesBySatellite(satellite: String, page: Int = 1, limit: Int = 50)
+        async throws -> PassesListPaginated
+    {
+        try await fetch(
+            "/api/satdump/passes_by_satellite?satellite=\(satellite)&page=\(page)&limit=\(limit)")
     }
 
     // MARK: - Helper Methods
@@ -1135,16 +1341,150 @@ actor APIService {
         var items: [URLQueryItem] = []
 
         if let query = request.query { items.append(URLQueryItem(name: "query", value: query)) }
-        if let flightNumber = request.flightNumber { items.append(URLQueryItem(name: "flightNumber", value: flightNumber)) }
-        if let registration = request.registration { items.append(URLQueryItem(name: "registration", value: registration)) }
-        if let aircraftType = request.aircraftType { items.append(URLQueryItem(name: "aircraftType", value: aircraftType)) }
+        if let flightNumber = request.flightNumber {
+            items.append(URLQueryItem(name: "flightNumber", value: flightNumber))
+        }
+        if let registration = request.registration {
+            items.append(URLQueryItem(name: "registration", value: registration))
+        }
+        if let aircraftType = request.aircraftType {
+            items.append(URLQueryItem(name: "aircraftType", value: aircraftType))
+        }
         if let origin = request.origin { items.append(URLQueryItem(name: "origin", value: origin)) }
-        if let destination = request.destination { items.append(URLQueryItem(name: "destination", value: destination)) }
-        if let altitudeMin = request.altitudeMin { items.append(URLQueryItem(name: "altitudeMin", value: "\(altitudeMin)")) }
-        if let altitudeMax = request.altitudeMax { items.append(URLQueryItem(name: "altitudeMax", value: "\(altitudeMax)")) }
-        if let limit = request.limit { items.append(URLQueryItem(name: "limit", value: "\(limit)")) }
-        if let offset = request.offset { items.append(URLQueryItem(name: "offset", value: "\(offset)")) }
+        if let destination = request.destination {
+            items.append(URLQueryItem(name: "destination", value: destination))
+        }
+        if let altitudeMin = request.altitudeMin {
+            items.append(URLQueryItem(name: "altitudeMin", value: "\(altitudeMin)"))
+        }
+        if let altitudeMax = request.altitudeMax {
+            items.append(URLQueryItem(name: "altitudeMax", value: "\(altitudeMax)"))
+        }
+        if let limit = request.limit {
+            items.append(URLQueryItem(name: "limit", value: "\(limit)"))
+        }
+        if let offset = request.offset {
+            items.append(URLQueryItem(name: "offset", value: "\(offset)"))
+        }
 
         return items
+    }
+
+    // MARK: - API2: Orbcomm Captures (app2.meulab.fun)
+
+    func fetchAPI2OrbcommRecent(limit: Int = 10) async throws -> API2OrbcommRecentResponse {
+        try await fetchAPI2("/orbcomm/recent?limit=\(limit)")
+    }
+
+    func fetchAPI2OrbcommLatest() async throws -> API2OrbcommLatestResponse {
+        try await fetchAPI2("/orbcomm/latest")
+    }
+
+    // MARK: - API2: Orbcomm Decoder
+
+    func fetchAPI2OrbcommDecoderStatus() async throws -> API2OrbcommDecoderStatusResponse {
+        try await fetchAPI2("/orbcomm/decoder/status")
+    }
+
+    func runAPI2OrbcommDecoder(
+        durationSec: Int = 90, centerFrequencyHz: Int = 137_524_000, gain: Int = 40
+    ) async throws -> API2DecoderRunResponse {
+        try await postAPI2(
+            "/orbcomm/decoder/run?duration_sec=\(durationSec)&center_frequency_hz=\(centerFrequencyHz)&gain=\(gain)"
+        )
+    }
+
+    func fetchAPI2OrbcommDecoderLatestPackets(sessions: Int = 1) async throws
+        -> API2DecoderLatestPacketsResponse
+    {
+        try await fetchAPI2("/orbcomm/decoder/latest-packets?sessions=\(sessions)")
+    }
+
+    func fetchAPI2OrbcommDecoderLatestMessages(sessions: Int = 3, limitPerSession: Int = 12)
+        async throws -> API2DecoderLatestMessagesResponse
+    {
+        try await fetchAPI2(
+            "/orbcomm/decoder/latest-messages?sessions=\(sessions)&limit_per_session=\(limitPerSession)"
+        )
+    }
+
+    // MARK: - API2: Orbcomm Passes
+
+    func fetchAPI2OrbcommPassesNext(
+        hours: Double = 24, minElevation: Double = 15, limit: Int = 20, decoderOnly: Bool = false
+    ) async throws -> API2OrbcommPassesNextResponse {
+        try await fetchAPI2(
+            "/orbcomm/passes/next?hours=\(hours)&min_elevation=\(minElevation)&limit=\(limit)&decoder_only=\(decoderOnly)"
+        )
+    }
+
+    func scheduleAPI2OrbcommNextPass(
+        minElevation: Double = 15, gain: Int = 40, extraBufferSec: Int = 30,
+        decoderOnly: Bool = true
+    ) async throws -> API2OrbcommScheduleNextResponse {
+        try await postAPI2(
+            "/orbcomm/passes/schedule-next?min_elevation=\(minElevation)&gain=\(gain)&extra_buffer_sec=\(extraBufferSec)&decoder_only=\(decoderOnly)"
+        )
+    }
+
+    func fetchAPI2OrbcommScheduled() async throws -> API2OrbcommScheduledResponse {
+        try await fetchAPI2("/orbcomm/passes/scheduled")
+    }
+
+    func cancelAPI2OrbcommScheduledPass(runId: String) async throws -> API2CancelPassResponse {
+        guard let encoded = runId.addingPercentEncoding(withAllowedCharacters: .urlPathAllowed)
+        else {
+            throw APIError.invalidURL
+        }
+        return try await deleteAPI2("/orbcomm/passes/scheduled/\(encoded)")
+    }
+
+    // MARK: - API2: Meteor
+
+    func fetchAPI2MeteorStatus() async throws -> API2MeteorStatusResponse {
+        try await fetchAPI2("/meteor/status")
+    }
+
+    func fetchAPI2MeteorPassesNext(hours: Double = 24, minElevation: Double = 10, limit: Int = 10)
+        async throws -> API2MeteorPassesNextResponse
+    {
+        try await fetchAPI2(
+            "/meteor/passes/next?hours=\(hours)&min_elevation=\(minElevation)&limit=\(limit)")
+    }
+
+    // MARK: - API2: SatDump Status
+
+    func fetchAPI2SatDumpStatus() async throws -> API2SatDumpStatusResponse {
+        try await fetchAPI2("/satdump/status")
+    }
+
+    // MARK: - API2: TLE Update
+
+    func updateAPI2TLEs() async throws -> API2TLEUpdateResponse {
+        try await postAPI2("/tles/update")
+    }
+
+    // MARK: - API2: Mac Mini System
+
+    func fetchMacMiniStatus() async throws -> SystemStatus {
+        try await fetchAPI2("/api/system/status")
+    }
+
+    func fetchMacMiniProcesses(limit: Int = 5) async throws -> ProcessList {
+        try await fetchAPI2("/api/system/processes?limit=\(limit)")
+    }
+
+    func fetchMacMiniPartitions() async throws -> PartitionList {
+        try await fetchAPI2("/api/system/partitions")
+    }
+
+    func fetchMacMiniNetwork() async throws -> NetworkStats {
+        try await fetchAPI2("/api/system/network")
+    }
+
+    func fetchMacMiniAnalytics(period: String = "24h", interval: String = "15m") async throws
+        -> SystemAnalytics
+    {
+        try await fetchAPI2("/api/analytics/system?period=\(period)&interval=\(interval)")
     }
 }

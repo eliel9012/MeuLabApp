@@ -10,7 +10,7 @@ struct HomeView: View {
     @State private var weather: WatchWeatherData?
     @State private var infra: WatchInfraData?
     @State private var satdump: WatchSatDumpData?
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 10) {
@@ -40,11 +40,11 @@ struct HomeView: View {
                             color: .blue,
                             lines: [
                                 "\(adsb.totalNow) no ar",
-                                "\(adsb.withPos) com posição"
+                                "\(adsb.withPos) com posição",
                             ]
                         )
                     }
-                    
+
                     // ACARS Card
                     if let acars {
                         SummaryCard(
@@ -53,11 +53,11 @@ struct HomeView: View {
                             color: .orange,
                             lines: [
                                 "\(acars.messagesTotal) msgs",
-                                "\(acars.uniqueFlights ?? 0) voos"
+                                "\(acars.uniqueFlights ?? 0) voos",
                             ]
                         )
                     }
-                    
+
                     // Sistema Card
                     if let system {
                         SummaryCard(
@@ -66,11 +66,11 @@ struct HomeView: View {
                             color: .green,
                             lines: [
                                 "CPU: \(Int(system.cpuPercent))%",
-                                "RAM: \(Int(system.memoryPercent))%"
+                                "RAM: \(Int(system.memoryPercent))%",
                             ]
                         )
                     }
-                    
+
                     // Infra Card
                     if let infra {
                         let running = infra.docker.containers.filter { $0.state == "running" }.count
@@ -81,7 +81,7 @@ struct HomeView: View {
                             lines: ["\(running) containers"]
                         )
                     }
-                    
+
                     // Clima Card
                     if let weather, let current = weather.current {
                         SummaryCard(
@@ -91,13 +91,13 @@ struct HomeView: View {
                             lines: ["\(Int(current.temperature))°C"]
                         )
                     }
-                    
+
                     // SatDump Card
                     if let satdump, let status = satdump.status {
                         let lastSat = status.lastPass?.satellite ?? "N/A"
                         SummaryCard(
                             title: "SatDump",
-                            icon: "satellite.fill",
+                            icon: "antenna.radiowaves.left.and.right",
                             color: .pink,
                             lines: ["Último: \(lastSat)"]
                         )
@@ -114,11 +114,11 @@ struct HomeView: View {
             await loadData()
         }
     }
-    
+
     private func loadData() async {
         isLoading = true
         error = nil
-        
+
         do {
             // Buscar dados em paralelo
             async let adsbTask = WatchAPIService.shared.fetchADSBSummary()
@@ -127,7 +127,7 @@ struct HomeView: View {
             async let weatherTask = WatchAPIService.shared.fetchWeather()
             async let infraTask = WatchAPIService.shared.fetchInfraSummary()
             async let satdumpTask = WatchAPIService.shared.fetchSatDumpStatus()
-            
+
             // Usar resultados individuais para não falhar tudo se um endpoint falhar
             adsb = try? await adsbTask
             acars = try? await acarsTask
@@ -135,7 +135,7 @@ struct HomeView: View {
             weather = try? await weatherTask
             infra = try? await infraTask
             satdump = try? await satdumpTask
-            
+
             // Se nenhum dado foi carregado, mostra erro
             if adsb == nil && acars == nil && system == nil {
                 error = "Falha ao conectar"
@@ -143,7 +143,7 @@ struct HomeView: View {
         } catch {
             self.error = error.localizedDescription
         }
-        
+
         isLoading = false
     }
 }
@@ -154,7 +154,7 @@ struct SummaryCard: View {
     let icon: String
     let color: Color
     let lines: [String]
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 6) {

@@ -235,8 +235,7 @@ struct CPUDetailsView: View {
                             }
                         }
                         .padding()
-                        .background(Color(.systemGray6))
-                        .cornerRadius(12)
+                        .glassCard(cornerRadius: 12)
                     }
                 }
             }

@@ -14,7 +14,7 @@ struct DataExportView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Tipo de Dados")) {
                     Picker("Dados", selection: $selectedDataType) {
@@ -221,7 +221,7 @@ struct AdvancedExportView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 if exportRequests.isEmpty {
                     ContentUnavailableView(
@@ -333,7 +333,7 @@ struct CustomExportView: View {
     @State private var customFilters: [String: AnyCodable] = [:]
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Configuração da Exportação")) {
                     Picker("Tipo de Dados", selection: $selectedDataType) {

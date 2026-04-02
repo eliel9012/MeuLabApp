@@ -49,7 +49,7 @@ struct FlightSearchView: View {
     @State private var boardError: String?
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 Picker("", selection: $mode) {
                     ForEach(Mode.allCases, id: \.self) { m in
@@ -168,8 +168,7 @@ struct FlightSearchView: View {
             }
             .padding(.horizontal, 16)
             .padding(.vertical, 12)
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
+            .glassCard(cornerRadius: 12)
         }
         .padding()
     }
@@ -362,7 +361,7 @@ struct FlightSearchView: View {
                 } label: {
                     Image(systemName: "arrow.clockwise")
                 }
-                .buttonStyle(.bordered)
+                .adaptiveGlassButton()
             }
 
             Picker("Tipo", selection: $boardKind) {
@@ -488,8 +487,7 @@ private struct AirportBoardCard: View {
             }
         }
         .padding(14)
-        .background(Color(.secondarySystemGroupedBackground))
-        .cornerRadius(14)
+        .glassCard(cornerRadius: 14)
     }
 }
 
@@ -516,7 +514,7 @@ struct FlightFiltersView: View {
     @State private var hasSpeedFilter = false
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Informações do Voo")) {
                     TextField("Número do Voo", text: $flightNumber)

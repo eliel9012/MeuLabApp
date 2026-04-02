@@ -1,105 +1,87 @@
 import SwiftUI
 
-/// Detalhes de Infraestrutura para watchOS
 struct WatchInfraView: View {
     @State private var isLoading = true
     @State private var infra: WatchInfraData?
     @State private var error: String?
-    
+
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 10) {
-                if isLoading {
-                    ProgressView("Carregando...")
-                        .frame(maxWidth: .infinity)
-                } else if let error {
-                    ErrorView(message: error) {
-                        Task { await loadData() }
-                    }
-                } else if let infra {
-                    // Métricas API
+        WatchLabScreen(title: "Infra", icon: "server.rack", tint: WatchLabTheme.orange) {
+            if isLoading {
+                WatchLabPanel(tint: WatchLabTheme.orange) {
+                    WatchLabStateView(
+                        icon: "server.rack",
+                        title: "Atualizando",
+                        subtitle: "Buscando métricas e containers.",
+                        tint: WatchLabTheme.orange,
+                        actionTitle: nil,
+                        action: nil
+                    )
+                }
+            } else if let error {
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    WatchLabStateView(
+                        icon: "wifi.exclamationmark",
+                        title: "Falha",
+                        subtitle: error,
+                        tint: WatchLabTheme.red,
+                        actionTitle: "Tentar",
+                        action: { Task { await loadData() } }
+                    )
+                }
+            } else if let infra {
+                WatchLabPanel(tint: WatchLabTheme.orange) {
+                    Text("API e containers")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WatchLabTheme.ink)
+
                     if let uptime = infra.metrics.uptime {
-                        MetricRow(label: "Uptime", value: uptime)
+                        WatchLabStatRow(icon: "clock", title: "Uptime", value: uptime, tint: WatchLabTheme.blue)
                     }
                     if let requests = infra.metrics.requestsTotal {
-                        MetricRow(label: "Requests", value: "\(requests)")
+                        WatchLabStatRow(icon: "arrow.up.arrow.down", title: "Requests", value: "\(requests)", tint: WatchLabTheme.cyan)
                     }
                     if let latency = infra.metrics.avgLatencyMs {
-                        MetricRow(label: "Latência", value: String(format: "%.0fms", latency))
+                        WatchLabStatRow(icon: "timer", title: "Latência", value: String(format: "%.0fms", latency), tint: WatchLabTheme.green)
                     }
-                    
-                    Divider()
-                    
-                    // Containers
+                }
+
+                WatchLabPanel(tint: WatchLabTheme.green) {
                     Text("Containers")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                    
-                    let running = infra.docker.containers.filter { $0.state == "running" }.count
-                    let total = infra.docker.containers.count
-                    
-                    Text("\(running)/\(total) running")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    
-                    ForEach(infra.docker.containers.prefix(5)) { container in
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WatchLabTheme.ink)
+
+                    ForEach(infra.docker.containers.prefix(4)) { container in
                         HStack {
                             Circle()
-                                .fill(container.state == "running" ? Color.green : Color.red)
-                                .frame(width: 6, height: 6)
+                                .fill(container.state == "running" ? WatchLabTheme.green : WatchLabTheme.red)
+                                .frame(width: 7, height: 7)
                             Text(container.name)
-                                .font(.caption2)
+                                .font(.caption)
+                                .foregroundStyle(WatchLabTheme.ink)
                                 .lineLimit(1)
                             Spacer()
-                            if let health = container.health, health != "none" {
-                                Text(health)
-                                    .font(.caption2)
-                                    .foregroundStyle(health == "healthy" ? .green : .orange)
-                            }
+                            Text(container.health ?? container.state)
+                                .font(.caption2)
+                                .foregroundStyle(WatchLabTheme.secondary)
                         }
                     }
                 }
             }
-            .padding(.horizontal)
         }
-        .navigationTitle("Infra")
-        .task {
-            await loadData()
-        }
-        .refreshable {
-            await loadData()
-        }
+        .task { await loadData() }
+        .refreshable { await loadData() }
     }
-    
+
     private func loadData() async {
         isLoading = true
         error = nil
-        
         do {
             infra = try await WatchAPIService.shared.fetchInfraSummary()
         } catch {
             self.error = error.localizedDescription
         }
-        
         isLoading = false
-    }
-}
-
-/// Linha de métrica simples
-struct MetricRow: View {
-    let label: String
-    let value: String
-    
-    var body: some View {
-        HStack {
-            Text(label)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-            Spacer()
-            Text(value)
-                .font(.caption)
-                .fontWeight(.medium)
-        }
     }
 }
 

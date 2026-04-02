@@ -133,14 +133,18 @@ private struct AnalyticsInsetBackground: View {
     }
 }
 
-private extension View {
-    func analyticsPanel(cornerRadius: CGFloat = 20, highlight: Color = AnalyticsTheme.blue)
+extension View {
+    fileprivate func analyticsPanel(
+        cornerRadius: CGFloat = 20, highlight: Color = AnalyticsTheme.blue
+    )
         -> some View
     {
         background(AnalyticsPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
     }
 
-    func analyticsInsetPanel(cornerRadius: CGFloat = 18, highlight: Color = AnalyticsTheme.blue)
+    fileprivate func analyticsInsetPanel(
+        cornerRadius: CGFloat = 18, highlight: Color = AnalyticsTheme.blue
+    )
         -> some View
     {
         background(AnalyticsInsetBackground(cornerRadius: cornerRadius, highlight: highlight))
@@ -160,7 +164,10 @@ private struct AnalyticsToolbarTitle: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [AnalyticsTheme.green.opacity(0.18), AnalyticsTheme.blue.opacity(0.12)],
+                            colors: [
+                                AnalyticsTheme.green.opacity(0.18),
+                                AnalyticsTheme.blue.opacity(0.12),
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -244,7 +251,9 @@ private struct AnalyticsFilterChip: View {
                                 endPoint: .bottomTrailing
                             )
                             : LinearGradient(
-                                colors: [AnalyticsTheme.surfaceTop.opacity(0.92), AnalyticsTheme.mist],
+                                colors: [
+                                    AnalyticsTheme.surfaceTop.opacity(0.92), AnalyticsTheme.mist,
+                                ],
                                 startPoint: .topLeading,
                                 endPoint: .bottomTrailing
                             )
@@ -351,6 +360,7 @@ enum AnalyticsFocusPanel: String, Identifiable {
 
 struct AnalyticsView: View {
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @EnvironmentObject var appState: AppState
     @State private var selectedPeriod: AnalyticsPeriod = .last24h
     @State private var selectedMetric: AnalyticsMetric = .cpu
@@ -446,7 +456,9 @@ struct AnalyticsView: View {
 
                     if showsEnvironmentSection, let message = tuyaSensorMessage {
                         tuyaSensorSection(message: message)
-                    } else if showsEnvironmentSection, let sensor = tuyaSensor, let current = sensor.current {
+                    } else if showsEnvironmentSection, let sensor = tuyaSensor,
+                        let current = sensor.current
+                    {
                         tuyaSensorSection(sensor: sensor, current: current)
                     }
 
@@ -481,7 +493,10 @@ struct AnalyticsView: View {
             .background {
                 ZStack {
                     LinearGradient(
-                        colors: [AnalyticsTheme.cloud, AnalyticsTheme.canvasMid, AnalyticsTheme.canvasEnd],
+                        colors: [
+                            AnalyticsTheme.cloud, AnalyticsTheme.canvasMid,
+                            AnalyticsTheme.canvasEnd,
+                        ],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
@@ -570,24 +585,39 @@ struct AnalyticsView: View {
         focus == .dashboard || focus == .satellite
     }
 
+    private var isCompactLayout: Bool {
+        horizontalSizeClass == .compact
+    }
+
     @ViewBuilder
     private var controlSection: some View {
         VStack(alignment: .leading, spacing: 18) {
-            HStack(alignment: .top, spacing: 16) {
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack(spacing: 10) {
-                        Label(focus.headerTitle, systemImage: "waveform.path.ecg.rectangle")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(AnalyticsTheme.ink.opacity(0.82))
+            if isCompactLayout {
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Label {
+                            Text(focus.headerTitle)
+                                .lineLimit(2)
+                                .fixedSize(horizontal: false, vertical: true)
+                        } icon: {
+                            Image(systemName: "waveform.path.ecg.rectangle")
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(AnalyticsTheme.ink.opacity(0.82))
+
+                        Spacer(minLength: 8)
 
                         Text(isLoading ? "ATUALIZANDO" : "PRONTO")
                             .font(.system(size: 10, weight: .black, design: .rounded))
                             .tracking(1)
-                            .foregroundStyle(isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green)
+                            .foregroundStyle(
+                                isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green
+                            )
                             .padding(.horizontal, 10)
                             .padding(.vertical, 5)
                             .background(
-                                (isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green).opacity(0.14),
+                                (isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green).opacity(
+                                    0.14),
                                 in: Capsule()
                             )
                     }
@@ -595,16 +625,52 @@ struct AnalyticsView: View {
                     Text(focus.subtitle)
                         .font(.caption)
                         .foregroundStyle(AnalyticsTheme.ink.opacity(0.56))
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    AnalyticsInfoChip(
+                        title: "Foco",
+                        value: focus.allowsMetricPicker ? selectedMetric.displayName : focus.title,
+                        tint: focus.allowsMetricPicker ? selectedMetric.color : focus.sectionTint,
+                        icon: focus.allowsMetricPicker ? selectedMetric.icon : "square.stack.3d.up"
+                    )
                 }
+            } else {
+                HStack(alignment: .top, spacing: 16) {
+                    VStack(alignment: .leading, spacing: 8) {
+                        HStack(spacing: 10) {
+                            Label(focus.headerTitle, systemImage: "waveform.path.ecg.rectangle")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundStyle(AnalyticsTheme.ink.opacity(0.82))
 
-                Spacer(minLength: 12)
+                            Text(isLoading ? "ATUALIZANDO" : "PRONTO")
+                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .tracking(1)
+                                .foregroundStyle(
+                                    isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green
+                                )
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 5)
+                                .background(
+                                    (isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green)
+                                        .opacity(0.14),
+                                    in: Capsule()
+                                )
+                        }
 
-                AnalyticsInfoChip(
-                    title: "Foco",
-                    value: focus.allowsMetricPicker ? selectedMetric.displayName : focus.title,
-                    tint: focus.allowsMetricPicker ? selectedMetric.color : focus.sectionTint,
-                    icon: focus.allowsMetricPicker ? selectedMetric.icon : "square.stack.3d.up"
-                )
+                        Text(focus.subtitle)
+                            .font(.caption)
+                            .foregroundStyle(AnalyticsTheme.ink.opacity(0.56))
+                    }
+
+                    Spacer(minLength: 12)
+
+                    AnalyticsInfoChip(
+                        title: "Foco",
+                        value: focus.allowsMetricPicker ? selectedMetric.displayName : focus.title,
+                        tint: focus.allowsMetricPicker ? selectedMetric.color : focus.sectionTint,
+                        icon: focus.allowsMetricPicker ? selectedMetric.icon : "square.stack.3d.up"
+                    )
+                }
             }
 
             ViewThatFits(in: .horizontal) {
@@ -1132,46 +1198,39 @@ struct AnalyticsView: View {
         let historyLimit = tuyaHistoryLimit(for: period)
 
         analyticsLoadTask = Task {
-            do {
-                async let systemTask = APIService.shared.fetchSystemAnalytics(
+            async let systemTask: SystemAnalytics? = {
+                try? await APIService.shared.fetchSystemAnalytics(
                     period: period.rawValue, interval: interval)
-                async let adsbTask = APIService.shared.fetchADSBAnalytics(period: period.rawValue)
-                async let satelliteTask = APIService.shared.fetchSatelliteAnalytics(
-                    period: period.rawValue)
-                async let tuyaTask = APIService.shared.fetchTuyaTemperatureHumidity(
+            }()
+            async let adsbTask: ADSBAnalytics? = {
+                try? await APIService.shared.fetchADSBAnalytics(period: period.rawValue)
+            }()
+            async let satelliteTask: SatelliteAnalytics? = {
+                try? await APIService.shared.fetchSatelliteAnalytics(period: period.rawValue)
+            }()
+            async let tuyaTask: TuyaTemperatureHumidityResponse? = {
+                try? await APIService.shared.fetchTuyaTemperatureHumidity(
                     historyLimit: historyLimit)
+            }()
 
-                let (system, adsb, satellite, tuya) = try await (
-                    systemTask, adsbTask, satelliteTask, tuyaTask
+            let (system, adsb, satellite, tuya) = await (
+                systemTask, adsbTask, satelliteTask, tuyaTask
+            )
+            guard !Task.isCancelled else { return }
+
+            await MainActor.run {
+                guard selectedPeriod == period else { return }
+                if let system { self.systemAnalytics = system }
+                if let adsb { self.adsbAnalytics = adsb }
+                if let satellite { self.satelliteAnalytics = satellite }
+                if let tuya { self.tuyaSensor = tuya }
+                AnalyticsScreenCache.entries[period.rawValue] = .init(
+                    system: system ?? self.systemAnalytics,
+                    adsb: adsb ?? self.adsbAnalytics,
+                    satellite: satellite ?? self.satelliteAnalytics,
+                    tuya: tuya ?? self.tuyaSensor
                 )
-                guard !Task.isCancelled else { return }
-
-                await MainActor.run {
-                    guard selectedPeriod == period else { return }
-                    self.systemAnalytics = system
-                    self.adsbAnalytics = adsb
-                    self.satelliteAnalytics = satellite
-                    self.tuyaSensor = tuya
-                    AnalyticsScreenCache.entries[period.rawValue] = .init(
-                        system: system,
-                        adsb: adsb,
-                        satellite: satellite,
-                        tuya: tuya
-                    )
-                    self.error = nil
-                    self.isLoading = false
-                }
-            } catch is CancellationError {
-                await MainActor.run {
-                    guard selectedPeriod == period else { return }
-                    self.isLoading = false
-                }
-            } catch {
-                await MainActor.run {
-                    guard selectedPeriod == period else { return }
-                    self.error = error.localizedDescription
-                    self.isLoading = false
-                }
+                self.isLoading = false
             }
         }
     }
@@ -1571,10 +1630,10 @@ private struct AnalyticsTooltipRow: Equatable {
 }
 
 private struct AnalyticsScreenCachePayload {
-    let system: SystemAnalytics
-    let adsb: ADSBAnalytics
-    let satellite: SatelliteAnalytics
-    let tuya: TuyaTemperatureHumidityResponse
+    let system: SystemAnalytics?
+    let adsb: ADSBAnalytics?
+    let satellite: SatelliteAnalytics?
+    let tuya: TuyaTemperatureHumidityResponse?
 }
 
 private enum AnalyticsScreenCache {

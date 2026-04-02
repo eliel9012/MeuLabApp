@@ -1,7 +1,171 @@
 import SwiftUI
+import UIKit
+
+private func acarsAdaptiveColor(light: UIColor, dark: UIColor) -> Color {
+    Color(
+        uiColor: UIColor { traitCollection in
+            traitCollection.userInterfaceStyle == .dark ? dark : light
+        }
+    )
+}
+
+private func acarsRGBA(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, _ alpha: CGFloat = 1)
+    -> UIColor
+{
+    UIColor(red: red, green: green, blue: blue, alpha: alpha)
+}
+
+private enum ACARSTheme {
+    static let violet = Color(red: 0.52, green: 0.34, blue: 0.88)
+    static let blue = Color(red: 0.14, green: 0.38, blue: 0.84)
+    static let cyan = Color(red: 0.18, green: 0.70, blue: 0.86)
+    static let green = Color(red: 0.27, green: 0.78, blue: 0.37)
+    static let amber = Color(red: 0.95, green: 0.57, blue: 0.15)
+    static let ink = acarsAdaptiveColor(
+        light: acarsRGBA(0.08, 0.11, 0.20),
+        dark: acarsRGBA(0.92, 0.95, 1.00)
+    )
+    static let mist = acarsAdaptiveColor(
+        light: acarsRGBA(0.94, 0.97, 1.00),
+        dark: acarsRGBA(0.09, 0.11, 0.18)
+    )
+    static let surfaceTop = acarsAdaptiveColor(
+        light: acarsRGBA(1.00, 1.00, 1.00, 0.98),
+        dark: acarsRGBA(0.13, 0.16, 0.24, 0.98)
+    )
+    static let surfaceStroke = acarsAdaptiveColor(
+        light: acarsRGBA(1.00, 1.00, 1.00, 0.92),
+        dark: acarsRGBA(0.26, 0.31, 0.42, 0.88)
+    )
+    static let canvasMid = acarsAdaptiveColor(
+        light: acarsRGBA(1.00, 1.00, 1.00),
+        dark: acarsRGBA(0.06, 0.08, 0.15)
+    )
+    static let canvasEnd = acarsAdaptiveColor(
+        light: acarsRGBA(0.98, 0.99, 0.97),
+        dark: acarsRGBA(0.08, 0.10, 0.17)
+    )
+    static let shadow = acarsAdaptiveColor(
+        light: acarsRGBA(0.05, 0.12, 0.26),
+        dark: acarsRGBA(0.00, 0.00, 0.00)
+    )
+    static let toolbarBubble = acarsAdaptiveColor(
+        light: acarsRGBA(1.00, 1.00, 1.00, 0.78),
+        dark: acarsRGBA(0.16, 0.20, 0.28, 0.94)
+    )
+}
+
+private struct ACARSPanelBackground: View {
+    let cornerRadius: CGFloat
+    let highlight: Color
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+            .fill(
+                LinearGradient(
+                    colors: [ACARSTheme.surfaceTop, ACARSTheme.mist],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .fill(
+                        LinearGradient(
+                            colors: [highlight.opacity(0.12), .clear],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+            }
+            .overlay {
+                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                    .strokeBorder(
+                        LinearGradient(
+                            colors: [highlight.opacity(0.28), ACARSTheme.surfaceStroke],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        ),
+                        lineWidth: 1.1
+                    )
+            }
+            .shadow(color: ACARSTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
+            .shadow(color: highlight.opacity(0.07), radius: 14, x: 0, y: 6)
+    }
+}
+
+private extension View {
+    func acarsPanel(cornerRadius: CGFloat = 20, highlight: Color = ACARSTheme.violet) -> some View {
+        background(ACARSPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+    }
+}
+
+private struct ACARSToolbarTitle: View {
+    var body: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [ACARSTheme.violet.opacity(0.18), ACARSTheme.blue.opacity(0.12)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 28, height: 28)
+
+                Image(systemName: "antenna.radiowaves.left.and.right")
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundStyle(ACARSTheme.violet)
+            }
+
+            Text("ACARS")
+                .font(.system(size: 23, weight: .black, design: .rounded))
+                .tracking(0.5)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [ACARSTheme.violet, ACARSTheme.blue],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+        }
+    }
+}
+
+private struct ACARSInfoChip: View {
+    let title: String
+    let value: String
+    let tint: Color
+    let icon: String
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(title)
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(ACARSTheme.ink.opacity(0.56))
+
+            HStack(spacing: 6) {
+                Image(systemName: icon)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(tint)
+
+                Text(value)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(ACARSTheme.ink)
+                    .lineLimit(1)
+            }
+        }
+        .padding(.horizontal, 12)
+        .padding(.vertical, 9)
+        .background(Capsule().fill(tint.opacity(0.10)))
+        .overlay(Capsule().stroke(tint.opacity(0.18), lineWidth: 1))
+    }
+}
 
 struct ACARSView: View {
     @EnvironmentObject var appState: AppState
+    @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showMessagesList = false
     @State private var showSearchResults = false
     @State private var searchText = ""
@@ -10,6 +174,9 @@ struct ACARSView: View {
     @State private var aircraftMessages: [ACARSMessage] = []
     @State private var isLoadingAircraftMessages = false
     @State private var searchResults: [ACARSMessage] = []
+
+    private var isWide: Bool { horizontalSizeClass == .regular }
+    private var contentMaxWidth: CGFloat { isWide ? 980 : 760 }
 
     var body: some View {
         NavigationStack {
@@ -38,11 +205,44 @@ struct ACARSView: View {
 
                     // Removed: "Alertas Recentes" card (kept alerts in the dedicated Alertas tab).
                 }
+                .frame(maxWidth: contentMaxWidth)
+                .frame(maxWidth: .infinity)
                 .padding()
+                .padding(.bottom, 44)
             }
-            .navigationTitle("ACARS")
-            .navigationBarTitleDisplayMode(.large)
+            .background {
+                ZStack {
+                    LinearGradient(
+                        colors: [ACARSTheme.canvasMid, ACARSTheme.canvasEnd],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+
+                    Circle()
+                        .fill(ACARSTheme.violet.opacity(0.10))
+                        .frame(width: isWide ? 520 : 320)
+                        .blur(radius: 40)
+                        .offset(x: isWide ? -260 : -120, y: -260)
+
+                    Circle()
+                        .fill(ACARSTheme.blue.opacity(0.08))
+                        .frame(width: isWide ? 420 : 260)
+                        .blur(radius: 34)
+                        .offset(x: isWide ? 260 : 120, y: -120)
+
+                    Circle()
+                        .fill(ACARSTheme.green.opacity(0.08))
+                        .frame(width: isWide ? 420 : 260)
+                        .blur(radius: 40)
+                        .offset(x: isWide ? 220 : 120, y: 280)
+                }
+                .ignoresSafeArea()
+            }
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
+                ToolbarItem(placement: .principal) {
+                    ACARSToolbarTitle()
+                }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button {
                         print("[ACARSView] 🔄 Manual refresh triggered")
@@ -53,6 +253,13 @@ struct ACARSView: View {
                         }
                     } label: {
                         Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 18, weight: .semibold))
+                            .foregroundStyle(ACARSTheme.violet)
+                            .padding(8)
+                            .background(
+                                Circle()
+                                    .fill(ACARSTheme.toolbarBubble)
+                            )
                     }
                 }
             }
@@ -113,17 +320,37 @@ struct ACARSView: View {
 
     @ViewBuilder
     private func summarySection(_ summary: ACARSSummary) -> some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                Image(systemName: "antenna.radiowaves.left.and.right")
-                    .foregroundStyle(.purple)
-                Text("Hoje")
-                    .font(.headline)
-                Spacer()
-                if let peak = summary.today.peakHour {
-                    Text("Pico: \(peak)")
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top, spacing: 16) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack(spacing: 10) {
+                        Label("Link ACARS", systemImage: "antenna.radiowaves.left.and.right")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(ACARSTheme.ink.opacity(0.82))
+
+                        Text("ATIVO")
+                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .tracking(1)
+                            .foregroundStyle(ACARSTheme.green)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(ACARSTheme.green.opacity(0.14), in: Capsule())
+                    }
+
+                    Text("Mensageria aeronáutica, fila recente e leitura de volume na mesma janela.")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(ACARSTheme.ink.opacity(0.56))
+                }
+
+                Spacer(minLength: 12)
+
+                VStack(alignment: .trailing, spacing: 8) {
+                    ACARSInfoChip(
+                        title: "Pico",
+                        value: summary.today.peakHour ?? "--",
+                        tint: ACARSTheme.amber,
+                        icon: "clock.badge"
+                    )
                 }
             }
 
@@ -138,35 +365,58 @@ struct ACARSView: View {
                     title: "Mensagens",
                     value: "\(summary.today.messages)",
                     icon: "envelope.fill",
-                    color: .purple
+                    color: ACARSTheme.violet
                 )
 
                 ACARSStatCard(
                     title: "Voos",
                     value: "\(summary.today.flights)",
                     icon: "airplane",
-                    color: .blue
+                    color: ACARSTheme.blue
                 )
 
                 ACARSStatCard(
                     title: "Aeronaves",
                     value: "\(summary.today.aircraft)",
                     icon: "airplane.circle",
-                    color: .green
+                    color: ACARSTheme.green
                 )
             }
 
-            // 24h stats
-            HStack(spacing: 16) {
-                Label("\(summary.last24h.messages) msgs/24h", systemImage: "clock")
-                Spacer()
-                Label("\(summary.lastHour) msgs/hora", systemImage: "clock.badge")
+            ViewThatFits(in: .horizontal) {
+                HStack(spacing: 10) {
+                    ACARSInfoChip(
+                        title: "Janela 24h",
+                        value: "\(summary.last24h.messages) msgs",
+                        tint: ACARSTheme.blue,
+                        icon: "clock"
+                    )
+                    ACARSInfoChip(
+                        title: "Cadência",
+                        value: "\(summary.lastHour) msgs/h",
+                        tint: ACARSTheme.cyan,
+                        icon: "waveform"
+                    )
+                }
+
+                VStack(alignment: .leading, spacing: 8) {
+                    ACARSInfoChip(
+                        title: "Janela 24h",
+                        value: "\(summary.last24h.messages) msgs",
+                        tint: ACARSTheme.blue,
+                        icon: "clock"
+                    )
+                    ACARSInfoChip(
+                        title: "Cadência",
+                        value: "\(summary.lastHour) msgs/h",
+                        tint: ACARSTheme.cyan,
+                        icon: "waveform"
+                    )
+                }
             }
-            .font(.caption)
-            .foregroundStyle(.secondary)
         }
-        .padding()
-        .glassCard(cornerRadius: 12)
+        .padding(18)
+        .acarsPanel(cornerRadius: 24, highlight: ACARSTheme.violet)
     }
 
     // MARK: - Hourly Chart
@@ -175,9 +425,10 @@ struct ACARSView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: "chart.bar.fill")
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(ACARSTheme.blue)
                 Text("Últimas 12 Horas")
                     .font(.headline)
+                    .foregroundStyle(ACARSTheme.ink)
             }
 
             if !appState.acarsHourly.isEmpty {
@@ -195,7 +446,7 @@ struct ACARSView: View {
                                 let width =
                                     CGFloat(hour.messages) / CGFloat(maxMessages) * geo.size.width
                                 RoundedRectangle(cornerRadius: 4)
-                                    .fill(.purple.opacity(0.7))
+                                    .fill(ACARSTheme.violet.opacity(0.8))
                                     .frame(width: max(width, 2))
                             }
                             .frame(height: 20)
@@ -203,15 +454,15 @@ struct ACARSView: View {
                             Text("\(hour.messages)")
                                 .font(.caption2)
                                 .monospacedDigit()
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                                 .frame(width: 50, alignment: .trailing)
                         }
                     }
                 }
             }
         }
-        .padding()
-        .glassCard(cornerRadius: 12)
+        .padding(18)
+        .acarsPanel(cornerRadius: 22, highlight: ACARSTheme.blue)
     }
 
     // MARK: - Top Aircraft
@@ -222,13 +473,14 @@ struct ACARSView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Image(systemName: "trophy.fill")
-                        .foregroundStyle(.orange)
+                        .foregroundStyle(ACARSTheme.amber)
                     Text("Top Aeronaves")
                         .font(.headline)
+                        .foregroundStyle(ACARSTheme.ink)
                     Spacer()
                     Text("Toque para ver mensagens")
                         .font(.caption2)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                 }
 
                 ForEach(Array(aircraft.enumerated()), id: \.element.id) { index, ac in
@@ -238,7 +490,7 @@ struct ACARSView: View {
                         HStack {
                             Text("\(index + 1).")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                                 .frame(width: 20)
 
                             Text(ac.tail)
@@ -249,28 +501,28 @@ struct ACARSView: View {
                             if let flight = ac.flight, !flight.isEmpty {
                                 Text("(\(flight))")
                                     .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                    .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                             }
 
                             Spacer()
 
                             Text("\(ac.count) msgs")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(ACARSTheme.ink.opacity(0.56))
 
                             Image(systemName: "chevron.right")
                                 .font(.caption)
-                                .foregroundStyle(.tertiary)
+                                .foregroundStyle(ACARSTheme.ink.opacity(0.34))
                         }
                         .padding(.vertical, 6)
                         .padding(.horizontal, 8)
-                        .materialCard(cornerRadius: 8)
+                        .acarsPanel(cornerRadius: 14, highlight: ACARSTheme.violet)
                     }
                     .buttonStyle(.plain)
                 }
             }
-            .padding()
-            .glassCard(cornerRadius: 12)
+            .padding(18)
+            .acarsPanel(cornerRadius: 22, highlight: ACARSTheme.amber)
         }
     }
 
@@ -282,9 +534,10 @@ struct ACARSView: View {
             VStack(alignment: .leading, spacing: 8) {
                 HStack {
                     Image(systemName: "tag.fill")
-                        .foregroundStyle(.green)
+                        .foregroundStyle(ACARSTheme.green)
                     Text("Tipos de Mensagem")
                         .font(.headline)
+                        .foregroundStyle(ACARSTheme.ink)
                 }
 
                 LazyVGrid(
@@ -301,29 +554,29 @@ struct ACARSView: View {
                                 .monospacedDigit()
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.purple.opacity(0.2))
-                                .cornerRadius(4)
+                                .background(ACARSTheme.violet.opacity(0.18), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
 
                             if let desc = label.description {
                                 Text(desc)
                                     .font(.caption)
                                     .lineLimit(1)
+                                    .foregroundStyle(ACARSTheme.ink)
                             }
 
                             Spacer()
 
                             Text("\(label.count)")
                                 .font(.caption)
-                                .foregroundStyle(.secondary)
+                                .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                         }
                         .padding(.horizontal, 8)
                         .padding(.vertical, 6)
-                        .materialCard(cornerRadius: 8)
+                        .acarsPanel(cornerRadius: 14, highlight: ACARSTheme.green)
                     }
                 }
             }
-            .padding()
-            .glassCard(cornerRadius: 12)
+            .padding(18)
+            .acarsPanel(cornerRadius: 22, highlight: ACARSTheme.green)
         }
     }
 
@@ -333,9 +586,10 @@ struct ACARSView: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: "envelope.badge")
-                    .foregroundStyle(.blue)
+                    .foregroundStyle(ACARSTheme.blue)
                 Text("Mensagens Recentes")
                     .font(.headline)
+                    .foregroundStyle(ACARSTheme.ink)
 
                 Spacer()
 
@@ -353,8 +607,8 @@ struct ACARSView: View {
                 }
             }
         }
-        .padding()
-        .glassCard(cornerRadius: 12)
+        .padding(18)
+        .acarsPanel(cornerRadius: 22, highlight: ACARSTheme.blue)
     }
 
     // MARK: - Search
@@ -385,7 +639,7 @@ struct ACARSView: View {
         VStack(alignment: .leading, spacing: 8) {
             Text("Histórico 7 Dias")
                 .font(.headline)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ACARSTheme.ink.opacity(0.72))
 
             VStack(spacing: 6) {
                 ForEach(history.last7Days) { day in
@@ -397,7 +651,7 @@ struct ACARSView: View {
                             let maxValue = history.last7Days.map(\.messages).max() ?? 1
                             let width = CGFloat(day.messages) / CGFloat(maxValue) * geo.size.width
                             RoundedRectangle(cornerRadius: 4)
-                                .fill(Color.purple.opacity(0.7))
+                                .fill(ACARSTheme.violet.opacity(0.8))
                                 .frame(width: max(width, 2))
                         }
                         .frame(height: 16)
@@ -405,13 +659,13 @@ struct ACARSView: View {
                             .font(.caption2)
                             .monospacedDigit()
                             .frame(width: 50, alignment: .trailing)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                     }
                 }
             }
         }
-        .padding()
-        .glassCard(cornerRadius: 12)
+        .padding(18)
+        .acarsPanel(cornerRadius: 22, highlight: ACARSTheme.violet)
     }
 
     @ViewBuilder
@@ -479,14 +733,15 @@ struct ACARSStatCard: View {
                 .font(.title2)
                 .fontWeight(.bold)
                 .monospacedDigit()
+                .foregroundStyle(ACARSTheme.ink)
 
             Text(title)
                 .font(.caption2)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(ACARSTheme.ink.opacity(0.56))
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
-        .glassCard(cornerRadius: 10)
+        .acarsPanel(cornerRadius: 16, highlight: color)
     }
 }
 
@@ -506,41 +761,43 @@ struct ACARSMessageRow: View {
                         .font(.subheadline)
                         .fontWeight(.medium)
                         .monospacedDigit()
+                        .foregroundStyle(ACARSTheme.ink)
 
                     if let tail = message.tail, message.flight != nil {
                         Text("(\(tail))")
                             .font(.caption)
-                            .foregroundStyle(.secondary)
+                            .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                     }
 
                     Spacer()
 
                     Text(formatTime(message.time))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                 }
 
                 if let route = message.displayRoute {
                     Label(route, systemImage: "airplane.departure")
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                 }
 
                 if let labelDesc = message.labelDesc {
                     Text(labelDesc)
                         .font(.caption)
-                        .foregroundStyle(.purple)
+                        .foregroundStyle(ACARSTheme.violet)
                 }
 
                 if let text = message.text, !text.isEmpty {
                     Text(text.prefix(80) + (text.count > 80 ? "..." : ""))
                         .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .foregroundStyle(ACARSTheme.ink.opacity(0.62))
                         .lineLimit(2)
                 }
             }
         }
-        .padding(.vertical, 4)
+        .padding(12)
+        .acarsPanel(cornerRadius: 16, highlight: Color.fromName(message.labelColor))
     }
 
     private func formatTime(_ timeString: String) -> String {

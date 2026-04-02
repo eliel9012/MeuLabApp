@@ -62,8 +62,19 @@
 	<dict>
 		<key>NSAllowsArbitraryLoads</key>
 		<false/>
+		<key>NSAllowsLocalNetworking</key>
+		<true/>
+		<key>NSAllowsArbitraryLoadsInWebContent</key>
+		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
+			<key>apple-mapkit.com</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<false/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
 			<key>meulab.fun</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
@@ -72,6 +83,13 @@
 				<true/>
 			</dict>
 			<key>webnow.com.br</key>
+			<dict>
+				<key>NSExceptionAllowsInsecureHTTPLoads</key>
+				<true/>
+				<key>NSIncludesSubdomains</key>
+				<true/>
+			</dict>
+			<key>10.0.1.50</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>
 				<true/>

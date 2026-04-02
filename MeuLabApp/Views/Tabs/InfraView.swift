@@ -7,7 +7,7 @@ struct InfraView: View {
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 16) {
+            LazyVStack(spacing: 16) {
                 if let metrics = appState.metrics {
                     metricsSection(metrics)
                 } else if let error = appState.metricsError {
@@ -58,11 +58,18 @@ struct InfraView: View {
                     icon: "clock",
                     color: .blue
                 )
-                InfraStatCard(title: "Requests", value: "\(metrics.requestCount)", icon: "arrow.up.arrow.down", color: .green)
-                InfraStatCard(title: "Latência Média", value: String(format: "%.1f ms", metrics.avgResponseMs), icon: "speedometer", color: .orange)
-                 InfraStatCard(title: "Última", value: String(format: "%.1f ms", metrics.lastResponseMs), icon: "timer", color: .purple)
+                InfraStatCard(
+                    title: "Requests", value: "\(metrics.requestCount)",
+                    icon: "arrow.up.arrow.down", color: .green)
+                InfraStatCard(
+                    title: "Latência Média",
+                    value: String(format: "%.1f ms", metrics.avgResponseMs), icon: "speedometer",
+                    color: .orange)
+                InfraStatCard(
+                    title: "Última", value: String(format: "%.1f ms", metrics.lastResponseMs),
+                    icon: "timer", color: .purple)
             }
-            
+
             Divider()
 
             HStack {
@@ -73,8 +80,7 @@ struct InfraView: View {
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 
     @ViewBuilder
@@ -88,22 +94,26 @@ struct InfraView: View {
                     .font(.headline)
             }
 
-            Text("Server \(response.version.server.version ?? "-") • API \(response.version.server.apiVersion ?? "-")")
-                .font(.caption)
-                .foregroundStyle(.secondary)
+            Text(
+                "Server \(response.version.server.version ?? "-") • API \(response.version.server.apiVersion ?? "-")"
+            )
+            .font(.caption)
+            .foregroundStyle(.secondary)
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 
     @ViewBuilder
     private func dockerContainersSection(_ containers: [DockerContainer]) -> some View {
-        let filtered = searchText.isEmpty ? containers : containers.filter {
-            $0.names.localizedCaseInsensitiveContains(searchText) ||
-            $0.image.localizedCaseInsensitiveContains(searchText)
-        }
-        
+        let filtered =
+            searchText.isEmpty
+            ? containers
+            : containers.filter {
+                $0.names.localizedCaseInsensitiveContains(searchText)
+                    || $0.image.localizedCaseInsensitiveContains(searchText)
+            }
+
         VStack(alignment: .leading, spacing: 12) {
             Text("Containers (\(filtered.count))")
                 .font(.headline)
@@ -127,7 +137,10 @@ struct InfraView: View {
                             if let health = container.health {
                                 Text("Health: \(health.status)")
                                     .font(.caption2)
-                                    .foregroundStyle(health.status == "healthy" ? .green : (health.status == "unhealthy" ? .red : .secondary))
+                                    .foregroundStyle(
+                                        health.status == "healthy"
+                                            ? .green
+                                            : (health.status == "unhealthy" ? .red : .secondary))
                             }
 
                             HStack {
@@ -142,21 +155,19 @@ struct InfraView: View {
                             }
                         }
                         .padding(12)
-                        .background(Color(.systemGray5))
-                        .cornerRadius(8)
+                        .materialCard(cornerRadius: 8)
                     }
                 }
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 
     @ViewBuilder
     private func systemdSection(_ services: [SystemdService]) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-             Text("Systemd")
+            Text("Systemd")
                 .font(.headline)
                 .foregroundStyle(.secondary)
 
@@ -175,20 +186,18 @@ struct InfraView: View {
                         StatusBadge(status: service.activeState)
                     }
                     .padding(8)
-                    .background(Color(.systemGray5)) // Added background for consistency
-                    .cornerRadius(8)
+                    .materialCard(cornerRadius: 8)
                 }
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 }
 
 struct StatusBadge: View {
     let status: String
-    
+
     var color: Color {
         switch status.lowercased() {
         case "running", "active", "healthy": return .green
@@ -197,7 +206,7 @@ struct StatusBadge: View {
         default: return .secondary
         }
     }
-    
+
     var body: some View {
         Text(status.capitalized)
             .font(.caption2)
@@ -232,7 +241,7 @@ struct ContainerLogView: View {
                         Button("Tentar Novamente") {
                             fetchLogs()
                         }
-                        .buttonStyle(.bordered)
+                        .adaptiveGlassButton()
                     }
                 } else {
                     ScrollView {
@@ -272,7 +281,8 @@ struct ContainerLogView: View {
         error = nil
         Task {
             do {
-                let output = try await APIService.shared.fetchDockerLogsRaw(container: containerName, tail: 500, since: 86400)
+                let output = try await APIService.shared.fetchDockerLogsRaw(
+                    container: containerName, tail: 500, since: 86400)
                 await MainActor.run {
                     self.logs = output.isEmpty ? "Nenhum log encontrado nas últimas 24h." : output
                     self.isLoading = false
@@ -314,8 +324,7 @@ struct InfraStatCard: View {
             Spacer()
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .glassCard(cornerRadius: 12)
     }
 }
 

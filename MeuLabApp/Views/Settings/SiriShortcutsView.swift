@@ -88,7 +88,7 @@ struct SiriShortcutsView: View {
     @State private var shortcuts: [SiriShortcut] = []
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             List {
                 Section("Atalhos Disponíveis") {
                     ForEach(shortcuts) { shortcut in
@@ -264,7 +264,7 @@ struct SiriShortcutsSetupView: View {
     @State private var successCount = 0
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 20) {
                 Text("Adicionar Atalhos Siri")
                     .font(.title2)
@@ -288,7 +288,7 @@ struct SiriShortcutsSetupView: View {
                     Button(addingAll ? "Adicionando..." : "Adicionar Todos") {
                         addAllShortcuts()
                     }
-                    .buttonStyle(.borderedProminent)
+                    .adaptiveGlassProminentButton()
                     .disabled(addingAll)
                     
                     if successCount > 0 {
@@ -366,7 +366,7 @@ struct SiriSetupRow: View {
                     addShortcut()
                 }
                 .font(.caption)
-                .buttonStyle(.bordered)
+                .adaptiveGlassButton()
             }
         }
         .padding(.vertical, 8)

@@ -1,3 +1,4 @@
+import Charts
 import SwiftUI
 import UIKit
 
@@ -13,6 +14,36 @@ private func systemRGBA(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, _ alp
     -> UIColor
 {
     UIColor(red: red, green: green, blue: blue, alpha: alpha)
+}
+
+private func systemParseDate(_ timestamp: String) -> Date? {
+    let isoWithFractional = ISO8601DateFormatter()
+    isoWithFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+    if let date = isoWithFractional.date(from: timestamp) {
+        return date
+    }
+
+    let iso = ISO8601DateFormatter()
+    iso.formatOptions = [.withInternetDateTime]
+    if let date = iso.date(from: timestamp) {
+        return date
+    }
+
+    let dateFormatter = DateFormatter()
+    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
+    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+    for format in [
+        "yyyy-MM-dd'T'HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm:ssZ",
+    ] {
+        dateFormatter.dateFormat = format
+        if let date = dateFormatter.date(from: timestamp) {
+            return date
+        }
+    }
+
+    return nil
 }
 
 private enum SystemTheme {
@@ -94,8 +125,9 @@ private struct SystemPanelBackground: View {
     }
 }
 
-private extension View {
-    func systemPanel(cornerRadius: CGFloat = 18, highlight: Color = SystemTheme.piBlue) -> some View
+extension View {
+    fileprivate func systemPanel(cornerRadius: CGFloat = 18, highlight: Color = SystemTheme.piBlue)
+        -> some View
     {
         background(SystemPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
     }
@@ -164,7 +196,9 @@ private struct SystemToolbarTitle: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [SystemTheme.piGreen.opacity(0.2), SystemTheme.piBlue.opacity(0.12)],
+                            colors: [
+                                SystemTheme.piGreen.opacity(0.2), SystemTheme.piBlue.opacity(0.12),
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -373,11 +407,43 @@ private struct SystemAnalyticsLaunchTile: View {
     }
 }
 
+private enum SystemNode: String, CaseIterable, Identifiable {
+    case pi = "pi"
+    case macMini = "mac"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .pi: return "Pi5"
+        case .macMini: return "Mac Mini"
+        }
+    }
+
+    var icon: String {
+        switch self {
+        case .pi: return "cpu"
+        case .macMini: return "desktopcomputer"
+        }
+    }
+
+    var tint: Color {
+        switch self {
+        case .pi: return SystemTheme.piGreen
+        case .macMini: return .blue
+        }
+    }
+}
+
 struct SystemView: View {
     @EnvironmentObject var appState: AppState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var snapshotTarget: FirestickSnapshotTarget?
     @State private var analyticsDestination: SystemAnalyticsDestination?
+    @State private var systemAnalytics: SystemAnalytics?
+    @State private var selectedCPUPointID: Date?
+    @State private var selectedNode: SystemNode = .pi
+    @State private var macMiniCPUPointID: Date?
 
     private var isCompactLayout: Bool { horizontalSizeClass == .compact }
 
@@ -385,15 +451,30 @@ struct SystemView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 20) {
-                    if let status = appState.systemStatus {
-                        systemContent(status)
-                    } else if let error = appState.systemError {
-                        ErrorCard(message: error)
-                    } else {
-                        LoadingCard()
+                    nodePickerBar
+
+                    switch selectedNode {
+                    case .pi:
+                        if let status = appState.systemStatus {
+                            systemContent(status)
+                        } else if let error = appState.systemError {
+                            ErrorCard(message: error)
+                        } else {
+                            LoadingCard()
+                        }
+
+                    case .macMini:
+                        if let status = appState.macMiniStatus {
+                            macMiniContent(status)
+                        } else if let error = appState.macMiniError {
+                            ErrorCard(message: error)
+                        } else {
+                            LoadingCard()
+                        }
                     }
                 }
                 .padding(.horizontal, isCompactLayout ? 14 : 16)
+                .padding(.top, isCompactLayout ? 8 : 4)
                 .padding(.bottom, 20)
             }
             .background {
@@ -427,6 +508,12 @@ struct SystemView: View {
                     SystemToolbarTitle()
                 }
             }
+            .task {
+                await loadSystemAnalyticsIfNeeded()
+                if appState.macMiniStatus == nil {
+                    await appState.refreshMacMini()
+                }
+            }
             .sheet(item: $snapshotTarget) { target in
                 FirestickSnapshotView(deviceId: target.id, deviceName: target.name)
             }
@@ -444,8 +531,8 @@ struct SystemView: View {
     @ViewBuilder
     private func systemContent(_ status: SystemStatus) -> some View {
         systemNodeBar(status)
-        systemOverviewHeader(status)
-        analyticsLauncherSection
+        realtimeHealthSection(status)
+        cpuHistorySection
         environmentSection
 
         // CPU
@@ -474,7 +561,9 @@ struct SystemView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 6) {
-                                if let l1 = cpu.load1min, let l5 = cpu.load5min, let l15 = cpu.load15min {
+                                if let l1 = cpu.load1min, let l5 = cpu.load5min,
+                                    let l15 = cpu.load15min
+                                {
                                     Text("Load Avg")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
@@ -507,7 +596,9 @@ struct SystemView: View {
                             }
 
                             VStack(alignment: .leading, spacing: 4) {
-                                if let l1 = cpu.load1min, let l5 = cpu.load5min, let l15 = cpu.load15min {
+                                if let l1 = cpu.load1min, let l5 = cpu.load5min,
+                                    let l15 = cpu.load15min
+                                {
                                     Text("Load Avg")
                                         .font(.caption2)
                                         .foregroundStyle(.secondary)
@@ -744,6 +835,413 @@ struct SystemView: View {
         }
     }
 
+    private func loadSystemAnalyticsIfNeeded() async {
+        guard systemAnalytics == nil else { return }
+        do {
+            systemAnalytics = try await APIService.shared.fetchSystemAnalytics(
+                period: "24h", interval: "15m")
+        } catch {
+        }
+    }
+
+    // MARK: - Node Picker
+
+    private var nodePickerBar: some View {
+        HStack(spacing: 0) {
+            ForEach(SystemNode.allCases) { node in
+                Button {
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        selectedNode = node
+                    }
+                } label: {
+                    HStack(spacing: 8) {
+                        Image(systemName: node.icon)
+                            .font(.system(size: 13, weight: .bold))
+
+                        Text(node.label)
+                            .font(.subheadline.weight(.bold))
+                    }
+                    .foregroundStyle(selectedNode == node ? .white : SystemTheme.ink.opacity(0.6))
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background {
+                        if selectedNode == node {
+                            Capsule()
+                                .fill(node.tint)
+                                .shadow(color: node.tint.opacity(0.3), radius: 8, y: 2)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(4)
+        .background(
+            Capsule()
+                .fill(Color(.secondarySystemGroupedBackground))
+        )
+        .overlay(
+            Capsule()
+                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
+        )
+    }
+
+    // MARK: - Mac Mini Content
+
+    @ViewBuilder
+    private func macMiniContent(_ status: SystemStatus) -> some View {
+        macMiniNodeBar(status)
+        realtimeHealthSection(status)
+        macMiniCPUHistorySection
+
+        // CPU
+        if let cpu = status.cpu, cpu.error == nil {
+            SystemCard(title: "CPU", icon: "cpu", color: .blue) {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(spacing: 16) {
+                        GaugeView(
+                            value: cpu.usagePercent ?? 0,
+                            maxValue: 100,
+                            title: "Uso",
+                            color: .blue
+                        )
+
+                        if let temp = cpu.temperatureC {
+                            GaugeView(
+                                value: temp,
+                                maxValue: 100,
+                                title: "Temp",
+                                color: Color.fromName(cpu.temperatureColor),
+                                suffix: "°C"
+                            )
+                        }
+                    }
+
+                    VStack(alignment: .leading, spacing: 6) {
+                        if let l1 = cpu.load1min, let l5 = cpu.load5min, let l15 = cpu.load15min {
+                            Text("Load Avg")
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            Text(String(format: "%.2f  %.2f  %.2f", l1, l5, l15))
+                                .font(.callout.monospacedDigit())
+                        }
+
+                        Text("\(cpu.cores ?? 8) cores")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+
+        // Memory
+        if let memory = status.memory, memory.error == nil {
+            SystemCard(title: "Memória RAM", icon: "memorychip", color: .purple) {
+                if let total = memory.totalMb, let used = memory.usedMb,
+                    let available = memory.availableMb
+                {
+                    VStack(spacing: 8) {
+                        ProgressView(value: Double(used), total: Double(total)) {
+                            HStack {
+                                Text("\(used) MB usado")
+                                    .font(.caption)
+                                Spacer()
+                                Text(String(format: "%.1f%%", memory.usedPercent ?? 0))
+                                    .font(.caption)
+                                    .monospacedDigit()
+                            }
+                        }
+                        .tint(.purple)
+
+                        HStack {
+                            Label("\(total) MB total", systemImage: "square.stack.3d.up")
+                            Spacer()
+                            Label("\(available) MB livre", systemImage: "checkmark.circle")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+
+        // Disk
+        if let disk = status.disk, disk.error == nil {
+            SystemCard(title: "Armazenamento", icon: "internaldrive", color: .orange) {
+                if let total = disk.totalGb, let used = disk.usedGb,
+                    let available = disk.availableGb
+                {
+                    VStack(spacing: 8) {
+                        ProgressView(value: used, total: total) {
+                            HStack {
+                                Text(String(format: "%.1f GB usado", used))
+                                    .font(.caption)
+                                Spacer()
+                                Text(String(format: "%.1f%%", disk.usedPercent ?? 0))
+                                    .font(.caption)
+                                    .monospacedDigit()
+                            }
+                        }
+                        .tint(.orange)
+
+                        HStack {
+                            Label(
+                                String(format: "%.1f GB total", total),
+                                systemImage: "square.stack.3d.up")
+                            Spacer()
+                            Label(
+                                String(format: "%.1f GB livre", available),
+                                systemImage: "checkmark.circle")
+                        }
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+
+        // Processes
+        if !appState.macMiniProcesses.isEmpty {
+            SystemCard(title: "Top Processos (CPU)", icon: "list.bullet.rectangle", color: .blue) {
+                VStack(spacing: 8) {
+                    ForEach(appState.macMiniProcesses.prefix(5)) { process in
+                        HStack {
+                            Text(process.command)
+                                .font(.subheadline)
+                                .lineLimit(1)
+                            Spacer()
+                            Text(String(format: "%.1f%%", process.cpuPercent))
+                                .font(.caption)
+                                .monospacedDigit()
+                                .foregroundStyle(.secondary)
+                        }
+                        Divider()
+                    }
+                }
+            }
+        }
+
+        // Partitions
+        if !appState.macMiniPartitions.isEmpty {
+            SystemCard(title: "Partições", icon: "externaldrive", color: .orange) {
+                VStack(spacing: 12) {
+                    ForEach(appState.macMiniPartitions) { partition in
+                        VStack(alignment: .leading, spacing: 4) {
+                            HStack {
+                                Text(partition.mount)
+                                    .font(.subheadline)
+                                    .fontWeight(.medium)
+                                Spacer()
+                                Text(partition.usedPercent)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                            ProgressView(
+                                value: Double(partition.usedBytes),
+                                total: Double(max(partition.totalBytes, 1))
+                            )
+                            .tint(.orange)
+
+                            Text(
+                                "\(formatBytes(partition.usedBytes)) / \(formatBytes(partition.totalBytes))"
+                            )
+                            .font(.caption2)
+                            .foregroundStyle(.secondary)
+                        }
+                    }
+                }
+            }
+        }
+
+        // Network
+        if !appState.macMiniNetwork.isEmpty {
+            let activeInterfaces = appState.macMiniNetwork.filter {
+                $0.rxBytes > 0 || $0.txBytes > 0
+            }
+            if !activeInterfaces.isEmpty {
+                SystemCard(title: "Rede", icon: "arrow.left.and.right", color: .green) {
+                    VStack(spacing: 10) {
+                        ForEach(activeInterfaces) { iface in
+                            HStack {
+                                Text(iface.iface)
+                                    .font(.subheadline)
+                                Spacer()
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text("RX \(formatBytes(iface.rxBytes))")
+                                    Text("TX \(formatBytes(iface.txBytes))")
+                                }
+                                .font(.caption2)
+                                .foregroundStyle(.secondary)
+                            }
+                            Divider()
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private func macMiniNodeBar(_ status: SystemStatus) -> some View {
+        VStack(alignment: .leading, spacing: 16) {
+            HStack(alignment: .top) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack(spacing: 10) {
+                        Label("Nó monitorado", systemImage: "desktopcomputer")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundStyle(SystemTheme.ink.opacity(0.82))
+
+                        Text("ONLINE")
+                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .tracking(1.0)
+                            .foregroundStyle(SystemTheme.piBlue)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(SystemTheme.piBlue.opacity(0.14), in: Capsule())
+                    }
+
+                    HStack(spacing: 10) {
+                        Image(systemName: "desktopcomputer")
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundStyle(SystemTheme.piBlue)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Mac Mini")
+                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .foregroundStyle(SystemTheme.ink)
+
+                            Text(status.location)
+                                .font(.subheadline)
+                                .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                        }
+                    }
+                }
+
+                Spacer(minLength: 12)
+
+                VStack(alignment: .trailing, spacing: 8) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [
+                                        SystemTheme.piBlue.opacity(0.16), Color.cyan.opacity(0.10),
+                                    ],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 64, height: 64)
+
+                        Circle()
+                            .stroke(SystemTheme.piBlue.opacity(0.22), lineWidth: 1.2)
+                            .frame(width: 64, height: 64)
+
+                        Image(systemName: "desktopcomputer")
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundStyle(SystemTheme.piBlue)
+                    }
+
+                    Text(statusUpdateText(status))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                        .multilineTextAlignment(.trailing)
+                }
+            }
+
+            Text("Telemetria ao vivo do Mac Mini e seus serviços.")
+                .font(.callout)
+                .foregroundStyle(SystemTheme.ink.opacity(0.62))
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 10) {
+                    if let uptime = status.uptime {
+                        SystemInfoChip(
+                            title: "Uptime",
+                            value: uptime.formatted,
+                            tint: SystemTheme.piBlue,
+                            icon: "clock"
+                        )
+                    }
+
+                    SystemInfoChip(
+                        title: "Plataforma",
+                        value: "macOS ARM64",
+                        tint: .cyan,
+                        icon: "apple.logo"
+                    )
+
+                    if let cores = status.cpu?.cores {
+                        SystemInfoChip(
+                            title: "Cores",
+                            value: "\(cores)",
+                            tint: .blue,
+                            icon: "cpu"
+                        )
+                    }
+                }
+                .padding(.vertical, 2)
+            }
+        }
+        .padding(20)
+        .systemPanel(cornerRadius: 24, highlight: SystemTheme.piBlue)
+    }
+
+    @ViewBuilder
+    private var macMiniCPUHistorySection: some View {
+        if let cpuMetrics = appState.macMiniAnalytics?.cpu {
+            let points = cpuChartPoints(cpuMetrics)
+            if !points.isEmpty {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(alignment: .firstTextBaseline) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("CPU")
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(SystemTheme.ink)
+
+                            Text("Histórico das últimas 24 horas")
+                                .font(.subheadline)
+                                .foregroundStyle(SystemTheme.ink.opacity(0.58))
+                        }
+
+                        Spacer()
+
+                        Text(
+                            String(
+                                format: "%.1f%% agora",
+                                cpuMetrics.dataPoints.last?.usage ?? cpuMetrics.average)
+                        )
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SystemTheme.piBlue)
+                        .monospacedDigit()
+                    }
+
+                    SystemCPUInteractiveChart(
+                        points: points,
+                        selectedPointID: $macMiniCPUPointID
+                    )
+                    .frame(height: isCompactLayout ? 230 : 240)
+                    .padding(14)
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+                    HStack(spacing: 12) {
+                        SystemTrendStat(
+                            title: "Média", value: String(format: "%.1f%%", cpuMetrics.average),
+                            tint: .blue)
+                        SystemTrendStat(
+                            title: "Pico", value: String(format: "%.1f%%", cpuMetrics.peak),
+                            tint: .orange)
+                        SystemTrendStat(
+                            title: "Mínimo", value: String(format: "%.1f%%", cpuMetrics.minimum),
+                            tint: .green)
+                    }
+                }
+                .padding(20)
+                .systemPanel(cornerRadius: 24, highlight: SystemTheme.piBlue)
+            }
+        }
+    }
+
     private func systemNodeBar(_ status: SystemStatus) -> some View {
         Group {
             if isCompactLayout {
@@ -786,7 +1284,10 @@ struct SystemView: View {
                                 Circle()
                                     .fill(
                                         LinearGradient(
-                                            colors: [SystemTheme.piGreen.opacity(0.16), SystemTheme.piBlue.opacity(0.10)],
+                                            colors: [
+                                                SystemTheme.piGreen.opacity(0.16),
+                                                SystemTheme.piBlue.opacity(0.10),
+                                            ],
                                             startPoint: .topLeading,
                                             endPoint: .bottomTrailing
                                         )
@@ -927,7 +1428,10 @@ struct SystemView: View {
                             Circle()
                                 .fill(
                                     LinearGradient(
-                                        colors: [SystemTheme.piGreen.opacity(0.16), SystemTheme.piBlue.opacity(0.10)],
+                                        colors: [
+                                            SystemTheme.piGreen.opacity(0.16),
+                                            SystemTheme.piBlue.opacity(0.10),
+                                        ],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
@@ -1075,6 +1579,148 @@ struct SystemView: View {
         .systemPanel(cornerRadius: 24, highlight: SystemTheme.piBlue)
     }
 
+    private func realtimeHealthSection(_ status: SystemStatus) -> some View {
+        VStack(alignment: .leading, spacing: 18) {
+            HStack {
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("Saúde em Tempo Real")
+                        .font(.title3.weight(.bold))
+                        .foregroundStyle(SystemTheme.ink)
+
+                    Text("CPU, RAM e temperatura do nó monitorado")
+                        .font(.subheadline)
+                        .foregroundStyle(SystemTheme.ink.opacity(0.58))
+                }
+
+                Spacer()
+            }
+
+            HStack(spacing: isCompactLayout ? 10 : 20) {
+                RealtimeGaugeCard(
+                    title: "CPU",
+                    value: status.cpu?.usagePercent ?? 0,
+                    maxValue: 100,
+                    tint: .blue,
+                    symbol: "cpu",
+                    valueLabel: String(format: "%.0f%%", status.cpu?.usagePercent ?? 0)
+                )
+
+                RealtimeGaugeCard(
+                    title: "RAM",
+                    value: status.memory?.usedPercent ?? 0,
+                    maxValue: 100,
+                    tint: .purple,
+                    symbol: "memorychip",
+                    valueLabel: String(format: "%.0f%%", status.memory?.usedPercent ?? 0)
+                )
+
+                RealtimeGaugeCard(
+                    title: "Temp",
+                    value: status.cpu?.temperatureC ?? 0,
+                    maxValue: 100,
+                    tint: temperatureGradient,
+                    symbol: "thermometer.medium",
+                    valueLabel: status.cpu?.temperatureC.map { String(format: "%.0f°C", $0) }
+                        ?? "--"
+                )
+            }
+        }
+        .padding(20)
+        .systemPanel(cornerRadius: 24, highlight: SystemTheme.piBlue)
+    }
+
+    @ViewBuilder
+    private var cpuHistorySection: some View {
+        if let cpuMetrics = systemAnalytics?.cpu {
+            let points = cpuChartPoints(cpuMetrics)
+            if !points.isEmpty {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack(alignment: .firstTextBaseline) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("CPU")
+                                .font(.title3.weight(.bold))
+                                .foregroundStyle(SystemTheme.ink)
+
+                            Text("Histórico das últimas 24 horas")
+                                .font(.subheadline)
+                                .foregroundStyle(SystemTheme.ink.opacity(0.58))
+                        }
+
+                        Spacer()
+
+                        Text(
+                            String(
+                                format: "%.1f%% agora",
+                                cpuMetrics.dataPoints.last?.usage ?? cpuMetrics.average)
+                        )
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SystemTheme.piBlue)
+                        .monospacedDigit()
+                    }
+
+                    SystemCPUInteractiveChart(
+                        points: points,
+                        selectedPointID: $selectedCPUPointID
+                    )
+                    .frame(height: isCompactLayout ? 230 : 240)
+                    .padding(14)
+                    .background(Color(.secondarySystemGroupedBackground))
+                    .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+
+                    HStack(spacing: 12) {
+                        SystemTrendStat(
+                            title: "Média", value: String(format: "%.1f%%", cpuMetrics.average),
+                            tint: .blue)
+                        SystemTrendStat(
+                            title: "Pico", value: String(format: "%.1f%%", cpuMetrics.peak),
+                            tint: .orange)
+                        SystemTrendStat(
+                            title: "Mínimo", value: String(format: "%.1f%%", cpuMetrics.minimum),
+                            tint: .green)
+                    }
+                }
+                .padding(20)
+                .systemPanel(cornerRadius: 24, highlight: SystemTheme.piBlue)
+            }
+        }
+    }
+
+    private var temperatureGradient: LinearGradient {
+        LinearGradient(
+            stops: [
+                .init(color: .green, location: 0.50),
+                .init(color: .orange, location: 0.70),
+                .init(color: .red, location: 0.85),
+            ],
+            startPoint: .topLeading,
+            endPoint: .bottomTrailing
+        )
+    }
+
+    private func cpuChartPoints(_ metrics: CPUMetrics) -> [SystemCPUChartPoint] {
+        metrics.dataPoints.compactMap { point in
+            guard let date = systemParseDate(point.timestamp) else { return nil }
+            let timestampText = date.formatted(.dateTime.day().month(.abbreviated).hour().minute())
+            return SystemCPUChartPoint(
+                date: date,
+                usage: point.usage,
+                valueText: String(format: "%.1f%%", point.usage),
+                timestampText: timestampText,
+                loadText: formattedLoadAverage(point)
+            )
+        }
+    }
+
+    private func formattedLoadAverage(_ point: CPUDataPoint) -> String? {
+        guard
+            let load1 = point.load1min,
+            let load5 = point.load5min,
+            let load15 = point.load15min
+        else { return nil }
+
+        return String(format: "Load %.2f / %.2f / %.2f", load1, load5, load15)
+    }
+
     private func cpuUsageHeadline(_ status: SystemStatus) -> String {
         guard let cpu = status.cpu?.usagePercent else { return "--%" }
         return String(format: "%.0f%%", cpu)
@@ -1095,7 +1741,8 @@ struct SystemView: View {
                     .foregroundStyle(SystemTheme.ink.opacity(0.48))
             }
 
-            let columns = isCompactLayout
+            let columns =
+                isCompactLayout
                 ? [GridItem(.flexible()), GridItem(.flexible())]
                 : [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
 
@@ -1141,12 +1788,14 @@ struct SystemView: View {
     }
 
     private func statusUpdateText(_ status: SystemStatus) -> String {
-        guard let date = Formatters.isoDate.date(from: status.timestamp)
-            ?? Formatters.isoDateNoFrac.date(from: status.timestamp)
+        guard
+            let date = Formatters.isoDate.date(from: status.timestamp)
+                ?? Formatters.isoDateNoFrac.date(from: status.timestamp)
         else {
             return "Atualização indisponível"
         }
-        return "Atualizado \(Formatters.relativeDate.localizedString(for: date, relativeTo: Date()))"
+        return
+            "Atualizado \(Formatters.relativeDate.localizedString(for: date, relativeTo: Date()))"
     }
 
     private func formatBytes(_ bytes: Int64) -> String {
@@ -1225,6 +1874,277 @@ struct GaugeView: View {
                 .font(.caption2)
                 .foregroundStyle(SystemTheme.ink.opacity(0.56))
         }
+    }
+}
+
+private struct RealtimeGaugeCard: View {
+    let title: String
+    let value: Double
+    let maxValue: Double
+    let tint: AnyShapeStyle
+    let symbol: String
+    let valueLabel: String
+
+    init<S: ShapeStyle>(
+        title: String, value: Double, maxValue: Double, tint: S, symbol: String, valueLabel: String
+    ) {
+        self.title = title
+        self.value = value
+        self.maxValue = maxValue
+        self.tint = AnyShapeStyle(tint)
+        self.symbol = symbol
+        self.valueLabel = valueLabel
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            Gauge(value: value, in: 0...maxValue) {
+                EmptyView()
+            } currentValueLabel: {
+                Text(valueLabel)
+                    .font(.caption2.weight(.bold))
+                    .monospacedDigit()
+                    .foregroundStyle(SystemTheme.ink)
+            }
+            .gaugeStyle(.accessoryCircular)
+            .tint(tint)
+            .scaleEffect(1.12)
+
+            Label(title, systemImage: symbol)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(SystemTheme.ink.opacity(0.68))
+                .labelStyle(.titleAndIcon)
+        }
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 18)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+    }
+}
+
+private struct SystemCPUChartPoint: Identifiable {
+    let date: Date
+    let usage: Double
+    let valueText: String
+    let timestampText: String
+    let loadText: String?
+
+    var id: Date { date }
+}
+
+private struct SystemCPUInteractiveChart: View {
+    let points: [SystemCPUChartPoint]
+    @Binding var selectedPointID: Date?
+
+    private var selectedPoint: SystemCPUChartPoint? {
+        guard let selectedPointID else { return nil }
+        return points.first(where: { $0.id == selectedPointID })
+    }
+
+    var body: some View {
+        Chart {
+            ForEach(points) { point in
+                AreaMark(
+                    x: .value("Horário", point.date),
+                    y: .value("CPU", point.usage)
+                )
+                .interpolationMethod(.catmullRom)
+                .foregroundStyle(
+                    LinearGradient(
+                        colors: [SystemTheme.piBlue.opacity(0.28), .clear],
+                        startPoint: .top,
+                        endPoint: .bottom
+                    )
+                )
+
+                LineMark(
+                    x: .value("Horário", point.date),
+                    y: .value("CPU", point.usage)
+                )
+                .interpolationMethod(.catmullRom)
+                .foregroundStyle(SystemTheme.piBlue)
+                .lineStyle(StrokeStyle(lineWidth: 2.5, lineCap: .round, lineJoin: .round))
+
+                if selectedPoint?.id == point.id {
+                    PointMark(
+                        x: .value("Horário", point.date),
+                        y: .value("CPU", point.usage)
+                    )
+                    .foregroundStyle(SystemTheme.piBlue)
+                    .symbolSize(70)
+                }
+            }
+
+            if let selectedPoint {
+                RuleMark(x: .value("Horário", selectedPoint.date))
+                    .foregroundStyle(SystemTheme.piBlue.opacity(0.36))
+                    .lineStyle(StrokeStyle(lineWidth: 1, dash: [4, 4]))
+            }
+        }
+        .chartYScale(domain: 0...100)
+        .chartXAxis {
+            AxisMarks(values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine()
+                AxisValueLabel(format: .dateTime.hour().minute())
+            }
+        }
+        .chartYAxis {
+            AxisMarks(position: .leading, values: .automatic(desiredCount: 4)) { value in
+                AxisGridLine()
+                AxisValueLabel {
+                    if let number = value.as(Double.self) {
+                        Text("\(Int(number.rounded()))")
+                            .foregroundStyle(SystemTheme.ink.opacity(0.58))
+                    }
+                }
+            }
+        }
+        .chartPlotStyle { plot in
+            plot
+                .background(Color(.systemBackground).opacity(0.7))
+                .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        }
+        .chartOverlay { proxy in
+            GeometryReader { geometry in
+                if let plotFrameAnchor = proxy.plotFrame {
+                    let plotFrame = geometry[plotFrameAnchor]
+
+                    ZStack(alignment: .topLeading) {
+                        Rectangle()
+                            .fill(.clear)
+                            .contentShape(Rectangle())
+                            .gesture(
+                                DragGesture(minimumDistance: 0)
+                                    .onChanged { value in
+                                        updateSelection(
+                                            at: value.location, proxy: proxy, geometry: geometry)
+                                    }
+                                    .onEnded { value in
+                                        updateSelection(
+                                            at: value.location, proxy: proxy, geometry: geometry)
+                                    }
+                            )
+
+                        if let selectedPoint,
+                            let plotX = proxy.position(forX: selectedPoint.date),
+                            let plotY = proxy.position(forY: selectedPoint.usage)
+                        {
+                            SystemChartTooltip(point: selectedPoint)
+                                .frame(width: 188, alignment: .leading)
+                                .position(
+                                    x: tooltipXPosition(
+                                        plotX: plotFrame.minX + plotX, plotFrame: plotFrame),
+                                    y: tooltipYPosition(
+                                        plotY: plotFrame.minY + plotY, plotFrame: plotFrame)
+                                )
+                        }
+                    }
+                }
+            }
+        }
+        .onChange(of: points.map(\.id)) { _, newIDs in
+            if let selectedPointID, !newIDs.contains(selectedPointID) {
+                self.selectedPointID = nil
+            }
+        }
+    }
+
+    private func updateSelection(at location: CGPoint, proxy: ChartProxy, geometry: GeometryProxy) {
+        guard let plotFrameAnchor = proxy.plotFrame else { return }
+        let plotFrame = geometry[plotFrameAnchor]
+        guard plotFrame.contains(location) else {
+            selectedPointID = nil
+            return
+        }
+
+        let relativeX = location.x - plotFrame.origin.x
+        guard let selectedDate = proxy.value(atX: relativeX, as: Date.self) else { return }
+
+        selectedPointID =
+            points.min {
+                abs($0.date.timeIntervalSince(selectedDate))
+                    < abs($1.date.timeIntervalSince(selectedDate))
+            }?.id
+    }
+
+    private func tooltipXPosition(plotX: CGFloat, plotFrame: CGRect) -> CGFloat {
+        let width: CGFloat = 188
+        let half = width / 2
+        return min(max(plotX, plotFrame.minX + half + 8), plotFrame.maxX - half - 8)
+    }
+
+    private func tooltipYPosition(plotY: CGFloat, plotFrame: CGRect) -> CGFloat {
+        let height: CGFloat = selectedPoint?.loadText == nil ? 84 : 102
+        let half = height / 2
+        let above = plotY - half - 18
+        let minY = plotFrame.minY + half + 8
+        if above >= minY {
+            return above
+        }
+        return min(plotFrame.maxY - half - 8, plotY + half + 18)
+    }
+}
+
+private struct SystemChartTooltip: View {
+    let point: SystemCPUChartPoint
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack {
+                Circle()
+                    .fill(SystemTheme.piBlue)
+                    .frame(width: 8, height: 8)
+
+                Text(point.valueText)
+                    .font(.headline.weight(.bold))
+                    .foregroundStyle(SystemTheme.ink)
+                    .monospacedDigit()
+            }
+
+            Text("CPU")
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(SystemTheme.ink)
+
+            Text(point.timestampText)
+                .font(.caption2)
+                .foregroundStyle(SystemTheme.ink.opacity(0.58))
+
+            if let loadText = point.loadText {
+                Text(loadText)
+                    .font(.caption2)
+                    .foregroundStyle(SystemTheme.ink.opacity(0.58))
+            }
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .stroke(SystemTheme.piBlue.opacity(0.18), lineWidth: 1)
+        )
+        .shadow(color: SystemTheme.shadow.opacity(0.12), radius: 12, x: 0, y: 6)
+    }
+}
+
+private struct SystemTrendStat: View {
+    let title: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(title)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(SystemTheme.ink.opacity(0.56))
+
+            Text(value)
+                .font(.headline.weight(.bold))
+                .monospacedDigit()
+                .foregroundStyle(tint)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(14)
+        .background(Color(.secondarySystemGroupedBackground))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
     }
 }
 

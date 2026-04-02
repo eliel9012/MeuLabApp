@@ -19,7 +19,7 @@ struct WatchADSBData: Codable {
     let withPos: Int
     let above10000: Int?
     let nonCivilNow: Int?
-    
+
     enum CodingKeys: String, CodingKey {
         case totalNow = "total_now"
         case withPos = "with_pos"
@@ -41,14 +41,14 @@ struct WatchAircraft: Codable, Identifiable {
     let altitudeFt: Int
     let speedKt: Int
     let distanceNm: Double?
-    
+
     enum CodingKeys: String, CodingKey {
         case id, callsign, model, airline
         case altitudeFt = "altitude_ft"
         case speedKt = "speed_kt"
         case distanceNm = "distance_nm"
     }
-    
+
     var displayCallsign: String {
         callsign.isEmpty ? id : callsign
     }
@@ -61,7 +61,7 @@ struct WatchACARSData: Codable {
     let messagesLast24h: Int?
     let uniqueFlights: Int?
     let uniqueAircraft: Int?
-    
+
     enum CodingKeys: String, CodingKey {
         case messagesTotal = "messages_total"
         case messagesLast24h = "messages_last_24h"
@@ -86,55 +86,138 @@ struct WatchACARSMessage: Codable, Identifiable {
 // MARK: - System
 
 struct WatchSystemData: Codable {
-    let cpuPercent: Double
-    let cpuTemp: Double?
-    let memoryPercent: Double
-    let diskPercent: Double
-    let wifiSignal: Int?
-    let uptime: String?
-    
+    let cpu: WatchCPUData?
+    let memory: WatchMemoryData?
+    let disk: WatchDiskData?
+    let wifi: WatchWiFiData?
+    let uptime: WatchUptimeData?
+
+    // Computed helpers for backward compat
+    var cpuPercent: Double { cpu?.usagePercent ?? 0 }
+    var cpuTemp: Double? { cpu?.temperatureC }
+    var memoryPercent: Double { memory?.usedPercent ?? 0 }
+    var diskPercent: Double { disk?.usedPercent ?? 0 }
+    var wifiSignal: Int? { wifi?.signalDbm }
+    var uptimeFormatted: String? { uptime?.formatted }
+}
+
+struct WatchCPUData: Codable {
+    let usagePercent: Double?
+    let temperatureC: Double?
+    let cores: Int?
+
     enum CodingKeys: String, CodingKey {
-        case cpuPercent = "cpu_percent"
-        case cpuTemp = "cpu_temp"
-        case memoryPercent = "memory_percent"
-        case diskPercent = "disk_percent"
-        case wifiSignal = "wifi_signal"
-        case uptime
+        case usagePercent = "usage_percent"
+        case temperatureC = "temperature_c"
+        case cores
     }
+}
+
+struct WatchMemoryData: Codable {
+    let usedPercent: Double?
+    let totalMb: Int?
+    let usedMb: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case usedPercent = "used_percent"
+        case totalMb = "total_mb"
+        case usedMb = "used_mb"
+    }
+}
+
+struct WatchDiskData: Codable {
+    let usedPercent: Double?
+    let totalGb: Double?
+    let usedGb: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case usedPercent = "used_percent"
+        case totalGb = "total_gb"
+        case usedGb = "used_gb"
+    }
+}
+
+struct WatchWiFiData: Codable {
+    let signalDbm: Int?
+    let ssid: String?
+
+    enum CodingKeys: String, CodingKey {
+        case signalDbm = "signal_dbm"
+        case ssid
+    }
+}
+
+struct WatchUptimeData: Codable {
+    let formatted: String?
+    let days: Int?
+    let hours: Int?
 }
 
 // MARK: - Weather
 
 struct WatchWeatherData: Codable {
     let current: WatchCurrentWeather?
+    let today: WatchTodayWeather?
     let forecast: [WatchForecastDay]?
 }
 
 struct WatchCurrentWeather: Codable {
-    let temperature: Double
-    let condition: String
+    let tempC: Int
+    let feelsLikeC: Int?
     let humidity: Int?
-    let windSpeed: Double?
-    let icon: String?
-    
+    let windKmh: Int?
+    let windDir: String?
+    let description: String
+    let precipMm: Double?
+    let uvIndex: Int?
+
     enum CodingKeys: String, CodingKey {
-        case temperature, condition, humidity, icon
-        case windSpeed = "wind_speed"
+        case tempC = "temp_c"
+        case feelsLikeC = "feels_like_c"
+        case humidity
+        case windKmh = "wind_kmh"
+        case windDir = "wind_dir"
+        case description
+        case precipMm = "precip_mm"
+        case uvIndex = "uv_index"
+    }
+
+    // Compat helpers
+    var temperature: Double { Double(tempC) }
+    var condition: String { description }
+}
+
+struct WatchTodayWeather: Codable {
+    let maxTempC: Int?
+    let minTempC: Int?
+    let rainChance: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case maxTempC = "max_temp_c"
+        case minTempC = "min_temp_c"
+        case rainChance = "rain_chance"
     }
 }
 
 struct WatchForecastDay: Codable, Identifiable {
     var id: String { date }
     let date: String
-    let tempMin: Double
-    let tempMax: Double
-    let condition: String
-    
+    let maxTempC: Int?
+    let minTempC: Int?
+    let rainChance: Int?
+    let description: String?
+
     enum CodingKeys: String, CodingKey {
-        case date, condition
-        case tempMin = "temp_min"
-        case tempMax = "temp_max"
+        case date, description
+        case maxTempC = "max_temp_c"
+        case minTempC = "min_temp_c"
+        case rainChance = "rain_chance"
     }
+
+    // Compat helpers
+    var tempMin: Double { Double(minTempC ?? 0) }
+    var tempMax: Double { Double(maxTempC ?? 0) }
+    var condition: String { description ?? "" }
 }
 
 // MARK: - Infra
@@ -148,7 +231,7 @@ struct WatchMetricsData: Codable {
     let uptime: String?
     let requestsTotal: Int?
     let avgLatencyMs: Double?
-    
+
     enum CodingKeys: String, CodingKey {
         case uptime
         case requestsTotal = "requests_total"
@@ -177,7 +260,7 @@ struct WatchSatDumpStatus: Codable {
     let running: Bool?
     let currentPass: String?
     let lastPass: WatchLastPass?
-    
+
     enum CodingKeys: String, CodingKey {
         case running
         case currentPass = "current_pass"
@@ -335,43 +418,43 @@ struct WatchAirlineLogo {
         "UPS": "5X",
         "DHL": "D0",
         "CARGOLUX": "CV",
-        "ATLAS AIR": "5Y"
+        "ATLAS AIR": "5Y",
     ]
-    
+
     static func url(for name: String) -> URL? {
         let cleanName = name.uppercased().trimmingCharacters(in: .whitespaces)
         guard let code = mapping[cleanName] else { return nil }
         return URL(string: "https://daisy.airdispatch.cl/logos/\(code).png")
     }
-    
+
     static func url(fromCallsign callsign: String) -> URL? {
         let prefix = String(callsign.prefix(3)).uppercased()
-        
+
         let mapping: [String: String] = [
-             "TAM": "JJ", "GLO": "G3", "AZU": "AD", "PTB": "2Z", "ONE": "LA",
-             "LAN": "LA", "SID": "SD", "ABJ": "M3", "TIB": "L0",
-             "AVA": "AV", "ARG": "AR", "FBH": "FO", "JAT": "JA", "SKU": "H2",
-             "CMP": "CM", "BOV": "OB", "AMX": "AM", "VOI": "Y4",
-             "VIV": "VH", "VB": "VB", "RPB": "P5", "NSE": "9R",
-             "DLH": "LH", "TAP": "TP", "AFR": "AF", "KLM": "KL", "IBE": "IB",
-             "BAW": "BA", "AEA": "UX", "THY": "TK", "SWR": "LX", "ITY": "AZ",
-             "AZA": "AZ", "VLG": "VY", "RYR": "FR", "EZY": "U2", "NAX": "DY",
-             "SAS": "SK", "FIN": "AY", "LOT": "LO", "AUA": "OS", "BEL": "SN",
-             "AFL": "SU", "EWG": "EW", "CFG": "DE", "WZZ": "W6", "ASL": "JU",
-             "TRA": "HV",
-             "AAL": "AA", "DAL": "DL", "UAL": "UA", "SWA": "WN", "JBU": "B6",
-             "ASA": "AS", "NKS": "NK", "FFT": "F9", "ACA": "AC", "WJA": "WS",
-             "UAE": "EK", "QTR": "QR", "ETD": "EY", "SVA": "SV", "RJA": "RJ",
-             "GFA": "GF", "OMA": "WY", "KAC": "KU",
-             "SIA": "SQ", "CPA": "CX", "ANA": "NH", "JAL": "JL", "KAL": "KE",
-             "AAR": "OZ", "CSN": "CZ", "CES": "MU", "CCA": "CA", "CHH": "HU",
-             "THA": "TG", "HVN": "VN", "GIA": "GA", "MAS": "MH", "PAL": "PR",
-             "EVA": "BR", "CAL": "CI",
-             "QFA": "QF", "ANZ": "NZ", "FJI": "FJ",
-             "SAA": "SA", "ETH": "ET", "KQA": "KQ", "MSR": "MS", "RAM": "AT",
-             "FDX": "FX", "UPS": "5X", "DHL": "D0", "CLX": "CV", "GTI": "5Y"
+            "TAM": "JJ", "GLO": "G3", "AZU": "AD", "PTB": "2Z", "ONE": "LA",
+            "LAN": "LA", "SID": "SD", "ABJ": "M3", "TIB": "L0",
+            "AVA": "AV", "ARG": "AR", "FBH": "FO", "JAT": "JA", "SKU": "H2",
+            "CMP": "CM", "BOV": "OB", "AMX": "AM", "VOI": "Y4",
+            "VIV": "VH", "VB": "VB", "RPB": "P5", "NSE": "9R",
+            "DLH": "LH", "TAP": "TP", "AFR": "AF", "KLM": "KL", "IBE": "IB",
+            "BAW": "BA", "AEA": "UX", "THY": "TK", "SWR": "LX", "ITY": "AZ",
+            "AZA": "AZ", "VLG": "VY", "RYR": "FR", "EZY": "U2", "NAX": "DY",
+            "SAS": "SK", "FIN": "AY", "LOT": "LO", "AUA": "OS", "BEL": "SN",
+            "AFL": "SU", "EWG": "EW", "CFG": "DE", "WZZ": "W6", "ASL": "JU",
+            "TRA": "HV",
+            "AAL": "AA", "DAL": "DL", "UAL": "UA", "SWA": "WN", "JBU": "B6",
+            "ASA": "AS", "NKS": "NK", "FFT": "F9", "ACA": "AC", "WJA": "WS",
+            "UAE": "EK", "QTR": "QR", "ETD": "EY", "SVA": "SV", "RJA": "RJ",
+            "GFA": "GF", "OMA": "WY", "KAC": "KU",
+            "SIA": "SQ", "CPA": "CX", "ANA": "NH", "JAL": "JL", "KAL": "KE",
+            "AAR": "OZ", "CSN": "CZ", "CES": "MU", "CCA": "CA", "CHH": "HU",
+            "THA": "TG", "HVN": "VN", "GIA": "GA", "MAS": "MH", "PAL": "PR",
+            "EVA": "BR", "CAL": "CI",
+            "QFA": "QF", "ANZ": "NZ", "FJI": "FJ",
+            "SAA": "SA", "ETH": "ET", "KQA": "KQ", "MSR": "MS", "RAM": "AT",
+            "FDX": "FX", "UPS": "5X", "DHL": "D0", "CLX": "CV", "GTI": "5Y",
         ]
-        
+
         guard let code = mapping[prefix] else { return nil }
         return URL(string: "https://daisy.airdispatch.cl/logos/\(code).png")
     }
@@ -401,11 +484,267 @@ struct NowPlaying: Codable, Equatable {
         case genre
         case hasItunes = "has_itunes"
     }
-    
+
     var displayTitle: String {
         if artist == "Desconhecido" {
             return title
         }
         return "\(artist) - \(title)"
+    }
+
+    var artworkURL: URL? {
+        guard let urlString = artworkUrl, !urlString.isEmpty else { return nil }
+        return URL(string: urlString)
+    }
+}
+
+// MARK: - Radio Status
+
+struct WatchRadioStatus: Codable {
+    let status: String?
+    let streamUrl: String?
+    let listeners: Int?
+    let uptime: String?
+
+    enum CodingKeys: String, CodingKey {
+        case status
+        case streamUrl = "stream_url"
+        case listeners, uptime
+    }
+}
+
+// MARK: - Satellite Predictions
+
+struct WatchMeteorPassesResponse: Codable {
+    let passes: [WatchMeteorPass]?
+    let satellite: String?
+    let count: Int?
+}
+
+struct WatchMeteorPass: Codable, Identifiable {
+    var id: String { "\(satellite ?? "sat")_\(aos ?? "unknown")" }
+    let satellite: String?
+    let aos: String?  // Acquisition of Signal
+    let los: String?  // Loss of Signal
+    let maxElevation: Double?
+    let azimuthAos: Double?
+    let azimuthLos: Double?
+    let duration: Double?  // seconds
+
+    enum CodingKeys: String, CodingKey {
+        case satellite, aos, los, duration
+        case maxElevation = "max_elevation"
+        case azimuthAos = "azimuth_aos"
+        case azimuthLos = "azimuth_los"
+    }
+
+    var aosDate: Date? {
+        guard let aos else { return nil }
+        return ISO8601DateFormatter().date(from: aos)
+            ?? DateFormatter.passFormatter.date(from: aos)
+    }
+
+    var isUpcoming: Bool {
+        guard let date = aosDate else { return false }
+        return date > Date()
+    }
+
+    var timeUntil: String {
+        guard let date = aosDate else { return "--" }
+        let interval = date.timeIntervalSince(Date())
+        if interval < 0 { return "Em andamento" }
+        let hours = Int(interval) / 3600
+        let minutes = (Int(interval) % 3600) / 60
+        if hours > 24 {
+            return "em \(hours / 24)d"
+        } else if hours > 0 {
+            return "em \(hours)h \(minutes)m"
+        } else {
+            return "em \(minutes)m"
+        }
+    }
+
+    var durationMinutes: String {
+        guard let d = duration else { return "--" }
+        return String(format: "%.0fm", d / 60.0)
+    }
+
+    var qualityStars: Int {
+        guard let el = maxElevation else { return 1 }
+        if el >= 70 { return 5 }
+        if el >= 50 { return 4 }
+        if el >= 30 { return 3 }
+        if el >= 15 { return 2 }
+        return 1
+    }
+}
+
+extension DateFormatter {
+    fileprivate static let passFormatter: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        f.timeZone = TimeZone(identifier: "UTC")
+        return f
+    }()
+}
+
+// MARK: - ACARS Search
+
+struct WatchACARSSearchResult: Codable {
+    let messages: [WatchACARSMessage]?
+    let count: Int?
+    let query: String?
+}
+
+// MARK: - ADS-B Highlights
+
+struct WatchADSBHighlights: Codable {
+    let highlights: [WatchHighlightAircraft]?
+    let militaryCount: Int?
+    let interestingCount: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case highlights
+        case militaryCount = "military_count"
+        case interestingCount = "interesting_count"
+    }
+}
+
+struct WatchHighlightAircraft: Codable, Identifiable {
+    let id: String
+    let callsign: String?
+    let registration: String?
+    let model: String?
+    let airline: String?
+    let category: String?
+    let reason: String?
+    let altitudeFt: Int?
+    let distanceNm: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case id, callsign, registration, model, airline, category, reason
+        case altitudeFt = "altitude_ft"
+        case distanceNm = "distance_nm"
+    }
+}
+
+// MARK: - Remote Control (Watch)
+
+struct WatchRemoteCommand: Codable, Identifiable {
+    let id: String
+    let command: String
+    let target: String?
+    let status: String
+    let createdAt: String
+    let output: String?
+    let error: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, command, target, status, output, error
+        case createdAt = "created_at"
+    }
+
+    var statusColor: String {
+        switch status {
+        case "completed": return "green"
+        case "failed": return "red"
+        case "running": return "orange"
+        default: return "secondary"
+        }
+    }
+}
+
+// MARK: - Analytics (Watch simplified)
+
+struct WatchADSBAnalytics: Codable {
+    let period: String?
+    let totalFlights: Int?
+    let uniqueAircraft: Int?
+    let topAircraftTypes: [WatchAircraftTypeStats]?
+    let hourlyStats: [WatchHourlyStats]?
+
+    enum CodingKeys: String, CodingKey {
+        case period
+        case totalFlights = "total_flights"
+        case uniqueAircraft = "unique_aircraft"
+        case topAircraftTypes = "top_aircraft_types"
+        case hourlyStats = "hourly_stats"
+    }
+}
+
+struct WatchAircraftTypeStats: Codable, Identifiable {
+    var id: String { type }
+    let type: String
+    let count: Int
+    let percentage: Double?
+}
+
+struct WatchHourlyStats: Codable, Identifiable {
+    var id: Int { hour }
+    let hour: Int
+    let flightCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case hour
+        case flightCount = "flight_count"
+    }
+}
+
+// MARK: - Tuya Smart Sensors
+
+struct WatchTuyaResponse: Codable {
+    let ok: Bool
+    let timestamp: String?
+    let current: WatchTuyaCurrent?
+    let degraded: Bool?
+    let degradedReason: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ok, timestamp, current, degraded
+        case degradedReason = "degraded_reason"
+    }
+}
+
+struct WatchTuyaCurrent: Codable {
+    let temperatureC: Double?
+    let humidityPct: Double?
+    let batteryPct: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case temperatureC = "temperature_c"
+        case humidityPct = "humidity_pct"
+        case batteryPct = "battery_pct"
+    }
+}
+
+// MARK: - Dashboard
+
+struct WatchDashboardResponse: Codable {
+    let adsb: WatchDashboardADSB?
+    let system: WatchDashboardSystem?
+    let uptime: String?
+}
+
+struct WatchDashboardADSB: Codable {
+    let totalToday: Int?
+    let peakHour: Int?
+    let topAirline: String?
+
+    enum CodingKeys: String, CodingKey {
+        case totalToday = "total_today"
+        case peakHour = "peak_hour"
+        case topAirline = "top_airline"
+    }
+}
+
+struct WatchDashboardSystem: Codable {
+    let cpuAvg: Double?
+    let memoryAvg: Double?
+    let diskUsed: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case cpuAvg = "cpu_avg"
+        case memoryAvg = "memory_avg"
+        case diskUsed = "disk_used"
     }
 }

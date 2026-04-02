@@ -12,14 +12,14 @@ struct StatCard: View {
                 Image(systemName: icon)
                     .font(.caption)
                     .foregroundStyle(color)
-                
+
                 Text(title)
                     .font(.caption2)
                     .fontWeight(.medium)
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
             }
-            
+
             Text(value)
                 .font(.headline)
                 .fontWeight(.bold)
@@ -30,8 +30,7 @@ struct StatCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .padding(.horizontal, 8)
-        .background(Color(.systemGray5))
-        .cornerRadius(10)
+        .glassCard(cornerRadius: 10)
     }
 }
 

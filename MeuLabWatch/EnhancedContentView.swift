@@ -5,7 +5,7 @@ struct WatchHomeView: View {
     @Environment(\.scenePhase) private var scenePhase
     @State private var showingNotifications = false
     @State private var pendingNotifications = 0
-    
+
     var body: some View {
         NavigationStack {
             List {
@@ -16,7 +16,7 @@ struct WatchHomeView: View {
                     Label("Resumo", systemImage: "square.grid.2x2")
                         .badge(pendingNotifications > 0 ? pendingNotifications : nil)
                 }
-                
+
                 // Quick Actions
                 Section("Ações Rápidas") {
                     NavigationLink {
@@ -24,7 +24,7 @@ struct WatchHomeView: View {
                     } label: {
                         Label("Ações Rápidas", systemImage: "bolt.circle")
                     }
-                    
+
                     NavigationLink {
                         WatchAlertsView()
                     } label: {
@@ -32,7 +32,7 @@ struct WatchHomeView: View {
                             .badge(pendingNotifications > 0 ? pendingNotifications : nil)
                     }
                 }
-                
+
                 // Enhanced Categories
                 Section("Monitoramento") {
                     NavigationLink {
@@ -40,47 +40,79 @@ struct WatchHomeView: View {
                     } label: {
                         Label("ADS-B", systemImage: "airplane.radar")
                     }
-                    
+
                     NavigationLink {
                         EnhancedWatchSystemView()
                     } label: {
                         Label("Sistema", systemImage: "cpu")
                     }
-                    
+
                     NavigationLink {
                         EnhancedWatchInfraView()
                     } label: {
                         Label("Infra", systemImage: "server.rack")
                     }
                 }
-                
+
                 Section("Dados") {
                     NavigationLink {
                         EnhancedWatchACARSView()
                     } label: {
                         Label("ACARS", systemImage: "envelope.badge")
                     }
-                    
+
                     NavigationLink {
                         EnhancedWatchWeatherView()
                     } label: {
                         Label("Clima", systemImage: "cloud.sun")
                     }
-                    
+
                     NavigationLink {
                         EnhancedWatchSatDumpView()
                     } label: {
                         Label("SatDump", systemImage: "antenna.radiowaves.left.and.right")
                     }
+
+                    NavigationLink {
+                        WatchRadioView()
+                    } label: {
+                        Label("Rádio", systemImage: "dot.radiowaves.left.and.right")
+                    }
                 }
-                
+
+                Section("Extras") {
+                    NavigationLink {
+                        WatchBibleView()
+                    } label: {
+                        Label("Bíblia", systemImage: "book.fill")
+                    }
+
+                    NavigationLink {
+                        WatchAnalyticsView()
+                    } label: {
+                        Label("Analytics", systemImage: "chart.bar.fill")
+                    }
+
+                    NavigationLink {
+                        WatchTuyaView()
+                    } label: {
+                        Label("Sensores", systemImage: "sensor.fill")
+                    }
+
+                    NavigationLink {
+                        WatchRemoteControlView()
+                    } label: {
+                        Label("Controle", systemImage: "terminal")
+                    }
+                }
+
                 Section("Configurações") {
                     NavigationLink {
                         WatchSettingsView()
                     } label: {
                         Label("Configurações", systemImage: "gear")
                     }
-                    
+
                     NavigationLink {
                         WatchAboutView()
                     } label: {
@@ -100,11 +132,13 @@ struct WatchHomeView: View {
             }
         }
     }
-    
+
     private func setupNotifications() {
-        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) { _, _ in }
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound, .badge]) {
+            _, _ in
+        }
     }
-    
+
     private func loadPendingNotifications() {
         UNUserNotificationCenter.current().getDeliveredNotifications { notifications in
             DispatchQueue.main.async {
@@ -122,13 +156,13 @@ struct EnhancedHomeView: View {
     @State private var healthScore: Double = 0
     @State private var lastUpdate: Date = Date()
     @State private var quickStats: QuickStats?
-    
+
     var body: some View {
         ScrollView {
             VStack(spacing: 12) {
                 // Health Score
                 HealthScoreCard(score: healthScore, lastUpdate: lastUpdate)
-                
+
                 if isLoading {
                     ProgressView("Carregando...")
                         .padding(.top, 20)
@@ -139,12 +173,12 @@ struct EnhancedHomeView: View {
                 } else if let stats = quickStats {
                     // Quick Stats
                     QuickStatsGrid(stats: stats)
-                    
+
                     // Critical Alerts
                     if stats.criticalAlerts > 0 {
                         CriticalAlertsCard(count: stats.criticalAlerts)
                     }
-                    
+
                     // Quick Actions
                     QuickActionsRow()
                 }
@@ -159,18 +193,18 @@ struct EnhancedHomeView: View {
             await loadData()
         }
     }
-    
+
     private func loadData() async {
         isLoading = true
         error = nil
-        
+
         do {
             async let systemTask = WatchAPIService.shared.fetchSystemStatus()
             async let adsbTask = WatchAPIService.shared.fetchADSBSummary()
             async let alertsTask = WatchAPIService.shared.fetchAlertsSummary()
-            
+
             let (system, adsb, alerts) = try await (systemTask, adsbTask, alertsTask)
-            
+
             await MainActor.run {
                 self.healthScore = calculateHealthScore(system: system, adsb: adsb, alerts: alerts)
                 self.lastUpdate = Date()
@@ -188,16 +222,18 @@ struct EnhancedHomeView: View {
             }
         }
     }
-    
-    private func calculateHealthScore(system: WatchSystemData?, adsb: WatchADSBData?, alerts: Any) -> Double {
+
+    private func calculateHealthScore(system: WatchSystemData?, adsb: WatchADSBData?, alerts: Any)
+        -> Double
+    {
         var score: Double = 100
-        
+
         if let system = system {
             if system.cpuPercent > 80 { score -= 20 }
             if system.memoryPercent > 80 { score -= 20 }
             if system.cpuTemp > 70 { score -= 15 }
         }
-        
+
         return max(0, score)
     }
 }
@@ -212,21 +248,21 @@ struct QuickActionsView: View {
                     Task { await restartService() }
                 }
                 .foregroundStyle(.red)
-                
+
                 Button("Limpar Cache") {
                     Task { await clearCache() }
                 }
-                
+
                 Button("Health Check") {
                     Task { await runHealthCheck() }
                 }
             }
-            
+
             Section("Notificações") {
                 Button("Enviar Teste") {
                     Task { await sendTestNotification() }
                 }
-                
+
                 Button("Limpar Notificações") {
                     clearAllNotifications()
                 }
@@ -234,29 +270,30 @@ struct QuickActionsView: View {
         }
         .navigationTitle("Ações Rápidas")
     }
-    
+
     private func restartService() async {
         // Implementation
     }
-    
+
     private func clearCache() async {
         // Implementation
     }
-    
+
     private func runHealthCheck() async {
         // Implementation
     }
-    
+
     private func sendTestNotification() async {
         let content = UNMutableNotificationContent()
         content.title = "MeuLab Test"
         content.body = "Notificação de teste do MeuLab"
         content.sound = .default
-        
-        let request = UNNotificationRequest(identifier: UUID().uuidString, content: content, trigger: nil)
+
+        let request = UNNotificationRequest(
+            identifier: UUID().uuidString, content: content, trigger: nil)
         UNUserNotificationCenter.current().add(request)
     }
-    
+
     private func clearAllNotifications() {
         UNUserNotificationCenter.current().removeAllDeliveredNotifications()
     }
@@ -267,30 +304,30 @@ struct QuickActionsView: View {
 struct HealthScoreCard: View {
     let score: Double
     let lastUpdate: Date
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Text("Saúde do Sistema")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            
+
             ZStack {
                 Circle()
                     .stroke(scoreColor.opacity(0.3), lineWidth: 8)
-                
+
                 Circle()
                     .trim(from: 0, to: score / 100)
                     .stroke(scoreColor, style: StrokeStyle(lineWidth: 8, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .animation(.easeInOut, value: score)
-                
+
                 Text("\(Int(score))")
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundStyle(scoreColor)
             }
             .frame(width: 60, height: 60)
-            
+
             Text("Atualizado \(formatTime(lastUpdate))")
                 .font(.caption2)
                 .foregroundStyle(.tertiary)
@@ -299,13 +336,13 @@ struct HealthScoreCard: View {
         .background(Color(.darkGray).opacity(0.3))
         .cornerRadius(12)
     }
-    
+
     private var scoreColor: Color {
         if score >= 80 { return .green }
         if score >= 60 { return .orange }
         return .red
     }
-    
+
     private func formatTime(_ date: Date) -> String {
         let formatter = RelativeDateTimeFormatter()
         formatter.unitsStyle = .abbreviated
@@ -315,7 +352,7 @@ struct HealthScoreCard: View {
 
 struct QuickStatsGrid: View {
     let stats: QuickStats
-    
+
     var body: some View {
         LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 8) {
             StatGridItem(
@@ -324,21 +361,21 @@ struct QuickStatsGrid: View {
                 icon: "cpu",
                 color: .blue
             )
-            
+
             StatGridItem(
                 title: "RAM",
                 value: "\(Int(stats.system?.memoryPercent ?? 0))%",
                 icon: "memorychip",
                 color: .purple
             )
-            
+
             StatGridItem(
                 title: "Voos",
                 value: "\(stats.adsb?.totalNow ?? 0)",
                 icon: "airplane",
                 color: .green
             )
-            
+
             StatGridItem(
                 title: "Alertas",
                 value: "\(stats.alerts?.activeCount ?? 0)",
@@ -354,17 +391,17 @@ struct StatGridItem: View {
     let value: String
     let icon: String
     let color: Color
-    
+
     var body: some View {
         VStack(spacing: 4) {
             Image(systemName: icon)
                 .font(.title3)
                 .foregroundStyle(color)
-            
+
             Text(value)
                 .font(.title3)
                 .fontWeight(.bold)
-            
+
             Text(title)
                 .font(.caption2)
                 .foregroundStyle(.secondary)
@@ -378,26 +415,26 @@ struct StatGridItem: View {
 
 struct CriticalAlertsCard: View {
     let count: Int
-    
+
     var body: some View {
         HStack {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.title2)
                 .foregroundStyle(.red)
-            
+
             VStack(alignment: .leading, spacing: 2) {
                 Text("Alertas Críticos")
                     .font(.caption)
                     .fontWeight(.bold)
                     .foregroundStyle(.red)
-                
+
                 Text("\(count) alert\(count == 1 ? "a" : "as") precisando atenção")
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             Image(systemName: "chevron.right")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -418,7 +455,7 @@ struct QuickActionsRow: View {
             ) {
                 // Action
             }
-            
+
             QuickActionButton(
                 icon: "heart.text.square",
                 title: "Health",
@@ -426,7 +463,7 @@ struct QuickActionsRow: View {
             ) {
                 // Action
             }
-            
+
             QuickActionButton(
                 icon: "bell",
                 title: "Alertas",
@@ -444,14 +481,14 @@ struct QuickActionButton: View {
     let title: String
     let color: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
                     .font(.title3)
                     .foregroundStyle(color)
-                
+
                 Text(title)
                     .font(.caption2)
                     .foregroundStyle(.primary)
@@ -468,17 +505,17 @@ struct QuickActionButton: View {
 struct ErrorCard: View {
     let message: String
     let retry: () -> Void
-    
+
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: "wifi.exclamationmark")
                 .font(.title)
                 .foregroundStyle(.orange)
-            
+
             Text(message)
                 .font(.caption)
                 .multilineTextAlignment(.center)
-            
+
             Button("Tentar novamente") {
                 retry()
             }
@@ -511,12 +548,12 @@ struct WatchSettingsView: View {
     @AppStorage("watchAutoRefresh") private var autoRefresh: Bool = true
     @AppStorage("watchRefreshInterval") private var refreshInterval: Int = 30
     @AppStorage("watchNotifications") private var notifications: Bool = true
-    
+
     var body: some View {
         List {
             Section("Atualização") {
                 Toggle("Auto-refresh", isOn: $autoRefresh)
-                
+
                 if autoRefresh {
                     HStack {
                         Text("Intervalo")
@@ -526,17 +563,17 @@ struct WatchSettingsView: View {
                     }
                 }
             }
-            
+
             Section("Notificações") {
                 Toggle("Notificações", isOn: $notifications)
-                
+
                 if notifications {
                     Button("Configurar no iPhone") {
                         // Open companion app
                     }
                 }
             }
-            
+
             Section("Sobre") {
                 HStack {
                     Text("Versão")
@@ -544,7 +581,7 @@ struct WatchSettingsView: View {
                     Text("1.0.0")
                         .foregroundStyle(.secondary)
                 }
-                
+
                 HStack {
                     Text("API")
                     Spacer()
@@ -565,11 +602,11 @@ struct WatchAboutView: View {
                     Image(systemName: "cpu")
                         .font(.system(size: 40))
                         .foregroundStyle(.blue)
-                    
+
                     Text("MeuLab Watch")
                         .font(.title2)
                         .fontWeight(.bold)
-                    
+
                     Text("Monitoramento do sistema MeuLab no seu pulso")
                         .font(.caption)
                         .multilineTextAlignment(.center)
@@ -578,7 +615,7 @@ struct WatchAboutView: View {
                 .padding(.vertical, 20)
                 .frame(maxWidth: .infinity)
             }
-            
+
             Section("Informações") {
                 HStack {
                     Text("Versão")
@@ -586,7 +623,7 @@ struct WatchAboutView: View {
                     Text("1.0.0")
                         .foregroundStyle(.secondary)
                 }
-                
+
                 HStack {
                     Text("Desenvolvimento")
                     Spacer()
@@ -599,54 +636,47 @@ struct WatchAboutView: View {
     }
 }
 
-// MARK: - Enhanced Category Views (placeholders for existing views)
+// MARK: - Enhanced Category Views (redirect to real views)
 
 struct EnhancedWatchADSBView: View {
     var body: some View {
-        Text("Enhanced ADS-B View")
-            .navigationTitle("ADS-B")
+        WatchADSBView()
     }
 }
 
 struct EnhancedWatchSystemView: View {
     var body: some View {
-        Text("Enhanced System View")
-            .navigationTitle("Sistema")
+        WatchSystemView()
     }
 }
 
 struct EnhancedWatchInfraView: View {
     var body: some View {
-        Text("Enhanced Infra View")
-            .navigationTitle("Infra")
+        WatchInfraView()
     }
 }
 
 struct EnhancedWatchACARSView: View {
     var body: some View {
-        Text("Enhanced ACARS View")
-            .navigationTitle("ACARS")
+        WatchACARSView()
     }
 }
 
 struct EnhancedWatchWeatherView: View {
     var body: some View {
-        Text("Enhanced Weather View")
-            .navigationTitle("Clima")
+        WatchWeatherView()
     }
 }
 
 struct EnhancedWatchSatDumpView: View {
     var body: some View {
-        Text("Enhanced SatDump View")
-            .navigationTitle("SatDump")
+        WatchSatDumpView()
     }
 }
 
 struct WatchAlertsView: View {
     var body: some View {
-        Text("Alerts View")
-            .navigationTitle("Alertas")
+        AlertsView()
     }
 }
 

@@ -197,9 +197,7 @@ struct AircraftInfoCard: View {
             }
         }
         .padding()
-        .background(.ultraThinMaterial)
-        .cornerRadius(16)
-        .shadow(radius: 10)
+        .glassCard(cornerRadius: 16)
     }
 }
 
@@ -234,7 +232,8 @@ struct FullscreenMapView: View {
 
     var body: some View {
         NavigationStack {
-            RadarWebView(isInteractive: true, forcePanelClosed: true)
+            NativeRadarMapView()
+                .environmentObject(appState)
                 .ignoresSafeArea(edges: .bottom)
                 .navigationTitle("Radar ADS-B")
                 .navigationBarTitleDisplayMode(.inline)

@@ -1,90 +1,121 @@
 import SwiftUI
 
-/// Detalhes do Sistema para watchOS com gauges visuais
 struct WatchSystemView: View {
     @State private var isLoading = true
     @State private var system: WatchSystemData?
     @State private var error: String?
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 12) {
-                if isLoading {
-                    Spacer()
-                    ProgressView()
-                    Text("Carregando...")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                    Spacer()
-                } else if let error {
-                    ErrorView(message: error) {
-                        Task { await loadData() }
+        WatchLabScreen(title: "Sistema", icon: "cpu", tint: WatchLabTheme.green) {
+            if isLoading {
+                WatchLabPanel(tint: WatchLabTheme.green) {
+                    WatchLabStateView(
+                        icon: "arrow.triangle.2.circlepath",
+                        title: "Atualizando",
+                        subtitle: "Sincronizando telemetria do nó.",
+                        tint: WatchLabTheme.green,
+                        actionTitle: nil,
+                        action: nil
+                    )
+                }
+            } else if let error {
+                WatchLabPanel(tint: WatchLabTheme.red) {
+                    WatchLabStateView(
+                        icon: "wifi.exclamationmark",
+                        title: "Falha",
+                        subtitle: error,
+                        tint: WatchLabTheme.red,
+                        actionTitle: "Tentar",
+                        action: { Task { await loadData() } }
+                    )
+                }
+            } else if let system {
+                WatchLabPanel(tint: WatchLabTheme.green) {
+                    HStack(alignment: .top) {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text("Nó monitorado")
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(WatchLabTheme.ink)
+                            Text("Pi5")
+                                .font(.system(size: 22, weight: .black, design: .rounded))
+                                .foregroundStyle(WatchLabTheme.ink)
+                        }
+
+                        Spacer()
+
+                        WatchLabMetricPill(
+                            title: "Rede",
+                            value: system.wifiSignal.map { "\($0) dBm" } ?? "--",
+                            tint: wifiColor(system.wifiSignal ?? -90),
+                            icon: "wifi"
+                        )
                     }
-                } else if let system {
-                    // Gauges principais em grid 2x2
+
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
-                        // CPU Gauge
-                        CircularGaugeView(
-                            value: system.cpuPercent,
+                        WatchGaugeCard(
                             label: "CPU",
+                            value: system.cpuPercent,
+                            tint: percentColor(system.cpuPercent),
                             icon: "cpu",
-                            color: colorForPercent(system.cpuPercent)
+                            suffix: "%"
                         )
 
-                        // RAM Gauge
-                        CircularGaugeView(
-                            value: system.memoryPercent,
+                        WatchGaugeCard(
                             label: "RAM",
+                            value: system.memoryPercent,
+                            tint: percentColor(system.memoryPercent),
                             icon: "memorychip",
-                            color: colorForPercent(system.memoryPercent)
+                            suffix: "%"
                         )
 
-                        // Disco Gauge
-                        CircularGaugeView(
-                            value: system.diskPercent,
+                        WatchGaugeCard(
                             label: "Disco",
+                            value: system.diskPercent,
+                            tint: percentColor(system.diskPercent),
                             icon: "externaldrive",
-                            color: colorForPercent(system.diskPercent)
+                            suffix: "%"
                         )
 
-                        // Temperatura Gauge
-                        if let temp = system.cpuTemp {
-                            CircularGaugeView(
-                                value: min(temp, 100),
-                                label: "Temp",
-                                icon: "thermometer",
-                                color: tempColor(temp),
-                                suffix: "°"
-                            )
-                        }
+                        WatchGaugeCard(
+                            label: "Temp",
+                            value: min(system.cpuTemp ?? 0, 100),
+                            tint: tempColor(system.cpuTemp ?? 0),
+                            icon: "thermometer",
+                            suffix: "°"
+                        )
+                    }
+                }
+
+                WatchLabPanel(tint: WatchLabTheme.blue) {
+                    Text("Leitura operacional")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(WatchLabTheme.ink)
+
+                    if let uptime = system.uptimeFormatted {
+                        WatchLabStatRow(
+                            icon: "clock",
+                            title: "Uptime",
+                            value: uptime,
+                            tint: WatchLabTheme.blue
+                        )
                     }
 
-                    // Informacoes adicionais
-                    VStack(spacing: 6) {
-                        if let wifi = system.wifiSignal {
-                            InfoRow(
-                                icon: "wifi",
-                                label: "Wi-Fi",
-                                value: "\(wifi) dBm",
-                                color: wifiColor(wifi)
-                            )
-                        }
+                    WatchLabStatRow(
+                        icon: "chart.bar.fill",
+                        title: "CPU",
+                        value: "\(Int(system.cpuPercent))%",
+                        tint: percentColor(system.cpuPercent)
+                    )
 
-                        if let uptime = system.uptime {
-                            InfoRow(
-                                icon: "clock",
-                                label: "Uptime",
-                                value: uptime,
-                                color: .blue
-                            )
-                        }
-                    }
-                    .padding(.top, 4)
+                    WatchLabStatRow(
+                        icon: "wifi",
+                        title: "Sinal",
+                        value: system.wifiSignal.map { "\($0) dBm" } ?? "--",
+                        tint: wifiColor(system.wifiSignal ?? -90)
+                    )
                 }
             }
-            .padding(.horizontal, 4)
         }
-        .navigationTitle("Sistema")
         .task {
             await loadData()
         }
@@ -106,95 +137,68 @@ struct WatchSystemView: View {
         isLoading = false
     }
 
-    private func colorForPercent(_ percent: Double) -> Color {
-        if percent > 90 { return .red }
-        if percent > 70 { return .orange }
-        return .green
+    private func percentColor(_ percent: Double) -> Color {
+        if percent > 90 { return WatchLabTheme.red }
+        if percent > 70 { return WatchLabTheme.orange }
+        return WatchLabTheme.green
     }
 
     private func tempColor(_ temp: Double) -> Color {
-        if temp > 70 { return .red }
-        if temp > 55 { return .orange }
-        return .green
+        if temp > 70 { return WatchLabTheme.red }
+        if temp > 55 { return WatchLabTheme.orange }
+        return WatchLabTheme.green
     }
 
     private func wifiColor(_ signal: Int) -> Color {
-        if signal > -50 { return .green }
-        if signal > -70 { return .orange }
-        return .red
+        if signal > -55 { return WatchLabTheme.green }
+        if signal > -70 { return WatchLabTheme.orange }
+        return WatchLabTheme.red
     }
 }
 
-// MARK: - Circular Gauge View
-
-struct CircularGaugeView: View {
-    let value: Double
+struct WatchGaugeCard: View {
     let label: String
+    let value: Double
+    let tint: Color
     let icon: String
-    let color: Color
-    var suffix: String = "%"
+    let suffix: String
 
     var body: some View {
-        VStack(spacing: 2) {
+        VStack(spacing: 5) {
             ZStack {
-                // Background circle
                 Circle()
-                    .stroke(Color.white.opacity(0.15), lineWidth: 6)
+                    .stroke(Color.white.opacity(0.10), lineWidth: 5)
 
-                // Progress arc
                 Circle()
                     .trim(from: 0, to: min(value / 100, 1))
-                    .stroke(
-                        color,
-                        style: StrokeStyle(lineWidth: 6, lineCap: .round)
-                    )
+                    .stroke(tint, style: StrokeStyle(lineWidth: 5, lineCap: .round))
                     .rotationEffect(.degrees(-90))
-                    .animation(.easeOut(duration: 0.5), value: value)
 
-                // Center content
-                VStack(spacing: 0) {
+                VStack(spacing: 1) {
                     Image(systemName: icon)
-                        .font(.system(size: 12))
-                        .foregroundStyle(color)
-
+                        .font(.system(size: 10, weight: .bold))
+                        .foregroundStyle(tint)
                     Text("\(Int(value))\(suffix)")
-                        .font(.system(size: 14, weight: .bold, design: .rounded))
+                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                        .foregroundStyle(WatchLabTheme.ink)
                 }
             }
-            .frame(width: 60, height: 60)
+            .frame(width: 62, height: 62)
 
             Text(label)
-                .font(.system(size: 10))
-                .foregroundStyle(.secondary)
+                .font(.system(size: 10, weight: .medium))
+                .foregroundStyle(WatchLabTheme.secondary)
         }
-    }
-}
-
-// MARK: - Info Row
-
-struct InfoRow: View {
-    let icon: String
-    let label: String
-    let value: String
-    let color: Color
-
-    var body: some View {
-        HStack {
-            Image(systemName: icon)
-                .foregroundStyle(color)
-                .frame(width: 20)
-
-            Text(label)
-                .font(.caption)
-
-            Spacer()
-
-            Text(value)
-                .font(.caption)
-                .fontWeight(.medium)
-                .foregroundStyle(.secondary)
-        }
-        .padding(.horizontal, 4)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 8)
+        .background(
+            RoundedRectangle(cornerRadius: 16, style: .continuous)
+                .fill(Color.white.opacity(0.04))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                        .strokeBorder(tint.opacity(0.16), lineWidth: 1)
+                )
+        )
     }
 }
 

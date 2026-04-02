@@ -4,7 +4,7 @@ import Foundation
 actor APIService: APIServiceProtocol {
     static let shared = APIService()
 
-    private let baseURL = "https://app.meulab.fun"
+    private var baseURL = "https://app.meulab.fun"
     private let adsbLolURL = "https://voa.meulab.fun"
     private let apiToken: String
 

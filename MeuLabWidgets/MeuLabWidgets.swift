@@ -87,15 +87,105 @@ struct SharedTimelineProvider: TimelineProvider {
 
 // MARK: - Premium Color Gradients
 struct WidgetGradients {
-    static let cpu = LinearGradient(colors: [Color(hex: "00D4FF"), Color(hex: "0096FF")], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let memory = LinearGradient(colors: [Color(hex: "A855F7"), Color(hex: "EC4899")], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let disk = LinearGradient(colors: [Color(hex: "F97316"), Color(hex: "FACC15")], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let background = LinearGradient(colors: [Color(hex: "1A1A2E"), Color(hex: "16213E")], startPoint: .top, endPoint: .bottom)
-    static let cardBackground = LinearGradient(colors: [Color.white.opacity(0.12), Color.white.opacity(0.05)], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let adsb = LinearGradient(colors: [Color(hex: "10B981"), Color(hex: "34D399")], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let radio = LinearGradient(colors: [Color(hex: "F472B6"), Color(hex: "DB2777")], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let acars = LinearGradient(colors: [Color(hex: "60A5FA"), Color(hex: "2563EB")], startPoint: .topLeading, endPoint: .bottomTrailing)
-    static let satellite = LinearGradient(colors: [Color(hex: "C084FC"), Color(hex: "7C3AED")], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let blue = Color(hex: "2361D6")
+    static let cyan = Color(hex: "2CB7DB")
+    static let green = Color(hex: "45C75E")
+    static let orange = Color(hex: "F29327")
+    static let violet = Color(hex: "8558E7")
+    static let red = Color(hex: "D33A52")
+
+    static let cpu = LinearGradient(colors: [blue, cyan], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let memory = LinearGradient(colors: [violet, Color(hex: "C14DEB")], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let disk = LinearGradient(colors: [orange, Color(hex: "FFBC52")], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let adsb = LinearGradient(colors: [green, Color(hex: "7BE38C")], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let radio = LinearGradient(colors: [red, Color(hex: "F15A78")], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let acars = LinearGradient(colors: [violet, blue], startPoint: .topLeading, endPoint: .bottomTrailing)
+    static let satellite = LinearGradient(colors: [violet, cyan], startPoint: .topLeading, endPoint: .bottomTrailing)
+
+    static let background = LinearGradient(
+        colors: [Color(hex: "0D1428"), Color(hex: "101A32"), Color(hex: "0A1020")],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let cardFill = LinearGradient(
+        colors: [Color.white.opacity(0.13), Color.white.opacity(0.05)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+
+    static let cardStroke = LinearGradient(
+        colors: [Color.white.opacity(0.16), Color.white.opacity(0.04)],
+        startPoint: .topLeading,
+        endPoint: .bottomTrailing
+    )
+}
+
+struct WidgetSurface<Content: View>: View {
+    let tint: Color
+    @ViewBuilder let content: Content
+
+    init(tint: Color, @ViewBuilder content: () -> Content) {
+        self.tint = tint
+        self.content = content()
+    }
+
+    var body: some View {
+        content
+            .padding(10)
+            .background(
+                RoundedRectangle(cornerRadius: 18, style: .continuous)
+                    .fill(WidgetGradients.cardFill)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .fill(
+                                LinearGradient(
+                                    colors: [tint.opacity(0.12), .clear],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 18, style: .continuous)
+                            .strokeBorder(tint.opacity(0.20), lineWidth: 1)
+                    )
+            )
+    }
+}
+
+struct WidgetCanvas<Content: View>: View {
+    @ViewBuilder let content: Content
+
+    init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    var body: some View {
+        ZStack {
+            WidgetGradients.background
+
+            Circle()
+                .fill(WidgetGradients.blue.opacity(0.16))
+                .frame(width: 160, height: 160)
+                .blur(radius: 32)
+                .offset(x: -65, y: -70)
+
+            Circle()
+                .fill(WidgetGradients.green.opacity(0.12))
+                .frame(width: 140, height: 140)
+                .blur(radius: 28)
+                .offset(x: 85, y: -30)
+
+            Circle()
+                .fill(WidgetGradients.violet.opacity(0.12))
+                .frame(width: 150, height: 150)
+                .blur(radius: 30)
+                .offset(x: 70, y: 90)
+
+            content
+        }
+    }
 }
 
 // MARK: - Color Extension
@@ -191,6 +281,34 @@ struct WidgetHeaderChip: View {
     }
 }
 
+struct WidgetKeyValuePill: View {
+    let icon: String
+    let title: String
+    let value: String
+    let tint: Color
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 2) {
+            HStack(spacing: 4) {
+                Image(systemName: icon)
+                    .font(.system(size: 8, weight: .bold))
+                    .foregroundStyle(tint)
+                Text(title)
+                    .font(.system(size: 9, weight: .semibold))
+                    .foregroundStyle(.white.opacity(0.58))
+            }
+            Text(value)
+                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .foregroundStyle(.white)
+                .lineLimit(1)
+        }
+        .padding(.horizontal, 8)
+        .padding(.vertical, 7)
+        .background(Capsule().fill(tint.opacity(0.12)))
+        .overlay(Capsule().stroke(tint.opacity(0.16), lineWidth: 1))
+    }
+}
+
 struct AircraftStatsView: View {
     let total: Int
     let pos: Int
@@ -230,28 +348,59 @@ struct SystemWidgetView: View {
     @Environment(\.widgetFamily) var family
     
     var body: some View {
-        ZStack {
-            WidgetGradients.background
+        WidgetCanvas {
             switch family {
             #if !os(watchOS)
             case .systemSmall:
-                VStack(spacing: 8) {
-                    HStack {
-                        WidgetHeaderChip(icon: "cpu.fill", title: "System", tint: Color(hex: "00D4FF"))
-                        Spacer()
+                WidgetSurface(tint: WidgetGradients.blue) {
+                    VStack(spacing: 8) {
+                        HStack {
+                            WidgetHeaderChip(icon: "cpu.fill", title: "Sistema", tint: WidgetGradients.blue)
+                            Spacer()
+                        }
+                        Spacer(minLength: 0)
+                        CircularGaugeView(value: entry.data.cpuUsage ?? 0, gradient: WidgetGradients.cpu, icon: "cpu", label: "CPU", size: 60)
+                        Spacer(minLength: 0)
                     }
-                    Spacer()
-                    CircularGaugeView(value: entry.data.cpuUsage ?? 0, gradient: WidgetGradients.cpu, icon: "cpu", label: "CPU", size: 60)
-                    Spacer()
                 }
-                .padding()
             case .systemMedium:
-                HStack(spacing: 15) {
-                    CircularGaugeView(value: entry.data.cpuUsage ?? 0, gradient: WidgetGradients.cpu, icon: "cpu", label: "CPU", size: 65)
-                    CircularGaugeView(value: entry.data.memoryUsage ?? 0, gradient: WidgetGradients.memory, icon: "memorychip", label: "RAM", size: 65)
-                    CircularGaugeView(value: entry.data.diskUsage ?? 0, gradient: WidgetGradients.disk, icon: "externaldrive", label: "Disco", size: 65)
+                WidgetSurface(tint: WidgetGradients.blue) {
+                    VStack(spacing: 12) {
+                        HStack {
+                            WidgetHeaderChip(icon: "cpu.fill", title: "Sistema", tint: WidgetGradients.blue)
+                            Spacer()
+                            WidgetKeyValuePill(icon: "bolt.horizontal", title: "CPU", value: "\(Int(entry.data.cpuUsage ?? 0))%", tint: WidgetGradients.blue)
+                        }
+
+                        HStack(spacing: 15) {
+                            CircularGaugeView(value: entry.data.cpuUsage ?? 0, gradient: WidgetGradients.cpu, icon: "cpu", label: "CPU", size: 65)
+                            CircularGaugeView(value: entry.data.memoryUsage ?? 0, gradient: WidgetGradients.memory, icon: "memorychip", label: "RAM", size: 65)
+                            CircularGaugeView(value: entry.data.diskUsage ?? 0, gradient: WidgetGradients.disk, icon: "externaldrive", label: "Disco", size: 65)
+                        }
+                    }
                 }
-                .padding()
+            case .systemLarge:
+                WidgetSurface(tint: WidgetGradients.blue) {
+                    VStack(alignment: .leading, spacing: 14) {
+                        HStack {
+                            WidgetHeaderChip(icon: "cpu.fill", title: "Sistema", tint: WidgetGradients.blue)
+                            Spacer()
+                            WidgetKeyValuePill(icon: "timer", title: "Carga", value: "\(Int(entry.data.cpuUsage ?? 0))%", tint: WidgetGradients.blue)
+                        }
+
+                        HStack(spacing: 16) {
+                            CircularGaugeView(value: entry.data.cpuUsage ?? 0, gradient: WidgetGradients.cpu, icon: "cpu", label: "CPU", size: 72)
+                            CircularGaugeView(value: entry.data.memoryUsage ?? 0, gradient: WidgetGradients.memory, icon: "memorychip", label: "RAM", size: 72)
+                            CircularGaugeView(value: entry.data.diskUsage ?? 0, gradient: WidgetGradients.disk, icon: "externaldrive", label: "Disco", size: 72)
+                        }
+
+                        VStack(spacing: 10) {
+                            StatRow(title: "CPU", value: "\(Int(entry.data.cpuUsage ?? 0))%", icon: "cpu", color: WidgetGradients.blue)
+                            StatRow(title: "Memória", value: "\(Int(entry.data.memoryUsage ?? 0))%", icon: "memorychip", color: WidgetGradients.violet)
+                            StatRow(title: "Disco", value: "\(Int(entry.data.diskUsage ?? 0))%", icon: "externaldrive", color: WidgetGradients.orange)
+                        }
+                    }
+                }
             #else
             case .accessoryCircular:
                 CircularGaugeView(value: entry.data.cpuUsage ?? 0, gradient: WidgetGradients.cpu, icon: "cpu", label: "CPU", size: 45)
@@ -284,7 +433,7 @@ struct SystemWidget: Widget {
         #if os(watchOS)
         .supportedFamilies([.accessoryCircular, .accessoryRectangular])
         #else
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         #endif
     }
 }
@@ -294,35 +443,45 @@ struct RadioWidgetView: View {
     let entry: MeuLabEntry
     
     var body: some View {
-        ZStack {
-            WidgetGradients.background
-            VStack(alignment: .leading, spacing: 10) {
-                HStack {
-                    WidgetHeaderChip(icon: "dot.radiowaves.left.and.right", title: "Rádio", tint: Color(hex: "F472B6"))
-                    Spacer()
-                    if let signal = entry.data.radioSignal {
-                        HStack(spacing: 2) {
-                            ForEach(0..<4) { i in
-                                RoundedRectangle(cornerRadius: 1)
-                                    .fill(signal > (i * 25) ? Color(hex: "10B981") : Color.white.opacity(0.2))
-                                    .frame(width: 3, height: 6 + CGFloat(i * 3))
+        WidgetCanvas {
+            WidgetSurface(tint: WidgetGradients.red) {
+                VStack(alignment: .leading, spacing: 10) {
+                    HStack {
+                        WidgetHeaderChip(icon: "dot.radiowaves.left.and.right", title: "Rádio", tint: WidgetGradients.red)
+                        Spacer()
+                        if let signal = entry.data.radioSignal {
+                            HStack(spacing: 2) {
+                                ForEach(0..<4) { i in
+                                    RoundedRectangle(cornerRadius: 1.5)
+                                        .fill(signal > (i * 25) ? WidgetGradients.green : Color.white.opacity(0.2))
+                                        .frame(width: 3, height: 6 + CGFloat(i * 3))
+                                }
                             }
                         }
                     }
+
+                    Divider().background(Color.white.opacity(0.08))
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(entry.data.radioFrequency ?? "---.---")
+                            .font(.system(size: 28, weight: .black, design: .monospaced))
+                            .foregroundStyle(.white)
+                        Text(entry.data.radioDescription ?? "Desconectado")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.7))
+                    }
+
+                    Spacer()
+
+                    ViewThatFits {
+                        HStack {
+                            WidgetKeyValuePill(icon: "airplane", title: "Radar", value: "\(entry.data.adsbTotal ?? 0)", tint: WidgetGradients.blue)
+                            WidgetKeyValuePill(icon: "location", title: "Posição", value: "\(entry.data.adsbWithPos ?? 0)", tint: WidgetGradients.green)
+                        }
+                        AircraftStatsView(total: entry.data.adsbTotal ?? 0, pos: entry.data.adsbWithPos ?? 0)
+                    }
                 }
-                
-                Divider().background(Color.white.opacity(0.1))
-                
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(entry.data.radioFrequency ?? "---.---").font(.system(size: 28, weight: .black, design: .monospaced)).foregroundStyle(.white)
-                    Text(entry.data.radioDescription ?? "Desconectado").font(.subheadline).foregroundStyle(.white.opacity(0.7))
-                }
-                
-                Spacer()
-                
-                AircraftStatsView(total: entry.data.adsbTotal ?? 0, pos: entry.data.adsbWithPos ?? 0)
             }
-            .padding()
         }
         .containerBackground(for: .widget) { WidgetGradients.background }
     }
@@ -340,7 +499,7 @@ struct RadioWidget: Widget {
         #if os(watchOS)
         .supportedFamilies([.accessoryRectangular, .accessoryCorner])
         #else
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         #endif
     }
 }
@@ -350,43 +509,57 @@ struct AcarsWidgetView: View {
     let entry: MeuLabEntry
     
     var body: some View {
-        ZStack {
-            WidgetGradients.background
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    WidgetHeaderChip(icon: "envelope.badge.fill", title: "ACARS", tint: Color(hex: "60A5FA"))
-                    Spacer()
-                    Text(entry.data.acarsLastTime ?? "--:--").font(.caption).foregroundStyle(.white.opacity(0.5))
-                }
-                
-                Divider().background(Color.white.opacity(0.1))
-                
-                if let msg = entry.data.acarsLastMessage {
-                    Text(msg)
-                        .font(.system(size: 11, design: .monospaced))
-                        .foregroundStyle(.white.opacity(0.9))
-                        .lineLimit(3)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(8)
-                        .background(Color.black.opacity(0.3))
-                        .cornerRadius(6)
-                } else {
-                    Text("Nenhuma mensagem").font(.caption).foregroundStyle(.white.opacity(0.5))
-                }
-                
-                Spacer()
-                
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text("\(entry.data.acarsTotalMessages ?? 0)").font(.headline).bold().foregroundStyle(.white)
-                        Text("Msgs hoje").font(.caption2).foregroundStyle(.white.opacity(0.5))
+        WidgetCanvas {
+            WidgetSurface(tint: WidgetGradients.violet) {
+                VStack(alignment: .leading, spacing: 8) {
+                    HStack {
+                        WidgetHeaderChip(icon: "envelope.badge.fill", title: "ACARS", tint: WidgetGradients.violet)
+                        Spacer()
+                        Text(entry.data.acarsLastTime ?? "--:--")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.5))
                     }
+
+                    Divider().background(Color.white.opacity(0.08))
+
+                    if let msg = entry.data.acarsLastMessage {
+                        Text(msg)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(.white.opacity(0.9))
+                            .lineLimit(3)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(8)
+                            .background(
+                                RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                    .fill(Color.black.opacity(0.22))
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                            .strokeBorder(WidgetGradients.violet.opacity(0.16), lineWidth: 1)
+                                    )
+                            )
+                    } else {
+                        Text("Nenhuma mensagem")
+                            .font(.caption)
+                            .foregroundStyle(.white.opacity(0.5))
+                    }
+
                     Spacer()
-                    AircraftStatsView(total: entry.data.adsbTotal ?? 0, pos: entry.data.adsbWithPos ?? 0)
-                        .scaleEffect(0.8, anchor: .trailing)
+
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text("\(entry.data.acarsTotalMessages ?? 0)")
+                                .font(.headline)
+                                .bold()
+                                .foregroundStyle(.white)
+                            Text("Msgs hoje")
+                                .font(.caption2)
+                                .foregroundStyle(.white.opacity(0.5))
+                        }
+                        Spacer()
+                        WidgetKeyValuePill(icon: "airplane", title: "Radar", value: "\(entry.data.adsbTotal ?? 0)", tint: WidgetGradients.blue)
+                    }
                 }
             }
-            .padding()
         }
         .containerBackground(for: .widget) { WidgetGradients.background }
     }
@@ -414,42 +587,48 @@ struct SatelliteWidgetView: View {
     let entry: MeuLabEntry
     
     var body: some View {
-        ZStack {
-            WidgetGradients.background
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    WidgetHeaderChip(icon: "satellite.fill", title: "Satélite", tint: Color(hex: "C084FC"))
-                    Spacer()
-                }
-                
-                ZStack {
-                    RoundedRectangle(cornerRadius: 12)
-                        .fill(WidgetGradients.satellite.opacity(0.1))
-                        .overlay(RoundedRectangle(cornerRadius: 12).stroke(WidgetGradients.satellite.opacity(0.3), lineWidth: 1))
-                    
+        WidgetCanvas {
+            WidgetSurface(tint: WidgetGradients.violet) {
+                VStack(alignment: .leading, spacing: 8) {
                     HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(entry.data.satName ?? "Sem previsão").font(.subheadline).bold().foregroundStyle(.white)
-                            Text("Próxima passagem").font(.caption2).foregroundStyle(.white.opacity(0.6))
-                        }
+                        WidgetHeaderChip(icon: "satellite.fill", title: "Satélite", tint: WidgetGradients.violet)
                         Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(entry.data.satNextPass ?? "--:--").font(.title3).bold().foregroundStyle(Color(hex: "C084FC"))
-                            HStack(spacing: 2) {
-                                Image(systemName: "arrow.up.forward").font(.caption2)
-                                Text(entry.data.satElevation ?? "0°").font(.caption2)
-                            }.foregroundStyle(.white.opacity(0.7))
-                        }
                     }
-                    .padding(10)
+
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(WidgetGradients.violet.opacity(0.10))
+                            .overlay(RoundedRectangle(cornerRadius: 12).stroke(WidgetGradients.violet.opacity(0.22), lineWidth: 1))
+
+                        HStack {
+                            VStack(alignment: .leading, spacing: 2) {
+                                Text(entry.data.satName ?? "Sem previsão").font(.subheadline).bold().foregroundStyle(.white)
+                                Text("Próxima passagem").font(.caption2).foregroundStyle(.white.opacity(0.6))
+                            }
+                            Spacer()
+                            VStack(alignment: .trailing, spacing: 2) {
+                                Text(entry.data.satNextPass ?? "--:--").font(.title3).bold().foregroundStyle(Color(hex: "C084FC"))
+                                HStack(spacing: 2) {
+                                    Image(systemName: "arrow.up.forward").font(.caption2)
+                                    Text(entry.data.satElevation ?? "0°").font(.caption2)
+                                }.foregroundStyle(.white.opacity(0.7))
+                            }
+                        }
+                        .padding(10)
+                    }
+                    .frame(height: 60)
+
+                    Spacer()
+
+                    ViewThatFits {
+                        HStack {
+                            WidgetKeyValuePill(icon: "clock", title: "Passagem", value: entry.data.satNextPass ?? "--:--", tint: WidgetGradients.violet)
+                            WidgetKeyValuePill(icon: "arrow.up.forward", title: "Elevação", value: entry.data.satElevation ?? "--", tint: WidgetGradients.cyan)
+                        }
+                        AircraftStatsView(total: entry.data.adsbTotal ?? 0, pos: entry.data.adsbWithPos ?? 0)
+                    }
                 }
-                .frame(height: 60)
-                
-                Spacer()
-                
-                AircraftStatsView(total: entry.data.adsbTotal ?? 0, pos: entry.data.adsbWithPos ?? 0)
             }
-            .padding()
         }
         .containerBackground(for: .widget) { WidgetGradients.background }
     }
@@ -467,7 +646,7 @@ struct SatelliteWidget: Widget {
         #if os(watchOS)
         .supportedFamilies([.accessoryRectangular, .accessoryInline])
         #else
-        .supportedFamilies([.systemSmall, .systemMedium])
+        .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
         #endif
     }
 }

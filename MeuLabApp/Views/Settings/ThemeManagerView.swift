@@ -28,7 +28,7 @@ struct ThemeManagerView: View {
     }
     
     var body: some View {
-        NavigationView {
+        NavigationStack {
             Form {
                 Section(header: Text("Modo de Aparência")) {
                     Picker("Tema", selection: $themeSettings.mode) {
@@ -121,8 +121,8 @@ struct ThemeManagerView: View {
         case .dark:
             return .dark
         case .system:
-            return themeSettings.followSystem ? 
-                (UIScreen.main.traitCollection.userInterfaceStyle == .dark ? .dark : .light) :
+            return themeSettings.followSystem ?
+                .dark :  // Will be overridden by system via .preferredColorScheme(nil)
                 shouldUseDarkMode() ? .dark : .light
         }
     }
@@ -316,8 +316,7 @@ struct ThemePreviewCards: View {
                     .frame(width: 12, height: 12)
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground))
-            .cornerRadius(12)
+            .glassCard(cornerRadius: 12)
             
             // Analytics Chart Preview
             VStack(alignment: .leading, spacing: 8) {
@@ -334,8 +333,7 @@ struct ThemePreviewCards: View {
                 }
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground))
-            .cornerRadius(12)
+            .glassCard(cornerRadius: 12)
             
             // Alert Card Preview
             HStack {
@@ -355,12 +353,11 @@ struct ThemePreviewCards: View {
                     // Preview action
                 }
                 .font(.caption)
-                .buttonStyle(.borderedProminent)
+                .adaptiveGlassProminentButton()
                 .controlSize(.small)
             }
             .padding()
-            .background(Color(.secondarySystemGroupedBackground))
-            .cornerRadius(12)
+            .glassCard(cornerRadius: 12)
         }
     }
 }

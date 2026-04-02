@@ -1,5 +1,5 @@
-import SwiftUI
 import Photos
+import SwiftUI
 
 struct AllSatellitePassesView: View {
     @EnvironmentObject var appState: AppState
@@ -10,13 +10,13 @@ struct AllSatellitePassesView: View {
     @State private var currentPage = 1
     @State private var selectedPass: SatellitePass?
     @State private var showingPassImages = false
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             VStack(spacing: 0) {
                 // Filter Controls
                 filterControls
-                
+
                 // Content
                 if isLoadingAllPasses {
                     ProgressView("Carregando passes...")
@@ -56,14 +56,14 @@ struct AllSatellitePassesView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private var filterControls: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text("Filtros")
                 .font(.headline)
                 .padding(.horizontal)
-            
+
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
                     ForEach(PassFilter.allCases, id: \.self) { filter in
@@ -79,7 +79,9 @@ struct AllSatellitePassesView: View {
                                 .padding(.vertical, 8)
                                 .background(
                                     RoundedRectangle(cornerRadius: 20)
-                                        .fill(selectedFilter == filter ? Color.blue : Color(.systemGray6))
+                                        .fill(
+                                            selectedFilter == filter
+                                                ? Color.blue : Color(.systemGray6))
                                 )
                                 .foregroundStyle(selectedFilter == filter ? .white : .primary)
                         }
@@ -90,9 +92,9 @@ struct AllSatellitePassesView: View {
             }
         }
         .padding(.vertical, 8)
-        .background(Color(.systemGray6))
+        .materialCard(cornerRadius: 0)
     }
-    
+
     @ViewBuilder
     private func passesList(_ passes: [SatellitePass]) -> some View {
         ScrollView {
@@ -109,7 +111,7 @@ struct AllSatellitePassesView: View {
                         }
                     )
                 }
-                
+
                 // Load More Button
                 if allPasses?.hasMore == true {
                     Button("Carregar mais") {
@@ -127,18 +129,18 @@ struct AllSatellitePassesView: View {
             .padding()
         }
     }
-    
+
     @ViewBuilder
     private var emptyState: some View {
         VStack(spacing: 16) {
             Image(systemName: "satellite")
                 .font(.system(size: 64))
                 .foregroundStyle(.secondary)
-            
+
             Text("Nenhum passe encontrado")
                 .font(.title2)
                 .fontWeight(.medium)
-            
+
             Text("Tente ajustar os filtros para ver passes anteriores")
                 .font(.caption)
                 .foregroundStyle(.secondary)
@@ -147,11 +149,11 @@ struct AllSatellitePassesView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .padding()
     }
-    
+
     private func loadAllPasses() {
         isLoadingAllPasses = true
         allPassesError = nil
-        
+
         Task {
             do {
                 let passes: PassesListPaginated
@@ -159,23 +161,31 @@ struct AllSatellitePassesView: View {
                 case .all:
                     passes = try await APIService.shared.fetchAllSatellitePasses(page: currentPage)
                 case .meteor:
-                    passes = try await APIService.shared.fetchSatellitePassesBySatellite(satellite: "METEOR", page: currentPage)
+                    passes = try await APIService.shared.fetchSatellitePassesBySatellite(
+                        satellite: "METEOR", page: currentPage)
                 case .noaa:
-                    passes = try await APIService.shared.fetchSatellitePassesBySatellite(satellite: "NOAA", page: currentPage)
+                    passes = try await APIService.shared.fetchSatellitePassesBySatellite(
+                        satellite: "NOAA", page: currentPage)
                 case .lastWeek:
                     let formatter = DateFormatter()
                     formatter.dateFormat = "yyyy-MM-dd"
-                    let from = formatter.string(from: Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date())
+                    let from = formatter.string(
+                        from: Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
+                    )
                     let to = formatter.string(from: Date())
-                    passes = try await APIService.shared.fetchSatellitePassesByDateRange(from: from, to: to, page: currentPage)
+                    passes = try await APIService.shared.fetchSatellitePassesByDateRange(
+                        from: from, to: to, page: currentPage)
                 case .lastMonth:
                     let formatter = DateFormatter()
                     formatter.dateFormat = "yyyy-MM-dd"
-                    let from = formatter.string(from: Calendar.current.date(byAdding: .month, value: -1, to: Date()) ?? Date())
+                    let from = formatter.string(
+                        from: Calendar.current.date(byAdding: .month, value: -1, to: Date())
+                            ?? Date())
                     let to = formatter.string(from: Date())
-                    passes = try await APIService.shared.fetchSatellitePassesByDateRange(from: from, to: to, page: currentPage)
+                    passes = try await APIService.shared.fetchSatellitePassesByDateRange(
+                        from: from, to: to, page: currentPage)
                 }
-                
+
                 await MainActor.run {
                     if currentPage == 1 {
                         self.allPasses = passes
@@ -193,24 +203,24 @@ struct AllSatellitePassesView: View {
             }
         }
     }
-    
+
     private func loadMorePasses() {
         currentPage += 1
         loadAllPasses()
     }
-    
+
     private func downloadPassImages(_ pass: SatellitePass) {
         Task {
             do {
                 let images = try await APIService.shared.fetchPassImages(passName: pass.name)
-                
+
                 // Request photo library permission
                 let status = await PHPhotoLibrary.requestAuthorization(for: .addOnly)
                 guard status == .authorized else {
                     print("Permissão negada para acessar a biblioteca de fotos")
                     return
                 }
-                
+
                 // Save images to photo library
                 for imageInfo in images.images {
                     if let imageData = try? await APIService.shared.fetchImageData(
@@ -224,7 +234,7 @@ struct AllSatellitePassesView: View {
                         }
                     }
                 }
-                
+
                 await MainActor.run {
                     // Show success message
                     print("Imagens do passe \(pass.name) salvas com sucesso")
@@ -236,15 +246,15 @@ struct AllSatellitePassesView: View {
             }
         }
     }
-    
+
     private func downloadAllImages() {
         guard let passes = allPasses?.passes else { return }
-        
+
         Task {
             for pass in passes {
                 downloadPassImages(pass)
                 // Add delay between downloads to avoid overwhelming the server
-                try? await Task.sleep(nanoseconds: 1_000_000_000) // 1 second
+                try? await Task.sleep(nanoseconds: 1_000_000_000)  // 1 second
             }
         }
     }
@@ -258,7 +268,7 @@ enum PassFilter: String, CaseIterable {
     case noaa = "noaa"
     case lastWeek = "last_week"
     case lastMonth = "last_month"
-    
+
     var displayName: String {
         switch self {
         case .all: return "Todos"
@@ -276,7 +286,7 @@ struct SatellitePassCard: View {
     let pass: SatellitePass
     let onViewImages: () -> Void
     let onDownload: () -> Void
-    
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -284,19 +294,19 @@ struct SatellitePassCard: View {
                     Text(pass.satelliteName)
                         .font(.headline)
                         .foregroundStyle(.primary)
-                    
+
                     Text(formatPassName(pass.name))
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 VStack(alignment: .trailing, spacing: 4) {
                     Text(formatPassDate(pass.name))
                         .font(.caption)
                         .foregroundStyle(.primary)
-                    
+
                     Text(String(format: "%.1f°", pass.maxElevation))
                         .font(.caption)
                         .foregroundStyle(.blue)
@@ -306,7 +316,7 @@ struct SatellitePassCard: View {
                         .cornerRadius(4)
                 }
             }
-            
+
             // Pass Info
             HStack(spacing: 16) {
                 HStack(spacing: 4) {
@@ -316,7 +326,7 @@ struct SatellitePassCard: View {
                         .font(.caption)
                 }
                 .foregroundStyle(.secondary)
-                
+
                 if !pass.images.isEmpty {
                     HStack(spacing: 4) {
                         Image(systemName: "photo")
@@ -326,9 +336,9 @@ struct SatellitePassCard: View {
                     }
                     .foregroundStyle(.green)
                 }
-                
+
                 Spacer()
-                
+
                 // Status
                 HStack(spacing: 4) {
                     Circle()
@@ -339,7 +349,7 @@ struct SatellitePassCard: View {
                         .foregroundStyle(pass.success ? .green : .red)
                 }
             }
-            
+
             // Action Buttons
             HStack(spacing: 12) {
                 if !pass.images.isEmpty {
@@ -352,7 +362,7 @@ struct SatellitePassCard: View {
                     .foregroundStyle(.white)
                     .cornerRadius(8)
                 }
-                
+
                 Button("Download") {
                     onDownload()
                 }
@@ -368,24 +378,25 @@ struct SatellitePassCard: View {
         .cornerRadius(12)
         .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
     }
-    
+
     private func formatPassName(_ name: String) -> String {
         let components = name.components(separatedBy: "_")
         guard components.count >= 3 else { return name }
         return "\(components[0]) \(components[1]) \(components[2])"
     }
-    
+
     private func formatPassDate(_ name: String) -> String {
         let components = name.components(separatedBy: "_")
         guard components.count >= 3,
-              let date = components[1].optionalDate(),
-              let time = components[2].optionalTime() else { return name }
-        
+            let date = components[1].optionalDate(),
+            let time = components[2].optionalTime()
+        else { return name }
+
         let formatter = DateFormatter()
         formatter.dateFormat = "dd/MM HH:mm"
         return formatter.string(from: date)
     }
-    
+
     private func formatDuration(_ duration: Double) -> String {
         let minutes = Int(duration) / 60
         let seconds = Int(duration) % 60
@@ -401,9 +412,9 @@ struct PassImagesView: View {
     @State private var isLoading = true
     @State private var error: String?
     @Environment(\.dismiss) private var dismiss
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 if isLoading {
                     ProgressView("Carregando imagens...")
@@ -411,14 +422,18 @@ struct PassImagesView: View {
                 } else if let error = error {
                     ErrorCard(message: error)
                 } else if let images = images {
-                    LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16) {
+                    LazyVGrid(
+                        columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 16
+                    ) {
                         ForEach(images.images) { image in
-                            AsyncImage(url: APIService.shared.imageLightURL(
-                                passName: pass.name,
-                                folderName: image.folderName,
-                                imageName: image.fileName,
-                                max: 512
-                            )) { image in
+                            AsyncImage(
+                                url: APIService.shared.imageLightURL(
+                                    passName: pass.name,
+                                    folderName: image.folderName,
+                                    imageName: image.fileName,
+                                    max: 512
+                                )
+                            ) { image in
                                 image
                                     .resizable()
                                     .aspectRatio(contentMode: .fill)
@@ -451,7 +466,7 @@ struct PassImagesView: View {
             loadImages()
         }
     }
-    
+
     private func loadImages() {
         Task {
             do {
@@ -478,7 +493,7 @@ extension String {
         formatter.dateFormat = "yyyyMMdd"
         return formatter.date(from: self)
     }
-    
+
     func optionalTime() -> Date? {
         let formatter = DateFormatter()
         formatter.dateFormat = "HHmmss"

@@ -11,36 +11,36 @@ struct HealthCheckView: View {
     @State private var autoCheckEnabled = false
     @State private var checkInterval: CheckInterval = .hourly
     @State private var autoCheckTimer: Timer?
-    
+
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
-                VStack(spacing: 20) {
+                LazyVStack(spacing: 20) {
                     // Current Status
                     if let report = currentReport {
                         currentHealthSection(report)
                     }
-                    
+
                     // Auto Check Settings
                     autoCheckSection
-                    
+
                     // Quick Actions
                     quickActionsSection
 
                     // Incident Notes (Writing Tools works here)
                     incidentNotesSection
-                    
+
                     // History
                     if !historyReports.isEmpty {
                         historySection
                     }
-                    
+
                     if isLoading {
                         ProgressView("Carregando relatórios...")
                             .frame(maxWidth: .infinity)
                             .padding()
                     }
-                    
+
                     if let error = error {
                         ErrorCard(message: error)
                             .onTapGesture {
@@ -58,7 +58,7 @@ struct HealthCheckView: View {
                         Button("Histórico Completo") {
                             // Navigate to full history
                         }
-                        
+
                         Button("Exportar Relatório") {
                             exportCurrentReport()
                         }
@@ -102,70 +102,68 @@ struct HealthCheckView: View {
                 .textInputAutocapitalization(.sentences)
                 .frame(minHeight: 140)
                 .padding(10)
-                .background(Color(.systemGray6))
-                .cornerRadius(12)
+                .glassCard(cornerRadius: 12)
         }
     }
-    
+
     @ViewBuilder
     private func currentHealthSection(_ report: HealthCheckReport) -> some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Status Atual")
                 .font(.title2)
                 .fontWeight(.bold)
-            
+
             // Overall Score
             VStack(spacing: 12) {
                 HStack {
                     Text("Score de Saúde")
                         .font(.headline)
-                    
+
                     Spacer()
-                    
+
                     Text(String(format: "%.0f", report.score))
                         .font(.title)
                         .fontWeight(.bold)
                         .foregroundStyle(scoreColor(report.score))
                 }
-                
+
                 // Progress Bar
                 ProgressView(value: report.score, total: 100)
                     .tint(scoreColor(report.score))
-                
+
                 // Overall Status
                 HStack {
                     HealthStatusBadge(status: report.overallStatus)
-                    
+
                     Spacer()
-                    
+
                     Text("Verificado em \(formatTime(report.timestamp))")
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
             }
             .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
-            
+            .glassCard(cornerRadius: 12)
+
             // Individual Checks
             VStack(alignment: .leading, spacing: 12) {
                 Text("Verificações Individuais")
                     .font(.headline)
-                
+
                 ForEach(report.checks) { check in
                     HealthCheckRow(check: check)
                 }
             }
         }
     }
-    
+
     @ViewBuilder
     private var autoCheckSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Verificação Automática")
                 .font(.title2)
                 .fontWeight(.bold)
-            
+
             VStack(spacing: 16) {
                 HStack {
                     Toggle("Ativar verificação automática", isOn: $autoCheckEnabled)
@@ -176,16 +174,16 @@ struct HealthCheckView: View {
                                 stopAutoCheck()
                             }
                         }
-                    
+
                     Spacer()
                 }
-                
+
                 if autoCheckEnabled {
                     VStack(alignment: .leading, spacing: 8) {
                         Text("Intervalo de verificação")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
-                        
+
                         Picker("Intervalo", selection: $checkInterval) {
                             ForEach(CheckInterval.allCases, id: \.self) { interval in
                                 Text(interval.displayName).tag(interval)
@@ -199,18 +197,17 @@ struct HealthCheckView: View {
                 }
             }
             .padding()
-            .background(Color(.systemGray6))
-            .cornerRadius(12)
+            .glassCard(cornerRadius: 12)
         }
     }
-    
+
     @ViewBuilder
     private var quickActionsSection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Ações Rápidas")
                 .font(.title2)
                 .fontWeight(.bold)
-            
+
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
                 HealthActionButton(
                     title: "Verificar Agora",
@@ -220,7 +217,7 @@ struct HealthCheckView: View {
                 ) {
                     runHealthCheck()
                 }
-                
+
                 HealthActionButton(
                     title: "Relatório Detalhado",
                     description: "Ver resultados completos",
@@ -229,7 +226,7 @@ struct HealthCheckView: View {
                 ) {
                     showDetailedReport()
                 }
-                
+
                 HealthActionButton(
                     title: "Corrigir Problemas",
                     description: "Executar correções automáticas",
@@ -238,7 +235,7 @@ struct HealthCheckView: View {
                 ) {
                     autoFixIssues()
                 }
-                
+
                 HealthActionButton(
                     title: "Configurar Alertas",
                     description: "Notificações de problemas",
@@ -250,45 +247,44 @@ struct HealthCheckView: View {
             }
         }
     }
-    
+
     @ViewBuilder
     private var historySection: some View {
         VStack(alignment: .leading, spacing: 16) {
             Text("Histórico Recente")
                 .font(.title2)
                 .fontWeight(.bold)
-            
+
             VStack(spacing: 12) {
                 ForEach(historyReports.prefix(5), id: \.timestamp) { report in
                     HealthHistoryRow(report: report) {
                         // Show report details
                     }
                 }
-                
+
                 if historyReports.count > 5 {
                     Button("Ver todo o histórico") {
                         // Navigate to full history
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color(.systemGray6))
-                    .cornerRadius(12)
+                    .glassCard(cornerRadius: 12)
                 }
             }
         }
     }
-    
+
     private func loadHealthReports() {
         isLoading = true
         error = nil
-        
+
         Task {
             do {
                 async let currentTask = APIService.shared.runHealthCheck()
                 async let historyTask = APIService.shared.fetchHealthReports()
-                
+
                 let (current, history) = try await (currentTask, historyTask)
-                
+
                 await MainActor.run {
                     self.currentReport = current
                     self.historyReports = history
@@ -302,14 +298,14 @@ struct HealthCheckView: View {
             }
         }
     }
-    
+
     private func runHealthCheck() {
         isRunningCheck = true
-        
+
         Task {
             do {
                 let report = try await APIService.shared.runHealthCheck()
-                
+
                 await MainActor.run {
                     self.currentReport = report
                     self.historyReports.insert(report, at: 0)
@@ -323,56 +319,61 @@ struct HealthCheckView: View {
             }
         }
     }
-    
+
     private func setupAutoCheck() {
         // Load settings from UserDefaults
         autoCheckEnabled = UserDefaults.standard.bool(forKey: "autoHealthCheck")
-        checkInterval = CheckInterval(rawValue: UserDefaults.standard.string(forKey: "healthCheckInterval") ?? CheckInterval.hourly.rawValue) ?? .hourly
-        
+        checkInterval =
+            CheckInterval(
+                rawValue: UserDefaults.standard.string(forKey: "healthCheckInterval")
+                    ?? CheckInterval.hourly.rawValue) ?? .hourly
+
         if autoCheckEnabled {
             startAutoCheck()
         }
     }
-    
+
     private func startAutoCheck() {
         stopAutoCheck()
-        
-        autoCheckTimer = Timer.scheduledTimer(withTimeInterval: checkInterval.seconds, repeats: true) { _ in
+
+        autoCheckTimer = Timer.scheduledTimer(
+            withTimeInterval: checkInterval.seconds, repeats: true
+        ) { _ in
             runHealthCheck()
         }
-        
+
         // Save settings
         UserDefaults.standard.set(true, forKey: "autoHealthCheck")
         UserDefaults.standard.set(checkInterval.rawValue, forKey: "healthCheckInterval")
     }
-    
+
     private func stopAutoCheck() {
         autoCheckTimer?.invalidate()
         autoCheckTimer = nil
         UserDefaults.standard.set(false, forKey: "autoHealthCheck")
     }
-    
+
     private func restartAutoCheck() {
         if autoCheckEnabled {
             startAutoCheck()
         }
     }
-    
+
     private func showDetailedReport() {
         // Navigate to detailed report view
     }
-    
+
     private func autoFixIssues() {
         // Implement auto-fix logic
     }
-    
+
     private func configureAlerts() {
         // Navigate to alert configuration
     }
-    
+
     private func exportCurrentReport() {
         guard let report = currentReport else { return }
-        
+
         Task {
             do {
                 let exportRequest = ExportRequest(
@@ -382,9 +383,9 @@ struct HealthCheckView: View {
                     dateTo: nil,
                     filters: ["health_check_report": AnyCodable(report.timestamp)]
                 )
-                
+
                 let data = try await APIService.shared.exportData(exportRequest)
-                
+
                 await MainActor.run {
                     // Share the data
                     print("Health check report exported: \(data.count) bytes")
@@ -396,7 +397,7 @@ struct HealthCheckView: View {
             }
         }
     }
-    
+
     private func scoreColor(_ score: Double) -> Color {
         if score >= 80 {
             return .green
@@ -406,12 +407,12 @@ struct HealthCheckView: View {
             return .red
         }
     }
-    
+
     private func formatTime(_ dateString: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         guard let date = formatter.date(from: dateString) else { return dateString }
-        
+
         let displayFormatter = DateFormatter()
         displayFormatter.timeStyle = .short
         return displayFormatter.string(from: date)
@@ -422,21 +423,21 @@ struct HealthCheckView: View {
 
 struct HealthCheckRow: View {
     let check: HealthCheck
-    
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(check.name)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 Text(check.message)
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             HealthStatusBadge(status: check.status)
         }
         .padding(.vertical, 8)
@@ -448,13 +449,13 @@ struct HealthCheckRow: View {
 
 struct HealthStatusBadge: View {
     let status: HealthStatus
-    
+
     var body: some View {
         HStack(spacing: 4) {
             Circle()
                 .fill(status.color)
                 .frame(width: 8, height: 8)
-            
+
             Text(status.displayName)
                 .font(.caption)
                 .foregroundStyle(status.color)
@@ -472,19 +473,19 @@ struct HealthActionButton: View {
     let icon: String
     let color: Color
     let action: () -> Void
-    
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 12) {
                 Image(systemName: icon)
                     .font(.system(size: 24))
                     .foregroundStyle(color)
-                
+
                 VStack(spacing: 4) {
                     Text(title)
                         .font(.subheadline)
                         .fontWeight(.medium)
-                    
+
                     Text(description)
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -504,55 +505,54 @@ struct HealthActionButton: View {
 struct HealthHistoryRow: View {
     let report: HealthCheckReport
     let onTap: () -> Void
-    
+
     var body: some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
                 Text(formatDate(report.timestamp))
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
+
                 Text(formatTimeAgo(report.timestamp))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
-            
+
             Spacer()
-            
+
             VStack(alignment: .trailing, spacing: 4) {
                 Text(String(format: "%.0f", report.score))
                     .font(.headline)
                     .foregroundStyle(scoreColor(report.score))
-                
+
                 HealthStatusBadge(status: report.overallStatus)
             }
         }
         .padding()
-        .background(Color(.systemGray6))
-        .cornerRadius(12)
+        .materialCard(cornerRadius: 12)
         .onTapGesture {
             onTap()
         }
     }
-    
+
     private func formatDate(_ dateString: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         guard let date = formatter.date(from: dateString) else { return dateString }
-        
+
         let displayFormatter = DateFormatter()
         displayFormatter.dateStyle = .short
         return displayFormatter.string(from: date)
     }
-    
+
     private func formatTimeAgo(_ dateString: String) -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
         guard let date = formatter.date(from: dateString) else { return dateString }
-        
+
         return Formatters.relativeDate.localizedString(for: date, relativeTo: Date())
     }
-    
+
     private func scoreColor(_ score: Double) -> Color {
         if score >= 80 {
             return .green
@@ -572,7 +572,7 @@ enum CheckInterval: String, CaseIterable {
     case hourly = "hourly"
     case every6hours = "6hours"
     case daily = "daily"
-    
+
     var displayName: String {
         switch self {
         case .every15min: return "15 min"
@@ -582,7 +582,7 @@ enum CheckInterval: String, CaseIterable {
         case .daily: return "Diário"
         }
     }
-    
+
     var seconds: TimeInterval {
         switch self {
         case .every15min: return 15 * 60
@@ -605,7 +605,7 @@ extension HealthStatus {
         case .unknown: return "Desconhecido"
         }
     }
-    
+
     var color: Color {
         switch self {
         case .healthy: return .green

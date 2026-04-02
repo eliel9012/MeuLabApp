@@ -71,6 +71,15 @@ class AppState: ObservableObject {
     @Published var systemError: String?
     @Published var systemLoading = false
 
+    // MARK: - Mac Mini (API2)
+    @Published var macMiniStatus: SystemStatus?
+    @Published var macMiniError: String?
+    @Published var macMiniLoading = false
+    @Published var macMiniProcesses: [ProcessItem] = []
+    @Published var macMiniPartitions: [Partition] = []
+    @Published var macMiniNetwork: [NetworkInterface] = []
+    @Published var macMiniAnalytics: SystemAnalytics?
+
     // MARK: - Fire Stick
     @Published var firestickDeviceStatuses: [FirestickDeviceStatus] = []
     @Published var firestickError: String?
@@ -139,6 +148,7 @@ class AppState: ObservableObject {
     // Módulos de tabs inativas NÃO fazem polling (zero custo).
     private var adsbTimer: Timer?
     private var moduleTimer: Timer?
+    private var radioBackgroundTimer: Timer?
 
     // Per-group in-flight guards — nunca bloqueia outro grupo.
     private var adsbInFlight = false
@@ -154,8 +164,8 @@ class AppState: ObservableObject {
     private let adsbAircraftInterval: TimeInterval = 1.5
     private let systemInterval: TimeInterval = 5.0
     private let firestickInterval: TimeInterval = 10.0
-    private let radioInterval: TimeInterval = 5.0
-    private let radioBackgroundInterval: TimeInterval = 15.0
+    private let radioInterval: TimeInterval = 1.0
+    private let radioBackgroundInterval: TimeInterval = 5.0
     private let weatherInterval: TimeInterval = 60.0
     private let satelliteInterval: TimeInterval = 120.0
     private let acarsInterval: TimeInterval = 10.0
@@ -209,6 +219,7 @@ class AppState: ObservableObject {
     deinit {
         adsbTimer?.invalidate()
         moduleTimer?.invalidate()
+        radioBackgroundTimer?.invalidate()
     }
 
     // MARK: - Timer Management
@@ -245,20 +256,39 @@ class AppState: ObservableObject {
     func setRefreshEnabled(_ enabled: Bool) {
         guard hasBootstrapped else { return }
         if enabled {
+            stopRadioBackgroundTimer()
             startRefreshTimers()
         } else {
             adsbTimer?.invalidate()
             adsbTimer = nil
             moduleTimer?.invalidate()
             moduleTimer = nil
+            startRadioBackgroundTimer()
         }
+    }
+
+    private func startRadioBackgroundTimer() {
+        guard radioBackgroundTimer == nil else { return }
+        radioBackgroundTimer = Timer.scheduledTimer(
+            withTimeInterval: radioBackgroundInterval, repeats: true
+        ) { [weak self] _ in
+            Task { @MainActor [weak self] in
+                await self?.tickRadio(Date(), background: true)
+            }
+        }
+    }
+
+    private func stopRadioBackgroundTimer() {
+        radioBackgroundTimer?.invalidate()
+        radioBackgroundTimer = nil
     }
 
     // MARK: - ADSB Tick (independente)
 
     private func tickADSB(forceVisible: Bool = false) async {
         let active = activeTabRawValue
-        let isADSBActive = forceVisible || active == "adsb" || active == "map" || active == "intelligence"
+        let isADSBActive =
+            forceVisible || active == "adsb" || active == "map" || active == "intelligence"
         guard isADSBActive else { return }  // Não gasta CPU se a tab não está visível
         guard !adsbInFlight else { return }
         adsbInFlight = true
@@ -712,6 +742,45 @@ class AppState: ObservableObject {
         }
     }
 
+    // MARK: - Mac Mini
+
+    func refreshMacMini() async {
+        guard !macMiniLoading else { return }
+        macMiniLoading = true
+        defer { macMiniLoading = false }
+        do {
+            async let statusTask = api.fetchMacMiniStatus()
+            async let processesTask: [ProcessItem]? = {
+                try? await self.api.fetchMacMiniProcesses().items
+            }()
+            async let partitionsTask: [Partition]? = {
+                try? await self.api.fetchMacMiniPartitions().partitions
+            }()
+            async let networkTask: [NetworkInterface]? = {
+                try? await self.api.fetchMacMiniNetwork().interfaces
+            }()
+            async let analyticsTask: SystemAnalytics? = {
+                try? await self.api.fetchMacMiniAnalytics()
+            }()
+
+            let status = try await statusTask
+            let (procs, parts, net, analytics) = await (
+                processesTask, partitionsTask, networkTask, analyticsTask
+            )
+
+            if self.macMiniStatus != status { self.macMiniStatus = status }
+            if let procs { self.macMiniProcesses = procs }
+            if let parts { self.macMiniPartitions = parts }
+            if let net { self.macMiniNetwork = net }
+            if let analytics { self.macMiniAnalytics = analytics }
+            self.macMiniError = nil
+        } catch {
+            if macMiniStatus == nil {
+                self.macMiniError = error.localizedDescription
+            }
+        }
+    }
+
     // MARK: - Fire Stick
 
     func refreshFirestick() async {
@@ -909,7 +978,9 @@ class AppState: ObservableObject {
         )
     }
 
-    private func mergedForecastDays(primary: [ForecastDay], fallback: [ForecastDay]) -> [ForecastDay] {
+    private func mergedForecastDays(primary: [ForecastDay], fallback: [ForecastDay])
+        -> [ForecastDay]
+    {
         if primary.count < 10 {
             return fallback
         }
@@ -2005,7 +2076,8 @@ actor LabIntelligenceService {
                 .init(
                     id: "healthy",
                     title: "Operação estável",
-                    detail: "Sem ação crítica agora. Recomendado: abrir Sistema e revisar históricos.",
+                    detail:
+                        "Sem ação crítica agora. Recomendado: abrir Sistema e revisar históricos.",
                     targetTab: "system"
                 ))
         }
@@ -2032,7 +2104,8 @@ actor LabIntelligenceService {
                 detail: "Msgs: \(snapshot.acarsMessages.count)"),
             .init(
                 id: "weather", source: "Clima", status: weatherOk ? "OK" : "Sem dados",
-                detail: weatherOk ? snapshot.weather?.current.description ?? "-" : "Coleta indisponível"),
+                detail: weatherOk
+                    ? snapshot.weather?.current.description ?? "-" : "Coleta indisponível"),
             .init(
                 id: "sys", source: "Sistema", status: sysOk ? "OK" : "Sem dados",
                 detail: "Host: \(snapshot.system?.hostname ?? "-")"),
@@ -2094,7 +2167,8 @@ actor LabIntelligenceService {
                     metric: "Chuva prevista",
                     current: "\(weather.today.rainChance)%",
                     previous: "\(weather.today.rainMm.formattedBR(decimals: 1)) mm",
-                    delta: weather.today.rainChance >= 60 || weather.today.rainMm >= 5 ? "Atenção" : "Baixo risco"
+                    delta: weather.today.rainChance >= 60 || weather.today.rainMm >= 5
+                        ? "Atenção" : "Baixo risco"
                 ))
         }
 
