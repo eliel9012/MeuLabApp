@@ -263,6 +263,13 @@ struct ACARSView: View {
                     }
                 }
             }
+            .task {
+                if appState.acarsSummary == nil && appState.acarsError == nil {
+                    await appState.refreshACARS()
+                    await appState.refreshACARSHistory()
+                    await appState.refreshACARSAlerts()
+                }
+            }
             .searchable(text: $searchText, prompt: "Buscar voo ou matrícula")
             .onSubmit(of: .search) {
                 Task { await searchFlight() }
