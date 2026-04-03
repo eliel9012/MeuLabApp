@@ -1,14 +1,17 @@
+import CoreLocation
 import Foundation
 
 // MARK: - Aircraft Source
 enum AircraftSource: String, Codable {
-    case local = "local"      // Detectado pelo seu radar
+    case local = "local"  // Detectado pelo seu radar
     case network = "network"  // Via API ADSB.lol
+    case opensky = "opensky"  // Via OpenSky Network
 
     var displayName: String {
         switch self {
         case .local: return "Meu Radar"
         case .network: return "Rede ADSB.lol"
+        case .opensky: return "OpenSky Network"
         }
     }
 
@@ -16,6 +19,7 @@ enum AircraftSource: String, Codable {
         switch self {
         case .local: return "antenna.radiowaves.left.and.right"
         case .network: return "globe"
+        case .opensky: return "network"
         }
     }
 }
@@ -97,6 +101,212 @@ struct Airline: Codable, Identifiable, Equatable {
     let count: Int
 
     var id: String { name }
+
+    var logoURL: URL? {
+        AirlineLogo.url(for: name)
+    }
+}
+
+// MARK: - Airline Logo Helper
+struct AirlineLogo {
+    // Comprehensive mapping of airline names to IATA codes
+    static let mapping: [String: String] = [
+        // Brazilian Airlines
+        "LATAM": "LA",
+        "TAM": "JJ",
+        "GOL": "G3",
+        "AZUL": "AD",
+        "VOEPASS": "2Z",
+        "PASSAREDO": "2Z",
+        "SIDERAL": "SD",
+        "MODERN": "WD",
+        "TOTAL": "L0",
+        "AZUL CONECTA": "AD",
+        "MAP": "7M",
+        "ABSA": "M3",
+        "TWO FLEX": "7Y",
+        "ITAPEMIRIM": "3H",
+        // South American
+        "AVIANCA": "AV",
+        "AVIANCA BRASIL": "O6",
+        "AEROLINEAS ARGENTINAS": "AR",
+        "AEROLINEAS": "AR",
+        "FLYBONDI": "FO",
+        "JETSMART": "JA",
+        "SKY AIRLINE": "H2",
+        "COPA": "CM",
+        "COPA AIRLINES": "CM",
+        "BOLIVIANA": "OB",
+        "BOA": "OB",  // Boliviana de Aviación
+        "BOLIVIANA DE AVIACION": "OB",
+        "AEROMEXICO": "AM",
+        "VOLARIS": "Y4",
+        "INTERJET": "4O",
+        "VIVA AIR": "VH",
+        "VIVA AEROBUS": "VB",
+        "WINGO": "P5",
+        "SATENA": "9R",
+        "EASYFLY": "VE",
+        // European
+        "LUFTHANSA": "LH",
+        "TAP": "TP",
+        "AIR FRANCE": "AF",
+        "KLM": "KL",
+        "IBERIA": "IB",
+        "BRITISH": "BA",
+        "AIR EUROPA": "UX",
+        "TURKISH": "TK",
+        "SWISS": "LX",
+        "ITA AIRWAYS": "AZ",
+        "ALITALIA": "AZ",
+        "VUELING": "VY",
+        "RYANAIR": "FR",
+        "EASYJET": "U2",
+        "NORWEGIAN": "DY",
+        "SAS": "SK",
+        "FINNAIR": "AY",
+        "LOT": "LO",
+        "AUSTRIAN": "OS",
+        "BRUSSELS": "SN",
+        "AEROFLOT": "SU",
+        "EUROWINGS": "EW",
+        "CONDOR": "DE",
+        "WIZZ": "W6",
+        "AIR SERBIA": "JU",
+        "TRANSAVIA": "HV",
+        // North American
+        "AMERICAN": "AA",
+        "DELTA": "DL",
+        "UNITED": "UA",
+        "SOUTHWEST": "WN",
+        "JETBLUE": "B6",
+        "ALASKA": "AS",
+        "SPIRIT": "NK",
+        "FRONTIER": "F9",
+        "AIR CANADA": "AC",
+        "WESTJET": "WS",
+        // Middle East
+        "EMIRATES": "EK",
+        "QATAR": "QR",
+        "ETIHAD": "EY",
+        "SAUDIA": "SV",
+        "ROYAL JORDANIAN": "RJ",
+        "GULF AIR": "GF",
+        "OMAN AIR": "WY",
+        "KUWAIT": "KU",
+        // Asian
+        "SINGAPORE": "SQ",
+        "CATHAY": "CX",
+        "ANA": "NH",
+        "JAL": "JL",
+        "JAPAN AIR": "JL",
+        "KOREAN AIR": "KE",
+        "ASIANA": "OZ",
+        "CHINA SOUTHERN": "CZ",
+        "CHINA EASTERN": "MU",
+        "AIR CHINA": "CA",
+        "HAINAN": "HU",
+        "THAI": "TG",
+        "VIETNAM": "VN",
+        "GARUDA": "GA",
+        "MALAYSIA": "MH",
+        "PHILIPPINE": "PR",
+        "EVA AIR": "BR",
+        "CHINA AIRLINES": "CI",
+        // Oceanian
+        "QANTAS": "QF",
+        "AIR NEW ZEALAND": "NZ",
+        "FIJI AIRWAYS": "FJ",
+        // African
+        "SOUTH AFRICAN": "SA",
+        "ETHIOPIAN": "ET",
+        "KENYA AIRWAYS": "KQ",
+        "EGYPT AIR": "MS",
+        "ROYAL AIR MAROC": "AT",
+        // Cargo
+        "FEDEX": "FX",
+        "UPS": "5X",
+        "DHL": "D0",
+        "CARGOLUX": "CV",
+        "ATLAS AIR": "5Y",
+    ]
+
+    // ICAO to IATA comprehensive mapping
+    static let icaoToIata: [String: String] = [
+        // Brazilian
+        "TAM": "JJ", "GLO": "G3", "AZU": "AD", "PTB": "2Z", "ONE": "LA",
+        "LAN": "LA", "SID": "SD", "ABJ": "M3", "TIB": "L0",
+        // South American
+        "AVA": "AV", "ARG": "AR", "FBH": "FO", "JAT": "JA", "JES": "JA", "SKU": "H2",
+        "CMP": "CM", "BOV": "OB", "AMX": "AM", "VOI": "Y4",
+        "VIV": "VH", "VB": "VB", "RPB": "P5", "NSE": "9R",
+        // European
+        "DLH": "LH", "TAP": "TP", "AFR": "AF", "KLM": "KL", "IBE": "IB",
+        "BAW": "BA", "AEA": "UX", "THY": "TK", "SWR": "LX", "ITY": "AZ",
+        "AZA": "AZ", "VLG": "VY", "RYR": "FR", "EZY": "U2", "NAX": "DY",
+        "SAS": "SK", "FIN": "AY", "LOT": "LO", "AUA": "OS", "BEL": "SN",
+        "AFL": "SU", "EWG": "EW", "CFG": "DE", "WZZ": "W6", "ASL": "JU",
+        "TRA": "HV",
+        // North American
+        "AAL": "AA", "DAL": "DL", "UAL": "UA", "SWA": "WN", "JBU": "B6",
+        "ASA": "AS", "NKS": "NK", "FFT": "F9", "ACA": "AC", "WJA": "WS",
+        // Middle East
+        "UAE": "EK", "QTR": "QR", "ETD": "EY", "SVA": "SV", "RJA": "RJ",
+        "GFA": "GF", "OMA": "WY", "KAC": "KU",
+        // Asian
+        "SIA": "SQ", "CPA": "CX", "ANA": "NH", "JAL": "JL", "KAL": "KE",
+        "AAR": "OZ", "CSN": "CZ", "CES": "MU", "CCA": "CA", "CHH": "HU",
+        "THA": "TG", "HVN": "VN", "GIA": "GA", "MAS": "MH", "PAL": "PR",
+        "EVA": "BR", "CAL": "CI",
+        // Oceanian
+        "QFA": "QF", "ANZ": "NZ", "FJI": "FJ",
+        // African
+        "SAA": "SA", "ETH": "ET", "KQA": "KQ", "MSR": "MS", "RAM": "AT",
+        // Cargo
+        "FDX": "FX", "UPS": "5X", "BOX": "D0", "CLX": "CV", "GTI": "5Y",
+        // Military/Government (generic icons)
+        "FAB": "FB", "BRS": "FB", "RCH": "FB",
+    ]
+
+    private static func normalize(_ s: String) -> String {
+        // Normalize for matching (handles Aeroméxico/Aviación, etc.).
+        s.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
+            .uppercased()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    private static let normalizedMapping: [String: String] = Dictionary(
+        uniqueKeysWithValues: mapping.map { (normalize($0.key), $0.value) }
+    )
+
+    static func url(for name: String) -> URL? {
+        let upper = normalize(name)
+
+        // 1. Precise match
+        if let iata = normalizedMapping[upper] {
+            return URL(string: "https://www.gstatic.com/flights/airline_logos/70px/\(iata).png")
+        }
+
+        // 2. Contains match
+        for (key, iata) in normalizedMapping {
+            if upper.contains(key) {
+                return URL(string: "https://www.gstatic.com/flights/airline_logos/70px/\(iata).png")
+            }
+        }
+        return nil
+    }
+
+    static func url(fromCallsign callsign: String) -> URL? {
+        let trimmed = callsign.trimmingCharacters(in: .whitespaces)
+        guard trimmed.count >= 3 else { return nil }
+        let icao = String(trimmed.prefix(3)).uppercased()
+
+        if let iata = icaoToIata[icao] {
+            return URL(string: "https://www.gstatic.com/flights/airline_logos/70px/\(iata).png")
+        }
+
+        return nil
+    }
 }
 
 struct TopModel: Codable, Identifiable, Equatable {
@@ -129,31 +339,98 @@ struct AircraftList: Codable {
 struct Aircraft: Codable, Identifiable, Equatable {
     let id: String
     let hex: String?
-    let callsign: String
+    let callsign: String  // Keep required - API always provides
     let model: String?
-    let airline: String?
+    var registration: String?  // Changed to var to allow update from ACARS
+    var airline: String?
     let lat: Double?
     let lon: Double?
     let track: Double?
-    let altitudeFt: Int
-    let speedKt: Int
-    let speedKmh: Int
+    let altitudeFt: Int  // Keep required - API always provides
+    let speedKt: Int  // Keep required - API always provides
+    let speedKmh: Int  // Keep required - API always provides
     let distanceNm: Double?
-    let verticalRateFpm: Int
+    let verticalRateFpm: Int  // Keep required - API always provides
     var source: AircraftSource = .local  // Origem dos dados
+    var isDualTracked: Bool = false  // Detectado por ambas as fontes
+    let squawk: String?  // Código transponder (e.g. 7700 = emergência)
 
     enum CodingKeys: String, CodingKey {
-        case id, hex, callsign, model, airline, lat, lon, track
+        case id, hex, callsign, model, registration, airline, lat, lon, track
         case altitudeFt = "altitude_ft"
         case speedKt = "speed_kt"
         case speedKmh = "speed_kmh"
         case distanceNm = "distance_nm"
         case verticalRateFpm = "vertical_rate_fpm"
-        case source
+        case squawk
+        // Note: source and isDualTracked are NOT in CodingKeys because they're not provided by the API
+    }
+
+    // Custom decoder to handle fields not in API response
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+
+        id = try container.decode(String.self, forKey: .id)
+        hex = try container.decodeIfPresent(String.self, forKey: .hex)
+        callsign = try container.decode(String.self, forKey: .callsign)
+        model = try container.decodeIfPresent(String.self, forKey: .model)
+        airline = try container.decodeIfPresent(String.self, forKey: .airline)
+        lat = try container.decodeIfPresent(Double.self, forKey: .lat)
+        lon = try container.decodeIfPresent(Double.self, forKey: .lon)
+        track = try container.decodeIfPresent(Double.self, forKey: .track)
+        altitudeFt = try container.decode(Int.self, forKey: .altitudeFt)
+        speedKt = try container.decode(Int.self, forKey: .speedKt)
+        speedKmh = try container.decode(Int.self, forKey: .speedKmh)
+        distanceNm = try container.decodeIfPresent(Double.self, forKey: .distanceNm)
+        verticalRateFpm = try container.decode(Int.self, forKey: .verticalRateFpm)
+
+        registration = try container.decodeIfPresent(String.self, forKey: .registration)
+        squawk = try container.decodeIfPresent(String.self, forKey: .squawk)
+        source = .local
+        isDualTracked = false
+    }
+
+    // Memberwise initializer for manual creation
+    init(
+        id: String,
+        hex: String?,
+        callsign: String,
+        model: String?,
+        registration: String?,
+        airline: String?,
+        lat: Double?,
+        lon: Double?,
+        track: Double?,
+        altitudeFt: Int,
+        speedKt: Int,
+        speedKmh: Int,
+        distanceNm: Double?,
+        verticalRateFpm: Int,
+        squawk: String? = nil,
+        source: AircraftSource = .local,
+        isDualTracked: Bool = false
+    ) {
+        self.id = id
+        self.hex = hex
+        self.callsign = callsign
+        self.model = model
+        self.registration = registration
+        self.airline = airline
+        self.lat = lat
+        self.lon = lon
+        self.track = track
+        self.altitudeFt = altitudeFt
+        self.speedKt = speedKt
+        self.speedKmh = speedKmh
+        self.distanceNm = distanceNm
+        self.verticalRateFpm = verticalRateFpm
+        self.squawk = squawk
+        self.source = source
+        self.isDualTracked = isDualTracked
     }
 
     var displayCallsign: String {
-        callsign.isEmpty ? (hex ?? "???") : callsign
+        callsign.isEmpty ? (hex ?? "Sem ID") : callsign
     }
 
     var hasPosition: Bool {
@@ -162,6 +439,20 @@ struct Aircraft: Codable, Identifiable, Equatable {
 
     var isLocal: Bool {
         source == .local
+    }
+
+    var airlineLogoURL: URL? {
+        // 1. Tenta pelo callsign (ICAO)
+        if let url = AirlineLogo.url(fromCallsign: callsign) {
+            return url
+        }
+
+        // 2. Tenta pelo nome da companhia se disponível
+        if let airlineName = airline, let url = AirlineLogo.url(for: airlineName) {
+            return url
+        }
+
+        return nil
     }
 
     var movementIcon: String {
@@ -185,10 +476,25 @@ struct Aircraft: Codable, Identifiable, Equatable {
     }
 
     // Criar cópia com source diferente
-    func with(source: AircraftSource) -> Aircraft {
+    func with(source: AircraftSource, dualTracked: Bool = false) -> Aircraft {
         var copy = self
         copy.source = source
+        copy.isDualTracked = dualTracked
         return copy
+    }
+
+    // Calcular distância dinâmica se não vier da API
+    @MainActor
+    var computedDistanceNm: Double {
+        if let d = distanceNm { return d }
+        // Calcular baseado na localização do usuário
+        if let lat = lat, let lon = lon,
+            let userLoc = LocationManager.shared.userLocation
+        {
+            let acLoc = CLLocation(latitude: lat, longitude: lon)
+            return userLoc.distance(from: acLoc) / 1852.0
+        }
+        return Double.infinity
     }
 }
 
@@ -204,13 +510,13 @@ struct ADSBLolResponse: Codable {
 struct ADSBLolAircraft: Codable {
     let hex: String?
     let flight: String?
-    let t: String?           // Tipo de aeronave
-    let r: String?           // Registro
+    let t: String?  // Tipo de aeronave
+    let r: String?  // Registro
     let lat: Double?
     let lon: Double?
     let alt_baro: IntOrString?
     let alt_geom: Int?
-    let gs: Double?          // Ground speed
+    let gs: Double?  // Ground speed
     let track: Double?
     let baro_rate: Int?
     let squawk: String?
@@ -248,6 +554,7 @@ struct ADSBLolAircraft: Codable {
             hex: hex,
             callsign: flight?.trimmingCharacters(in: .whitespaces) ?? "",
             model: t,
+            registration: r,
             airline: nil,
             lat: lat,
             lon: lon,
@@ -257,8 +564,200 @@ struct ADSBLolAircraft: Codable {
             speedKmh: Int((gs ?? 0) * 1.852),
             distanceNm: nil,
             verticalRateFpm: baro_rate ?? 0,
+            squawk: squawk,
             source: .network
         )
+    }
+}
+
+// MARK: - Tuya Sensor
+
+struct TuyaTemperatureHumidityResponse: Codable, Equatable {
+    let ok: Bool
+    let timestamp: String
+    let source: String?
+    let device: TuyaSensorDevice?
+    let current: TuyaSensorCurrent?
+    let history: [TuyaSensorHistoryEntry]?
+    let historyIntervalSeconds: Int?
+    let raw: TuyaSensorRaw?
+    let degraded: Bool
+    let degradedReason: String?
+    let localError: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ok, timestamp, source, device, current, history, raw, degraded
+        case degradedReason = "degraded_reason"
+        case historyIntervalSeconds = "history_interval_seconds"
+        case localError = "local_error"
+    }
+
+    var friendlyErrorMessage: String? {
+        guard !ok || degraded else { return nil }
+
+        if let reason = degradedReason?.trimmedNonEmpty {
+            return "Leitura parcial do sensor: \(reason)."
+        }
+
+        if let localError = localError?.trimmedNonEmpty {
+            return "Sensor indisponível no momento: \(localError)."
+        }
+
+        return "Sensor Tuya indisponível no momento."
+    }
+
+    var lastUpdatedAt: Date? {
+        Formatters.isoDate.date(from: timestamp) ?? Formatters.isoDateNoFrac.date(from: timestamp)
+    }
+}
+
+struct TuyaSensorHistoryEntry: Codable, Equatable, Identifiable {
+    let timestamp: String
+    let temperatureC: Double?
+    let humidityPct: Double?
+    let batteryPct: Int?
+    let source: String?
+    let deviceID: String?
+    let deviceName: String?
+
+    var id: String { timestamp }
+
+    enum CodingKeys: String, CodingKey {
+        case timestamp, source
+        case temperatureC = "temperature_c"
+        case humidityPct = "humidity_pct"
+        case batteryPct = "battery_pct"
+        case deviceID = "device_id"
+        case deviceName = "device_name"
+    }
+
+    var date: Date? {
+        Formatters.isoDate.date(from: timestamp) ?? Formatters.isoDateNoFrac.date(from: timestamp)
+    }
+}
+
+struct TuyaSensorDevice: Codable, Equatable {
+    let id: String
+    let name: String
+    let localIP: String?
+    let productID: String?
+    let category: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, category
+        case localIP = "local_ip"
+        case productID = "product_id"
+    }
+}
+
+struct TuyaSensorCurrent: Codable, Equatable {
+    let temperatureC: Double?
+    let humidityPct: Double?
+    let batteryPct: Int?
+    let temperatureUnit: String?
+    let temperatureAlarm: String?
+    let humidityAlarm: String?
+
+    enum CodingKeys: String, CodingKey {
+        case temperatureC = "temperature_c"
+        case humidityPct = "humidity_pct"
+        case batteryPct = "battery_pct"
+        case temperatureUnit = "temperature_unit"
+        case temperatureAlarm = "temperature_alarm"
+        case humidityAlarm = "humidity_alarm"
+    }
+}
+
+struct TuyaSensorRaw: Codable, Equatable {
+    let status: TuyaSensorStatus?
+}
+
+struct TuyaSensorStatus: Codable, Equatable {
+    let result: [TuyaSensorStatusEntry]?
+    let success: Bool?
+}
+
+struct TuyaSensorStatusEntry: Codable, Equatable {
+    let code: String
+    let value: TuyaSensorStatusValue
+}
+
+enum TuyaSensorStatusValue: Codable, Equatable {
+    case int(Int)
+    case double(Double)
+    case string(String)
+    case bool(Bool)
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        if let value = try? container.decode(Int.self) {
+            self = .int(value)
+        } else if let value = try? container.decode(Double.self) {
+            self = .double(value)
+        } else if let value = try? container.decode(Bool.self) {
+            self = .bool(value)
+        } else if let value = try? container.decode(String.self) {
+            self = .string(value)
+        } else {
+            throw DecodingError.typeMismatch(
+                TuyaSensorStatusValue.self,
+                .init(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "Unsupported Tuya status value")
+            )
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.singleValueContainer()
+        switch self {
+        case .int(let value):
+            try container.encode(value)
+        case .double(let value):
+            try container.encode(value)
+        case .string(let value):
+            try container.encode(value)
+        case .bool(let value):
+            try container.encode(value)
+        }
+    }
+}
+
+extension String {
+    fileprivate var trimmedNonEmpty: String? {
+        let trimmed = trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+}
+
+// MARK: - Tuya Status (API2)
+
+struct TuyaStatusResponse: Codable {
+    let service: String
+    let running: Bool
+    let deviceId: String?
+    let deviceName: String?
+    let sourceMode: String?
+    let historyPath: String?
+    let historyItems: Int?
+    let backgroundRefreshSeconds: Int?
+    let cacheTtlSeconds: Double?
+    let lastRefreshAt: String?
+    let lastError: String?
+    let hasStalePayload: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case service, running
+        case deviceId = "device_id"
+        case deviceName = "device_name"
+        case sourceMode = "source_mode"
+        case historyPath = "history_path"
+        case historyItems = "history_items"
+        case backgroundRefreshSeconds = "background_refresh_seconds"
+        case cacheTtlSeconds = "cache_ttl_seconds"
+        case lastRefreshAt = "last_refresh_at"
+        case lastError = "last_error"
+        case hasStalePayload = "has_stale_payload"
     }
 }
 
@@ -292,4 +791,60 @@ enum IntOrString: Codable {
         case .string: return nil
         }
     }
+}
+
+// MARK: - Airline Classification (Manual)
+
+struct AirlineClassificationRecord: Codable, Equatable {
+    let hex: String?
+    let registration: String?
+    let callsign: String?
+    let model: String?
+    let airlineName: String
+    let airlineIcao: String?
+    let airlineIata: String?
+    let source: String?
+    let confidence: Double?
+    let createdAt: String?
+    let updatedAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case hex, registration, callsign, model, source, confidence
+        case airlineName = "airline_name"
+        case airlineIcao = "airline_icao"
+        case airlineIata = "airline_iata"
+        case createdAt = "created_at"
+        case updatedAt = "updated_at"
+    }
+}
+
+struct AirlineClassificationLookupResponse: Codable {
+    let ok: Bool?
+    let classification: AirlineClassificationRecord?
+    let message: String?
+}
+
+struct AirlineClassificationUpsertRequest: Codable {
+    let hex: String?
+    let registration: String?
+    let callsign: String?
+    let model: String?
+    let airlineName: String
+    let airlineIcao: String?
+    let airlineIata: String?
+    let source: String
+    let confidence: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case hex, registration, callsign, model, source, confidence
+        case airlineName = "airline_name"
+        case airlineIcao = "airline_icao"
+        case airlineIata = "airline_iata"
+    }
+}
+
+struct AirlineClassificationUpsertResponse: Codable {
+    let ok: Bool?
+    let classification: AirlineClassificationRecord?
+    let message: String?
 }

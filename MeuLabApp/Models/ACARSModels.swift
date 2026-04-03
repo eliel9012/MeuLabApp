@@ -42,7 +42,7 @@ struct ACARSPeriodStats: Codable, Equatable {
 
 struct ACARSTopAircraft: Codable, Equatable, Identifiable {
     let tail: String
-    let flight: String
+    let flight: String?
     let count: Int
 
     var id: String { tail }
@@ -50,7 +50,7 @@ struct ACARSTopAircraft: Codable, Equatable, Identifiable {
 
 struct ACARSTopLabel: Codable, Equatable, Identifiable {
     let label: String
-    let description: String
+    let description: String?
     let count: Int
 
     var id: String { label }
@@ -61,10 +61,13 @@ struct ACARSTopLabel: Codable, Equatable, Identifiable {
 struct ACARSMessageList: Codable {
     let timestamp: String
     let count: Int
+    let details: Bool?
+    let libacars: Bool?
     let messages: [ACARSMessage]
 }
 
 struct ACARSMessage: Codable, Identifiable, Equatable {
+    // Base fields (sempre presentes)
     let id: Int
     let flight: String?
     let tail: String?
@@ -74,23 +77,67 @@ struct ACARSMessage: Codable, Identifiable, Equatable {
     let destination: String?
     let text: String?
     let time: String
-    let timestamp: Int
+    let timestamp: Double  // Changed from Int to Double to match API
+
+    // Extra fields (quando details=1)
+    let messageType: String?
+    let stationId: String?
+    let toaddr: String?
+    let fromaddr: String?
+    let eta: String?
+    let gtout: String?
+    let gtin: String?
+    let wloff: String?
+    let wlin: String?
+    let icao: String?
+    let lat: Double?
+    let lon: Double?
+    let altitudeFt: Double?
+    let freqMhz: Double?
+    let ack: Int?
+    let mode: Int?
+    let blockId: String?
+    let msgno: String?
+    let isResponse: Int?
+    let isOnground: Int?
+    let error: Int?
+    let levelDbfs: Double?
+
+    // Libacars (quando libacars=1)
+    let libacars: AnyCodable?
 
     enum CodingKeys: String, CodingKey {
         case id, flight, tail, label
         case labelDesc = "label_desc"
         case departure, destination, text, time, timestamp
+        case messageType = "message_type"
+        case stationId = "station_id"
+        case toaddr, fromaddr, eta, gtout, gtin, wloff, wlin, icao, lat, lon
+        case altitudeFt = "altitude_ft"
+        case freqMhz = "freq_mhz"
+        case ack, mode
+        case blockId = "block_id"
+        case msgno
+        case isResponse = "is_response"
+        case isOnground = "is_onground"
+        case error
+        case levelDbfs = "level_dbfs"
+        case libacars
     }
 
     var displayFlight: String {
-        flight ?? tail ?? "???"
+        flight ?? tail ?? "Sem ID"
     }
 
     var displayRoute: String? {
         guard departure != nil || destination != nil else { return nil }
-        let dep = departure ?? "???"
-        let dst = destination ?? "???"
+        let dep = departure ?? "—"
+        let dst = destination ?? "—"
         return "\(dep) → \(dst)"
+    }
+
+    var hasPosition: Bool {
+        lat != nil && lon != nil
     }
 
     var labelIcon: String {
@@ -119,6 +166,14 @@ struct ACARSMessage: Codable, Identifiable, Equatable {
     }
 }
 
+// MARK: - ACARS Single Message Response
+
+struct ACARSMessageResponse: Codable {
+    let timestamp: String
+    let libacars: Bool?
+    let message: ACARSMessage
+}
+
 // MARK: - ACARS Hourly Stats
 
 struct ACARSHourlyStats: Codable {
@@ -140,5 +195,7 @@ struct ACARSSearchResult: Codable {
     let timestamp: String
     let query: String
     let count: Int
+    let details: Bool?
+    let libacars: Bool?
     let messages: [ACARSMessage]
 }

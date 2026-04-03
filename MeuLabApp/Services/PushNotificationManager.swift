@@ -68,10 +68,10 @@ class PushNotificationManager: NSObject, ObservableObject {
     private func registerTokenWithServer(_ token: String) async {
         do {
             var deviceInfo: [String: Any] = [
-                "device_name": await UIDevice.current.name,
-                "device_model": await UIDevice.current.model,
+                "device_name": UIDevice.current.name,
+                "device_model": UIDevice.current.model,
                 "app_version": Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0",
-                "os_version": await UIDevice.current.systemVersion
+                "os_version": UIDevice.current.systemVersion
             ]
 
             // Adiciona localização se disponível
@@ -80,7 +80,7 @@ class PushNotificationManager: NSObject, ObservableObject {
                 deviceInfo["longitude"] = userLocation.coordinate.longitude
             }
 
-            try await APIService.shared.registerDeviceToken(token: token, deviceInfo: deviceInfo)
+            _ = try await APIService.shared.registerDeviceToken(token: token, deviceInfo: deviceInfo)
             isRegistered = true
             print("Token registrado no servidor")
         } catch {
@@ -141,7 +141,14 @@ class PushNotificationManager: NSObject, ObservableObject {
             options: .customDismissAction
         )
 
-        center.setNotificationCategories([adsbCategory, acarsCategory, weatherCategory, satelliteCategory])
+        let generalCategory = UNNotificationCategory(
+            identifier: "general",
+            actions: [],
+            intentIdentifiers: [],
+            options: []
+        )
+
+        center.setNotificationCategories([adsbCategory, acarsCategory, weatherCategory, satelliteCategory, generalCategory])
     }
 }
 
@@ -190,54 +197,4 @@ extension PushNotificationManager: UNUserNotificationCenterDelegate {
 
 extension Notification.Name {
     static let pushNotificationReceived = Notification.Name("pushNotificationReceived")
-}
-
-// MARK: - APIService Extension
-
-extension APIService {
-    /// Registra device token no servidor
-    func registerDeviceToken(token: String, deviceInfo: [String: Any]) async throws {
-        let url = baseURL.appendingPathComponent("notifications/register")
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiToken)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body: [String: Any] = [
-            "device_token": token,
-            "device_info": deviceInfo
-        ]
-
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
-            throw URLError(.badServerResponse)
-        }
-
-        if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
-            print("Registro push: \(json)")
-        }
-    }
-
-    /// Remove device token do servidor
-    func unregisterDeviceToken(token: String) async throws {
-        let url = baseURL.appendingPathComponent("notifications/unregister")
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue("Bearer \(apiToken)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body = ["device_token": token]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (_, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
-            throw URLError(.badServerResponse)
-        }
-    }
 }

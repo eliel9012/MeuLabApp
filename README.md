@@ -1,248 +1,154 @@
 # MeuLab App
 
-## English
+App SwiftUI para iOS/iPadOS que monitora dados do servidor Raspberry Pi em tempo real.
 
-SwiftUI app for iOS and iPadOS that monitors MeuLab services in real time.
+## Funcionalidades
 
-## Screenshots / Capturas de tela
+- **ADS-B**: Rastreamento de aeronaves em tempo real
+- **Satélite**: Imagens do Meteor M2-x via SatDump
+- **Sistema**: Status do Raspberry Pi (CPU, RAM, disco, Wi-Fi)
+- **Rádio**: Player da Diário FM com Now Playing no Control Center
+- **Clima**: Previsão do tempo para Franca, SP
 
-<table>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/ios-dark/adsb-overview.png" alt="ADS-B overview / visão geral do ADS-B" width="260"><br>
-      <sub>ADS-B overview / Visão geral do ADS-B</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/ios-dark/adsb-climbing-list.png" alt="Climbing aircraft list / lista de aeronaves em subida" width="260"><br>
-      <sub>Climbing aircraft list / Lista de aeronaves em subida</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/ios-dark/adsb-flight-details.png" alt="Flight details / detalhes do voo" width="260"><br>
-      <sub>Flight details / Detalhes do voo</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/ios-dark/radio-now-playing.png" alt="Now playing / tocando agora" width="260"><br>
-      <sub>Now playing / Tocando agora</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/ios-dark/radio-history.png" alt="Radio history / histórico da rádio" width="260"><br>
-      <sub>Radio history / Histórico da rádio</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/ios-dark/satellite-map.png" alt="Satellite map / mapa de satélite" width="260"><br>
-      <sub>Satellite map / Mapa de satélite</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/ios-dark/satellite-passes.png" alt="Satellite passes / passagens de satélite" width="260"><br>
-      <sub>Satellite passes / Passagens de satélite</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/ios-dark/satellite-pass-gallery.png" alt="Pass gallery / galeria de passagens" width="260"><br>
-      <sub>Pass gallery / Galeria de passagens</sub>
-    </td>
-  </tr>
-  <tr>
-    <td align="center">
-      <img src="Screenshots/ios-dark/system-overview.png" alt="System overview / visão geral do sistema" width="260"><br>
-      <sub>System overview / Visão geral do sistema</sub>
-    </td>
-    <td align="center">
-      <img src="Screenshots/ios-dark/weather-overview.png" alt="Weather overview / visão geral do clima" width="260"><br>
-      <sub>Weather overview / Visão geral do clima</sub>
-    </td>
-  </tr>
-</table>
+## Requisitos
 
-### Overview
-
-The app is designed as a client for the MeuLab environment, aggregating operational data from aviation, satellite, system, radio, and weather services into a single mobile interface.
-
-Main areas:
-
-- ADS-B
-- Radar
-- ACARS
-- Satellite
-- System
-- Radio
-- Weather
-
-### Features
-
-- real-time MeuLab service monitoring
-- push notifications with automatic tab routing
-- API token loaded at runtime instead of hardcoded in source
-- iPhone and iPad support with SwiftUI
-
-### Requirements
-
-- Xcode 15+
-- iOS / iPadOS 17+
+- Xcode 15.0+
+- iOS 17.0+ / iPadOS 17.0+
 - Swift 5.9+
 
-### Quick Start
+## Build Apple Silicon
 
-1. Open `MeuLabApp.xcodeproj` in Xcode.
-2. Create `MeuLabApp/Resources/Secrets.plist` from `Secrets.plist.example`.
-3. Add your `API_TOKEN`.
-4. Configure your development team in Signing & Capabilities.
-5. Run on a simulator or device.
+### iPhone real (arm64)
 
-Example:
-
-```xml
-<key>API_TOKEN</key>
-<string>YOUR_TOKEN_HERE</string>
+```bash
+xcodebuild -project MeuLabApp.xcodeproj \
+  -scheme MeuLabApp \
+  -configuration Release \
+  -destination 'generic/platform=iOS' \
+  -derivedDataPath build/DerivedData \
+  CODE_SIGNING_ALLOWED=NO build
 ```
 
-### Secret Loading
+### Simulador Apple Silicon (arm64)
 
-The app looks for the token in this order:
-
-1. `Info.plist` via `API_TOKEN`
-2. `Secrets.plist` bundled with the app via `API_TOKEN`
-
-If no token is found, protected endpoints return `401`.
-
-### Architecture
-
-- `MeuLabApp/MeuLabApp.swift`: app bootstrap and notification integration
-- `MeuLabApp/ContentView.swift`: main tab container
-- `MeuLabApp/Services/APIService.swift`: HTTP client and endpoint integration
-- `MeuLabApp/Services/PushNotificationManager.swift`: APNs registration and handling
-- `MeuLabApp/Services/AudioPlayer.swift`: radio playback
-- `MeuLabApp/Services/LocationManager.swift`: location-aware features
-- `MeuLabApp/ViewModels/AppState.swift`: shared app state
-- `MeuLabApp/Views/Tabs/*.swift`: feature-specific screens
-
-### Main Endpoints
-
-- `/api/adsb/summary`
-- `/api/adsb/aircraft`
-- `/api/acars/summary`
-- `/api/acars/messages`
-- `/api/acars/hourly`
-- `/api/acars/search`
-- `/api/system/status`
-- `/api/radio/now-playing`
-- `/api/weather/current`
-- `/api/satdump/last/images`
-- `/api/satdump/passes`
-- `/api/satdump/image`
-- `/notifications/register`
-- `/notifications/unregister`
-
-### Push Notifications
-
-To enable the full notification flow:
-
-1. enable `Push Notifications`
-2. enable `Background Modes > remote-notification`
-3. configure APNs in Apple Developer
-4. make sure the backend accepts registration and unregistration with a valid token
-
-### License
-
-Personal MeuLab use.
-
-## Português
-
-App SwiftUI para iPhone e iPad que monitora os serviços do ambiente MeuLab em tempo real.
-
-### Visão Geral
-
-O app funciona como cliente do ambiente MeuLab, reunindo dados operacionais de aviação, satélite, sistema, rádio e clima em uma única interface móvel.
-
-Áreas principais:
-
-- ADS-B
-- Radar
-- ACARS
-- Satélite
-- Sistema
-- Rádio
-- Clima
-
-### Funcionalidades
-
-- monitoramento em tempo real dos serviços do MeuLab
-- push notifications com navegação automática para a aba relacionada
-- token de API carregado em runtime, sem segredo hardcoded no código
-- suporte a iPhone e iPad com SwiftUI
-
-### Requisitos
-
-- Xcode 15+
-- iOS / iPadOS 17+
-- Swift 5.9+
-
-### Início Rápido
-
-1. Abra `MeuLabApp.xcodeproj` no Xcode.
-2. Crie `MeuLabApp/Resources/Secrets.plist` a partir de `Secrets.plist.example`.
-3. Adicione seu `API_TOKEN`.
-4. Configure seu time de desenvolvimento em Signing & Capabilities.
-5. Rode no simulador ou dispositivo.
-
-Exemplo:
-
-```xml
-<key>API_TOKEN</key>
-<string>SEU_TOKEN_AQUI</string>
+```bash
+xcodebuild -project MeuLabApp.xcodeproj \
+  -scheme MeuLabApp \
+  -configuration Debug \
+  -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.2' \
+  -derivedDataPath build/DerivedDataSimNoSign \
+  CODE_SIGNING_ALLOWED=NO build
 ```
 
-### Carregamento de Segredos
+## Screenshots
 
-O app procura o token nesta ordem:
+Para gerar screenshots de varias telas no simulador Apple Silicon:
 
-1. `Info.plist` com a chave `API_TOKEN`
-2. `Secrets.plist` no bundle com a chave `API_TOKEN`
+```bash
+./scripts/capture_apple_silicon_screenshots.sh
+```
 
-Se não houver token, endpoints protegidos retornam `401`.
+Arquivos gerados em:
 
-### Arquitetura
+```text
+Screenshots/apple-silicon/
+```
 
-- `MeuLabApp/MeuLabApp.swift`: bootstrap do app e integração com notificações
-- `MeuLabApp/ContentView.swift`: contêiner principal de abas
-- `MeuLabApp/Services/APIService.swift`: cliente HTTP e integração com endpoints
-- `MeuLabApp/Services/PushNotificationManager.swift`: registro e tratamento de APNs
-- `MeuLabApp/Services/AudioPlayer.swift`: reprodução da rádio
-- `MeuLabApp/Services/LocationManager.swift`: recursos dependentes de localização
-- `MeuLabApp/ViewModels/AppState.swift`: estado compartilhado do app
-- `MeuLabApp/Views/Tabs/*.swift`: telas específicas de cada domínio
+## Instalação
 
-### Principais Endpoints
+1. Copie a pasta `MeuLabApp` para seu Mac
+2. Abra `MeuLabApp.xcodeproj` no Xcode
+3. Configure o Team de desenvolvimento em Signing & Capabilities
+4. Conecte seu iPhone/iPad ou selecione um simulador
+5. Build e Run (⌘R)
 
-- `/api/adsb/summary`
-- `/api/adsb/aircraft`
-- `/api/acars/summary`
-- `/api/acars/messages`
-- `/api/acars/hourly`
-- `/api/acars/search`
-- `/api/system/status`
-- `/api/radio/now-playing`
-- `/api/weather/current`
-- `/api/satdump/last/images`
-- `/api/satdump/passes`
-- `/api/satdump/image`
-- `/notifications/register`
-- `/notifications/unregister`
+## Configuração
 
-### Push Notifications
+O app já está configurado para conectar à API em `https://app.meulab.fun`
 
-Para habilitar o fluxo completo:
+### Segredos (não commitar)
 
-1. ative `Push Notifications`
-2. ative `Background Modes > remote-notification`
-3. configure APNs no Apple Developer
-4. garanta que o backend aceite registro e remoção com token válido
+Defina os segredos no Scheme do Xcode (Run > Arguments > Environment Variables) ou no `Info.plist` local:
 
-### Licença
+```text
+MEULAB_API_TOKEN
+MEULAB_OPENSKY_CLIENT_SECRET
+MEULAB_MAPKIT_JWT
+```
 
-Uso pessoal do MeuLab.
+Sem essas variáveis, endpoints protegidos podem retornar não autorizado.
+
+## Estrutura do Projeto
+
+```
+MeuLabApp/
+├── MeuLabApp.swift          # Entry point
+├── ContentView.swift        # TabView principal
+├── Info.plist              # Configurações do app
+├── Models/                 # Modelos de dados
+│   ├── ADSBModels.swift
+│   ├── SystemModels.swift
+│   ├── RadioModels.swift
+│   ├── WeatherModels.swift
+│   └── SatelliteModels.swift
+├── Services/               # Serviços
+│   ├── APIService.swift    # Cliente da API
+│   └── AudioPlayer.swift   # Player de streaming
+├── ViewModels/             # Estado do app
+│   └── AppState.swift
+├── Views/                  # Interfaces
+│   └── Tabs/
+│       ├── ADSBView.swift
+│       ├── SystemView.swift
+│       ├── RadioView.swift
+│       ├── WeatherView.swift
+│       └── SatelliteView.swift
+└── Resources/
+    └── Assets.xcassets/
+```
+
+## API Endpoints
+
+O app consome os seguintes endpoints:
+
+| Endpoint | Descrição |
+|----------|-----------|
+| `/api/adsb/summary` | Resumo do tráfego aéreo |
+| `/api/adsb/aircraft` | Lista de aeronaves |
+| `/api/system/status` | Status do sistema |
+| `/api/radio/now-playing` | Música tocando agora |
+| `/api/weather/current` | Clima atual e previsão |
+| `/api/satdump/last/images` | Últimas imagens de satélite |
+| `/api/satdump/passes` | Lista de passes |
+| `/api/satdump/image` | Serve imagem PNG |
+
+## Características Técnicas
+
+- **Refresh automático**: Dados atualizados a cada 250ms
+- **Interface estável**: Updates condicionais para evitar "jitter"
+- **Background audio**: Rádio continua tocando em background
+- **Now Playing**: Metadados exibidos no Control Center
+- **iTunes integration**: Artwork e informações das músicas
+
+## Notificações Push
+
+Para ativar notificações push:
+
+1. Configure um certificado APNs no Apple Developer Portal
+2. Adicione o capability "Push Notifications" no Xcode
+3. Configure o servidor para enviar notificações via APNs
+
+## Licença
+
+Uso pessoal - MeuLab.fun
+
+## Publicar no GitHub
+
+```bash
+git init
+git add .
+git commit -m "Prepare Apple Silicon build and screenshots"
+git branch -M main
+git remote add origin <URL_DO_SEU_REPOSITORIO>
+git push -u origin main
+```

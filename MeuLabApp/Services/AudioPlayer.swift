@@ -16,18 +16,32 @@ class AudioPlayer: NSObject, ObservableObject {
     private var timeObserver: Any?
 
     private let streamURL = URL(string: "https://rrdns-megasistema.webnow.com.br/diario.aac")!
+    private var lastArtworkURL: URL?
+    private var lastArtworkImage: UIImage?
+
+    private var isInPreviewOrSimulator: Bool {
+        #if targetEnvironment(simulator)
+        return true
+        #else
+        return ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1"
+        #endif
+    }
 
     override init() {
         super.init()
         setupAudioSession()
-        setupRemoteCommandCenter()
-        setupNowPlayingInfo()
+        if !isInPreviewOrSimulator {
+            setupRemoteCommandCenter()
+            setupNowPlayingInfo()
+        }
     }
 
     private func setupAudioSession() {
+        let session = AVAudioSession.sharedInstance()
         do {
-            let session = AVAudioSession.sharedInstance()
-            try session.setCategory(.playback, mode: .default, options: [.allowAirPlay, .allowBluetooth])
+            // Use a safe combination to avoid paramErr (-50). Don't combine mutually exclusive options
+            // like .allowAirPlay and .allowBluetoothA2DP together with .playback.
+            try session.setCategory(.playback, mode: .default, options: [])
             try session.setActive(true)
         } catch {
             print("Audio session setup error: \(error)")
@@ -35,6 +49,7 @@ class AudioPlayer: NSObject, ObservableObject {
     }
 
     private func setupRemoteCommandCenter() {
+        if isInPreviewOrSimulator { return }
         let commandCenter = MPRemoteCommandCenter.shared()
 
         commandCenter.playCommand.isEnabled = true
@@ -57,6 +72,7 @@ class AudioPlayer: NSObject, ObservableObject {
     }
 
     private func setupNowPlayingInfo() {
+        if isInPreviewOrSimulator { return }
         var nowPlayingInfo = [String: Any]()
         nowPlayingInfo[MPMediaItemPropertyTitle] = "Diário FM"
         nowPlayingInfo[MPMediaItemPropertyArtist] = "Franca, SP"
@@ -65,6 +81,7 @@ class AudioPlayer: NSObject, ObservableObject {
     }
 
     func updateNowPlayingInfo(track: NowPlaying) {
+        if isInPreviewOrSimulator { return }
         currentTrack = track
 
         var nowPlayingInfo = [String: Any]()
@@ -74,23 +91,53 @@ class AudioPlayer: NSObject, ObservableObject {
         nowPlayingInfo[MPNowPlayingInfoPropertyIsLiveStream] = true
         nowPlayingInfo[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
 
-        // Load artwork if available
-        if let artworkURL = track.artworkURL {
-            Task {
-                do {
-                    let (data, _) = try await URLSession.shared.data(from: artworkURL)
-                    if let image = UIImage(data: data) {
-                        let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
-                        nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
-                        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
-                    }
-                } catch {
-                    print("Artwork load error: \(error)")
-                }
-            }
+        // Apply base metadata immediately, then enrich with artwork asynchronously.
+        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+
+        guard let artworkURL = track.artworkURL else {
+            lastArtworkURL = nil
+            lastArtworkImage = nil
+            return
         }
 
-        MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+        // Reuse cached artwork when possible to avoid refetch + decode churn.
+        if lastArtworkURL == artworkURL, let image = lastArtworkImage {
+            let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+            nowPlayingInfo[MPMediaItemPropertyArtwork] = artwork
+            MPNowPlayingInfoCenter.default().nowPlayingInfo = nowPlayingInfo
+            return
+        }
+
+        lastArtworkURL = artworkURL
+        lastArtworkImage = nil
+
+        // Swift 6: `Task.detached` runs in a concurrent context; don't capture `self` or other
+        // non-Sendable values here. Do the network+decode work detached, then hop to MainActor.
+        Task.detached(priority: .utility) {
+            do {
+                let (data, _) = try await URLSession.shared.data(from: artworkURL)
+                if Task.isCancelled { return }
+                let decoded: UIImage? = UIImage(data: data)
+                if Task.isCancelled { return }
+
+                await MainActor.run {
+                    // Drop stale result if the track/artwork has already moved on.
+                    let player = AudioPlayer.shared
+                    guard player.lastArtworkURL == artworkURL else { return }
+                    guard let image = decoded else { return }
+
+                    player.lastArtworkImage = image
+                    var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
+                    let artwork = MPMediaItemArtwork(boundsSize: image.size) { _ in image }
+                    info[MPMediaItemPropertyArtwork] = artwork
+                    MPNowPlayingInfoCenter.default().nowPlayingInfo = info
+                }
+            } catch {
+                // Avoid surfacing noisy errors to UI; this is best-effort metadata.
+                // Keep it as a log only.
+                print("Artwork load error: \(error)")
+            }
+        }
     }
 
     func play() {
@@ -98,6 +145,9 @@ class AudioPlayer: NSObject, ObservableObject {
 
         isLoading = true
         error = nil
+
+        // Remove observer from previous player item to avoid memory leak
+        playerItem?.removeObserver(self, forKeyPath: "status")
 
         // Create new player item for fresh stream
         playerItem = AVPlayerItem(url: streamURL)
@@ -140,6 +190,7 @@ class AudioPlayer: NSObject, ObservableObject {
     }
 
     private func updateNowPlayingPlaybackState() {
+        if isInPreviewOrSimulator { return }
         var info = MPNowPlayingInfoCenter.default().nowPlayingInfo ?? [:]
         info[MPNowPlayingInfoPropertyPlaybackRate] = isPlaying ? 1.0 : 0.0
         MPNowPlayingInfoCenter.default().nowPlayingInfo = info
