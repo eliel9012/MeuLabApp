@@ -6,19 +6,64 @@ struct MeuLabApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     @StateObject private var appState = AppState()
     @StateObject private var pushManager = PushNotificationManager.shared
+    @StateObject private var notificationFeed = NotificationFeedManager.shared
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var startupTask: Task<Void, Never>?
+    @State private var didConfigurePushNotifications = false
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .radarSplash()
                 .environmentObject(appState)
                 .environmentObject(pushManager)
+                .environmentObject(notificationFeed)
                 .onAppear {
-                    setupPushNotifications()
+                    scheduleDeferredStartup()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: .pushNotificationReceived)) { notification in
                     handlePushNotification(notification)
                 }
+                .onChange(of: scenePhase) { _, newPhase in
+                    if newPhase == .active {
+                        scheduleDeferredStartup()
+                        notificationFeed.start()
+                        appState.setRefreshEnabled(true)
+                    } else if newPhase == .background {
+                        startupTask?.cancel()
+                        startupTask = nil
+                        notificationFeed.stop()
+                        appState.setRefreshEnabled(false)
+                    }
+                }
         }
+    }
+
+    private func scheduleDeferredStartup() {
+        guard startupTask == nil else { return }
+
+        startupTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            guard !Task.isCancelled else { return }
+
+            _ = NetworkEnvironment.shared
+            appState.bootstrapIfNeeded()
+            setupPushNotificationsIfNeeded()
+            notificationFeed.start()
+            appState.setRefreshEnabled(true)
+            if #available(iOS 18.0, *) {
+                Task {
+                    await LabEntityIndexer.shared.reindexIfNeeded()
+                }
+            }
+            startupTask = nil
+        }
+    }
+
+    private func setupPushNotificationsIfNeeded() {
+        guard !didConfigurePushNotifications else { return }
+        didConfigurePushNotifications = true
+        setupPushNotifications()
     }
 
     private func setupPushNotifications() {
@@ -33,7 +78,7 @@ struct MeuLabApp: App {
                 _ = await pushManager.requestPermission()
             } else if pushManager.permissionStatus == .authorized {
                 // Já autorizado, registra novamente
-                await UIApplication.shared.registerForRemoteNotifications()
+                UIApplication.shared.registerForRemoteNotifications()
             }
         }
     }
@@ -86,10 +131,22 @@ class AppDelegate: NSObject, UIApplicationDelegate {
     ) {
         PushNotificationManager.shared.handleRegistrationError(error)
     }
+
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        // Handle silent/background pushes used to keep widgets fresh.
+        let updated = WidgetDataManager.shared.applyWidgetUpdateFromPush(userInfo: userInfo)
+        completionHandler(updated ? .newData : .noData)
+    }
 }
 
 // MARK: - Navigation Notification
 
 extension Notification.Name {
-    static let navigateToTab = Notification.Name("navigateToTab")
+    static let meulabNavigateToTab = Notification.Name("meulab.navigateToTab")
+    static let meulabOpenContext = Notification.Name("meulab.openContext")
+    static let navigateToTab = Notification.Name.meulabNavigateToTab
 }

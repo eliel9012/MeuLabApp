@@ -6,7 +6,7 @@ struct AircraftMapView: View {
     let receiverLocation: CLLocationCoordinate2D
 
     @State private var position: MapCameraPosition
-    @State private var selectedAircraft: Aircraft?
+    @State private var selectedAircraftID: Aircraft.ID?
 
     init(aircraft: [Aircraft], receiverLat: Double = -20.512504, receiverLon: Double = -47.400830) {
         self.aircraft = aircraft
@@ -19,7 +19,7 @@ struct AircraftMapView: View {
     }
 
     var body: some View {
-        Map(position: $position, selection: $selectedAircraft) {
+        Map(position: $position, selection: $selectedAircraftID) {
             // Receiver location (your station)
             Annotation("Receptor", coordinate: receiverLocation) {
                 ZStack {
@@ -45,9 +45,9 @@ struct AircraftMapView: View {
             ForEach(aircraftWithPosition) { ac in
                 if let coord = ac.coordinate {
                     Annotation(ac.displayCallsign, coordinate: coord) {
-                        AircraftMarker(aircraft: ac, isSelected: selectedAircraft?.id == ac.id)
+                        AircraftMarker(aircraft: ac, isSelected: selectedAircraftID == ac.id)
                     }
-                    .tag(ac)
+                    .tag(ac.id)
                 }
             }
         }
@@ -58,13 +58,13 @@ struct AircraftMapView: View {
             MapUserLocationButton()
         }
         .overlay(alignment: .bottom) {
-            if let selected = selectedAircraft {
+            if let selectedID = selectedAircraftID, let selected = aircraftWithPosition.first(where: { $0.id == selectedID }) {
                 AircraftInfoCard(aircraft: selected)
                     .padding()
                     .transition(.move(edge: .bottom).combined(with: .opacity))
             }
         }
-        .animation(.easeInOut, value: selectedAircraft?.id)
+        .animation(.easeInOut, value: selectedAircraftID)
     }
 
     private var aircraftWithPosition: [Aircraft] {
@@ -133,32 +133,48 @@ struct AircraftInfoCard: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
                 Image(systemName: aircraft.movementIcon)
-                    .foregroundStyle(Color(aircraft.movementColor))
+                    .foregroundStyle(Color.fromName(aircraft.movementColor))
 
-                Text(aircraft.displayCallsign)
-                    .font(.headline)
-                    .monospacedDigit()
+                HStack(spacing: 6) {
+                    if let logoURL = aircraft.airlineLogoURL {
+                        AsyncImage(url: logoURL) { phase in
+                            switch phase {
+                            case .success(let image):
+                                image.resizable()
+                                    .aspectRatio(contentMode: .fit)
+                                    .frame(height: 18)
+                            default:
+                                if let airline = aircraft.airline {
+                                    Text(airline)
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                    } else if let airline = aircraft.airline {
+                        Text(airline)
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
 
-                Spacer()
-
-                if let airline = aircraft.airline {
-                    Text(airline)
-                        .font(.caption)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.blue.opacity(0.2))
-                        .cornerRadius(8)
+                    Text(aircraft.displayCallsign)
+                        .font(.headline)
+                        .monospacedDigit()
                 }
             }
 
             Divider()
 
             HStack(spacing: 20) {
-                InfoItem(icon: "arrow.up.and.down", label: "Alt", value: "\(aircraft.altitudeFt.formatted()) ft")
-                InfoItem(icon: "gauge.with.needle", label: "Vel", value: "\(aircraft.speedKt) kt")
+                let alt = Formatters.altitudeDual(aircraft.altitudeFt)
+                InfoItem(icon: "arrow.up.and.down", label: alt.metric, value: alt.aviation)
+                
+                let speed = Formatters.speedDual(aircraft.speedKt)
+                InfoItem(icon: "gauge.with.needle", label: speed.metric, value: speed.aviation)
 
                 if let dist = aircraft.distanceNm {
-                    InfoItem(icon: "location", label: "Dist", value: String(format: "%.1f nm", dist))
+                    let d = Formatters.distanceDual(dist)
+                    InfoItem(icon: "location", label: d.metric, value: d.aviation)
                 }
 
                 if aircraft.verticalRateFpm != 0 {
@@ -181,9 +197,7 @@ struct AircraftInfoCard: View {
             }
         }
         .padding()
-        .background(.ultraThinMaterial)
-        .cornerRadius(16)
-        .shadow(radius: 10)
+        .glassCard(cornerRadius: 16)
     }
 }
 
@@ -218,9 +232,10 @@ struct FullscreenMapView: View {
 
     var body: some View {
         NavigationStack {
-            AircraftMapView(aircraft: appState.aircraftList)
+            NativeRadarMapView()
+                .environmentObject(appState)
                 .ignoresSafeArea(edges: .bottom)
-                .navigationTitle("Mapa ADS-B")
+                .navigationTitle("Radar ADS-B")
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .topBarLeading) {

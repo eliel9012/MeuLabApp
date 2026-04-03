@@ -179,7 +179,7 @@ extension Double {
 
 extension LocationManager {
     /// Converte bearing em direção cardeal
-    static func compassDirection(from bearing: Double) -> String {
+    static nonisolated func compassDirection(from bearing: Double) -> String {
         let directions = ["N", "NE", "E", "SE", "S", "SW", "W", "NW"]
         let index = Int((bearing + 22.5) / 45.0) % 8
         return directions[index]

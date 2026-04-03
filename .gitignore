@@ -1,1 +1,40 @@
+# macOS
+.DS_Store
+
+# Swift Package Manager
+.build/
+Package.resolved
+
+# Xcode
+DerivedData/
+build/
+*.xcworkspace/xcuserdata/
+*.xcodeproj/xcuserdata/
+*.xcodeproj/project.xcworkspace/xcuserdata/
+*.xcuserstate
+xcuserdata/
+
+# Logs and temporary files
+*.log
+*.tmp
+*.swp
+build*.txt
+final*.txt
+watch*_errors.txt
+widget*_errors.txt
+clean_build_errors.txt
+
+# Local secret files - NEVER commit these
 Secrets.plist
+**/Secrets.plist
+Secrets.xcconfig
+**/Secrets.xcconfig
+.env
+.env.*
+*.xcconfig.local
+.secrets
+**/.secrets
+
+# Python cache (server scripts)
+__pycache__/
+*.pyc
