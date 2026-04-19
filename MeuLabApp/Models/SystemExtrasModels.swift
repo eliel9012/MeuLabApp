@@ -103,11 +103,19 @@ struct NetworkInterface: Codable, Equatable, Identifiable {
     }
 }
 
+// MARK: - Remote Source
+
+struct APIRemoteSource: Codable, Equatable {
+    let type: String?
+    let host: String?
+}
+
 // MARK: - Docker
 
 struct DockerVersionResponse: Codable, Equatable {
     let timestamp: String
     let version: DockerVersionPayload
+    let source: APIRemoteSource?
 }
 
 struct DockerVersionPayload: Codable, Equatable {
@@ -199,6 +207,7 @@ struct DockerComponent: Codable, Equatable, Identifiable {
 struct DockerStatusResponse: Codable, Equatable {
     let timestamp: String
     let containers: [DockerContainer]
+    let source: APIRemoteSource?
 }
 
 struct DockerContainer: Codable, Equatable, Identifiable {
@@ -282,6 +291,7 @@ struct DockerLogsResponse: Codable {
 struct SystemdStatusResponse: Codable, Equatable {
     let timestamp: String
     let services: [SystemdService]
+    let source: APIRemoteSource?
 }
 
 struct SystemdService: Codable, Equatable, Identifiable {
@@ -452,8 +462,8 @@ enum FlexibleTimestamp: Codable, Equatable {
     }
 }
 
-private extension DateFormatter {
-    static let timeFormatter: DateFormatter = {
+extension DateFormatter {
+    fileprivate static let timeFormatter: DateFormatter = {
         let f = DateFormatter()
         f.dateFormat = "HH:mm"
         return f

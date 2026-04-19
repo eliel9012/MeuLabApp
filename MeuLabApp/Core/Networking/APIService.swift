@@ -5,13 +5,8 @@ actor APIService: APIServiceProtocol {
     static let shared = APIService()
 
     private var baseURL = "https://app.meulab.fun"
-    private let adsbLolURL = "https://voa.meulab.fun"
+    private let radarBaseURL = "https://radar.meulab.fun"
     private let apiToken: String
-
-    // Localização do receptor para buscar aeronaves próximas
-    private let receiverLat = -20.512504
-    private let receiverLon = -47.400830
-    private let searchRadiusNm = 250  // Raio de busca em milhas náuticas
 
     private let session: URLSession
 
@@ -27,19 +22,21 @@ actor APIService: APIServiceProtocol {
 
     private static func loadAPIToken() -> String {
         if let token = Bundle.main.infoDictionary?["API_TOKEN"] as? String,
-           !token.isEmpty {
+            !token.isEmpty
+        {
             return token
         }
 
         guard let url = Bundle.main.url(forResource: "Secrets", withExtension: "plist"),
-              let data = try? Data(contentsOf: url),
-              let plist = try? PropertyListSerialization.propertyList(
+            let data = try? Data(contentsOf: url),
+            let plist = try? PropertyListSerialization.propertyList(
                 from: data,
                 options: [],
                 format: nil
-              ) as? [String: Any],
-              let token = plist["API_TOKEN"] as? String,
-              !token.isEmpty else {
+            ) as? [String: Any],
+            let token = plist["API_TOKEN"] as? String,
+            !token.isEmpty
+        else {
             Logger.warning("API_TOKEN não encontrado em Info.plist ou Secrets.plist")
             return ""
         }
@@ -116,11 +113,11 @@ actor APIService: APIServiceProtocol {
         try await fetch("/api/adsb/aircraft?limit=\(limit)")
     }
 
-    // MARK: - ADSB.lol Network API
+    // MARK: - Radar direto (radar.meulab.fun)
 
-    /// Busca aeronaves da rede ADSB.lol num raio ao redor do receptor
+    /// Busca aeronaves ao vivo diretamente do receptor ADS-B local (sem autenticação)
     func fetchADSBLolAircraft() async throws -> [Aircraft] {
-        let urlString = "\(adsbLolURL)/v2/lat/\(receiverLat)/lon/\(receiverLon)/dist/\(searchRadiusNm)"
+        let urlString = "\(radarBaseURL)/data/aircraft.json"
 
         guard let url = URL(string: urlString) else {
             throw APIError.invalidURL
@@ -128,6 +125,7 @@ actor APIService: APIServiceProtocol {
 
         var request = URLRequest(url: url)
         request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
+        request.cachePolicy = .reloadIgnoringLocalCacheData
 
         Logger.logRequest(method: "GET", url: urlString)
 
@@ -136,27 +134,30 @@ actor APIService: APIServiceProtocol {
             (data, response) = try await session.data(for: request)
         } catch {
             let apiError = APIError.from(error)
-            Logger.logError(apiError, context: "ADSB.lol Aircraft")
+            Logger.logError(apiError, context: "Radar Aircraft")
             throw apiError
         }
 
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             let statusCode = (response as? HTTPURLResponse)?.statusCode ?? 0
             throw APIError.serverError(statusCode)
         }
 
         do {
             let decoder = JSONDecoder()
-            let adsbLolResponse = try decoder.decode(ADSBLolResponse.self, from: data)
+            let radarResponse = try decoder.decode(RadarAircraftResponse.self, from: data)
 
-            // Converter para Aircraft com source = .network
-            let aircraft = adsbLolResponse.ac?.compactMap { $0.toAircraft() } ?? []
-            Logger.info("ADSB.lol retornou \(aircraft.count) aeronaves")
+            // Converte para Aircraft, filtrando apenas os com posição
+            let aircraft = radarResponse.aircraft.compactMap { $0.toAircraft() }
+            Logger.info(
+                "Radar retornou \(aircraft.count) aeronaves (total: \(radarResponse.aircraft.count))"
+            )
             return aircraft
         } catch {
             let decodingError = APIError.decodingError(error.localizedDescription)
-            Logger.logError(decodingError, context: "ADSB.lol Decoding")
+            Logger.logError(decodingError, context: "Radar Decoding")
             throw decodingError
         }
     }
@@ -192,7 +193,8 @@ actor APIService: APIServiceProtocol {
     func imageURL(passName: String, folderName: String, imageName: String) -> URL? {
         let path = "/api/satdump/image?pass=\(passName)&folder=\(folderName)&image=\(imageName)"
         guard let encodedPath = path.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed),
-              var components = URLComponents(string: "\(baseURL)\(encodedPath)") else {
+            var components = URLComponents(string: "\(baseURL)\(encodedPath)")
+        else {
             return nil
         }
         return components.url
@@ -213,7 +215,8 @@ actor APIService: APIServiceProtocol {
     }
 
     func searchACARSMessages(query: String) async throws -> ACARSSearchResult {
-        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) else {
+        guard let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+        else {
             throw APIError.invalidURL
         }
         return try await fetch("/api/acars/search?q=\(encoded)")
@@ -221,14 +224,18 @@ actor APIService: APIServiceProtocol {
 
     // MARK: - Image Loading with Auth
 
-    func fetchImageData(passName: String, folderName: String, imageName: String) async throws -> Data {
-        let path = "/api/satdump/image?pass=\(passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName)&folder=\(folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName)&image=\(imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName)"
+    func fetchImageData(passName: String, folderName: String, imageName: String) async throws
+        -> Data
+    {
+        let path =
+            "/api/satdump/image?pass=\(passName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? passName)&folder=\(folderName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? folderName)&image=\(imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName)"
 
         let request = try makeRequest(path: path)
         let (data, response) = try await session.data(for: request)
 
         guard let httpResponse = response as? HTTPURLResponse,
-              httpResponse.statusCode == 200 else {
+            httpResponse.statusCode == 200
+        else {
             throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
         }
 

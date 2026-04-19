@@ -498,45 +498,63 @@ struct Aircraft: Codable, Identifiable, Equatable {
     }
 }
 
-// MARK: - ADSB.lol API Response
+// MARK: - radar.meulab.fun Direct API Response
+struct RadarAircraftResponse: Codable {
+    let now: Double
+    let messages: Int
+    let aircraft: [ADSBLolAircraft]
+}
+
+// MARK: - ADSB.lol / Backend Proxy Response
 struct ADSBLolResponse: Codable {
-    let ac: [ADSBLolAircraft]?
+    let ac: [ADSBLolAircraft]?  // adsb.lol format
+    let aircraft: [ADSBLolAircraft]?  // radar.meulab.fun / backend format
     let now: Double?
     let total: Int?
     let ctime: Double?
     let ptime: Int?
+
+    var allAircraft: [ADSBLolAircraft] {
+        aircraft ?? ac ?? []
+    }
 }
 
 struct ADSBLolAircraft: Codable {
     let hex: String?
+    let type: String?  // Fonte: adsb_icao, mlat, adsr_icao
     let flight: String?
-    let t: String?  // Tipo de aeronave
-    let r: String?  // Registro
+    let t: String?  // Tipo ICAO de aeronave (ex: "A320")
+    let r: String?  // Matrícula (ex: "PR-MYK")
+    let desc: String?  // Descrição longa (ex: "AIRBUS A-320")
     let lat: Double?
     let lon: Double?
     let alt_baro: IntOrString?
     let alt_geom: Int?
-    let gs: Double?  // Ground speed
+    let gs: Double?  // Ground speed em nós
     let track: Double?
-    let baro_rate: Int?
+    let geom_rate: Int?  // Taxa de subida/descida geométrica (GPS)
+    let baro_rate: Int?  // Taxa de subida/descida barométrica
     let squawk: String?
+    let emergency: String?
     let category: String?
+    let seen: Double?
+    let seen_pos: Double?
+    let rssi: Double?
+    let r_dst: Double?  // Distância do receptor em km
+    let r_dir: Double?  // Direção do receptor em graus
+    let messages: Int?
+    let mlat: [String]?
     let nav_altitude_mcp: Int?
     let nav_heading: Double?
     let nic: Int?
     let rc: Int?
-    let seen_pos: Double?
     let version: Int?
     let nic_baro: Int?
     let nac_p: Int?
     let nac_v: Int?
     let sil: Int?
     let sil_type: String?
-    let mlat: [String]?
     let tisb: [String]?
-    let messages: Int?
-    let seen: Double?
-    let rssi: Double?
 
     // Converter para Aircraft
     func toAircraft() -> Aircraft? {
@@ -548,6 +566,9 @@ struct ADSBLolAircraft: Codable {
         } else {
             altFt = alt_geom ?? 0
         }
+
+        // r_dst vem em km do receptor; converter para nm
+        let distNm: Double? = r_dst.map { $0 / 1.852 }
 
         return Aircraft(
             id: hex,
@@ -562,8 +583,8 @@ struct ADSBLolAircraft: Codable {
             altitudeFt: altFt,
             speedKt: Int(gs ?? 0),
             speedKmh: Int((gs ?? 0) * 1.852),
-            distanceNm: nil,
-            verticalRateFpm: baro_rate ?? 0,
+            distanceNm: distNm,
+            verticalRateFpm: baro_rate ?? geom_rate ?? 0,
             squawk: squawk,
             source: .network
         )

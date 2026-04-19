@@ -1,0 +1,10 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no pi@192.168.100.131
+expect "password:"
+send "pobgu9-jabdoP-ruczaq\r"
+expect "$ "
+send "cat /home/pi/bot2/api/health_api.py\r"
+expect -timeout 20 "$ "
+send "exit\r"
+expect eof
