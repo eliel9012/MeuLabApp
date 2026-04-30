@@ -60,43 +60,17 @@ private struct ACARSPanelBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [ACARSTheme.surfaceTop, ACARSTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.28), ACARSTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: ACARSTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.07), radius: 14, x: 0, y: 6)
+        MacOS9Colors.panelBackground
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
-private extension View {
-    func acarsPanel(cornerRadius: CGFloat = 20, highlight: Color = ACARSTheme.violet) -> some View {
-        background(ACARSPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+extension View {
+    fileprivate func acarsPanel(cornerRadius: CGFloat = 20, highlight: Color = ACARSTheme.violet)
+        -> some View
+    {
+        mac9Panel()
     }
 }
 
@@ -107,7 +81,9 @@ private struct ACARSToolbarTitle: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [ACARSTheme.violet.opacity(0.18), ACARSTheme.blue.opacity(0.12)],
+                            colors: [
+                                ACARSTheme.violet.opacity(0.18), ACARSTheme.blue.opacity(0.12),
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -210,34 +186,7 @@ struct ACARSView: View {
                 .padding()
                 .padding(.bottom, 44)
             }
-            .background {
-                ZStack {
-                    LinearGradient(
-                        colors: [ACARSTheme.canvasMid, ACARSTheme.canvasEnd],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-
-                    Circle()
-                        .fill(ACARSTheme.violet.opacity(0.10))
-                        .frame(width: isWide ? 520 : 320)
-                        .blur(radius: 40)
-                        .offset(x: isWide ? -260 : -120, y: -260)
-
-                    Circle()
-                        .fill(ACARSTheme.blue.opacity(0.08))
-                        .frame(width: isWide ? 420 : 260)
-                        .blur(radius: 34)
-                        .offset(x: isWide ? 260 : 120, y: -120)
-
-                    Circle()
-                        .fill(ACARSTheme.green.opacity(0.08))
-                        .frame(width: isWide ? 420 : 260)
-                        .blur(radius: 40)
-                        .offset(x: isWide ? 220 : 120, y: 280)
-                }
-                .ignoresSafeArea()
-            }
+            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .principal) {
@@ -344,9 +293,11 @@ struct ACARSView: View {
                             .background(ACARSTheme.green.opacity(0.14), in: Capsule())
                     }
 
-                    Text("Mensageria aeronáutica, fila recente e leitura de volume na mesma janela.")
-                        .font(.caption)
-                        .foregroundStyle(ACARSTheme.ink.opacity(0.56))
+                    Text(
+                        "Mensageria aeronáutica, fila recente e leitura de volume na mesma janela."
+                    )
+                    .font(.caption)
+                    .foregroundStyle(ACARSTheme.ink.opacity(0.56))
                 }
 
                 Spacer(minLength: 12)
@@ -561,7 +512,9 @@ struct ACARSView: View {
                                 .monospacedDigit()
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(ACARSTheme.violet.opacity(0.18), in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                                .background(
+                                    ACARSTheme.violet.opacity(0.18),
+                                    in: RoundedRectangle(cornerRadius: 6, style: .continuous))
 
                             if let desc = label.description {
                                 Text(desc)

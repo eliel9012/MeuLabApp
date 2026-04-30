@@ -113,20 +113,6 @@
 		WN10 /* WatchTuyaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN09 /* WatchTuyaView.swift */; };
 		WN12 /* MeuLabComplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN11 /* MeuLabComplications.swift */; };
 		WN14 /* MeuLabSmartStackWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN15 /* MeuLabSmartStackWidgets.swift */; };
-		DS00102 /* MacOS9Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00101 /* MacOS9Colors.swift */; };
-		DS00202 /* MacOS9Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00201 /* MacOS9Typography.swift */; };
-		DS00302 /* MacOS9Metrics.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00301 /* MacOS9Metrics.swift */; };
-		DS00402 /* MacOS9Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00401 /* MacOS9Modifiers.swift */; };
-		DS00502 /* MacOS9TitleBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00501 /* MacOS9TitleBar.swift */; };
-		DS00602 /* MacOS9Window.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00601 /* MacOS9Window.swift */; };
-		DS00702 /* MacOS9Button.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00701 /* MacOS9Button.swift */; };
-		DS00802 /* MacOS9Panel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00801 /* MacOS9Panel.swift */; };
-		DS00902 /* MacOS9Label.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS00901 /* MacOS9Label.swift */; };
-		DS01002 /* MacOS9TextField.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01001 /* MacOS9TextField.swift */; };
-		DS01102 /* MacOS9ListRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01101 /* MacOS9ListRow.swift */; };
-		DS01202 /* MacOS9Divider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01201 /* MacOS9Divider.swift */; };
-		DS01302 /* MacOS9Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01301 /* MacOS9Screen.swift */; };
-		DS01402 /* MacOS9Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01401 /* MacOS9Theme.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -288,20 +274,6 @@
 		WN09 /* WatchTuyaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTuyaView.swift; sourceTree = "<group>"; };
 		WN11 /* MeuLabComplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabComplications.swift; sourceTree = "<group>"; };
 		WN15 /* MeuLabSmartStackWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabSmartStackWidgets.swift; sourceTree = "<group>"; };
-		DS00101 /* MacOS9Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Colors.swift"; sourceTree = SOURCE_ROOT; };
-		DS00201 /* MacOS9Typography.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Typography.swift"; sourceTree = SOURCE_ROOT; };
-		DS00301 /* MacOS9Metrics.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Metrics.swift"; sourceTree = SOURCE_ROOT; };
-		DS00401 /* MacOS9Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Modifiers.swift"; sourceTree = SOURCE_ROOT; };
-		DS00501 /* MacOS9TitleBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9TitleBar.swift"; sourceTree = SOURCE_ROOT; };
-		DS00601 /* MacOS9Window.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Window.swift"; sourceTree = SOURCE_ROOT; };
-		DS00701 /* MacOS9Button.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Button.swift"; sourceTree = SOURCE_ROOT; };
-		DS00801 /* MacOS9Panel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Panel.swift"; sourceTree = SOURCE_ROOT; };
-		DS00901 /* MacOS9Label.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Label.swift"; sourceTree = SOURCE_ROOT; };
-		DS01001 /* MacOS9TextField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9TextField.swift"; sourceTree = SOURCE_ROOT; };
-		DS01101 /* MacOS9ListRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9ListRow.swift"; sourceTree = SOURCE_ROOT; };
-		DS01201 /* MacOS9Divider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Divider.swift"; sourceTree = SOURCE_ROOT; };
-		DS01301 /* MacOS9Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Screen.swift"; sourceTree = SOURCE_ROOT; };
-		DS01401 /* MacOS9Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Theme.swift"; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -544,20 +516,6 @@
 				AC200 /* MeuLabApp/Core/Utils/AircraftClassification.swift */,
 				FM200 /* MeuLabApp/Core/Services/FavoritesManager.swift */,
 				LGM01 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift */,
-				DS00101 /* MacOS9Colors.swift */,
-				DS00201 /* MacOS9Typography.swift */,
-				DS00301 /* MacOS9Metrics.swift */,
-				DS00401 /* MacOS9Modifiers.swift */,
-				DS00501 /* MacOS9TitleBar.swift */,
-				DS00601 /* MacOS9Window.swift */,
-				DS00701 /* MacOS9Button.swift */,
-				DS00801 /* MacOS9Panel.swift */,
-				DS00901 /* MacOS9Label.swift */,
-				DS01001 /* MacOS9TextField.swift */,
-				DS01101 /* MacOS9ListRow.swift */,
-				DS01201 /* MacOS9Divider.swift */,
-				DS01301 /* MacOS9Screen.swift */,
-				DS01401 /* MacOS9Theme.swift */,
 				E181A3D935D7491286930152 /* MeuLabWatch/Services/WatchSecrets.swift */,
 			);
 			name = "Recovered References";
@@ -904,20 +862,6 @@
 				RR203 /* RemoteRadioViewModel.swift in Sources */,
 				RR204 /* RemoteRadioView.swift in Sources */,
 				LGM02 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift in Sources */,
-				DS00102 /* MacOS9Colors.swift in Sources */,
-				DS00202 /* MacOS9Typography.swift in Sources */,
-				DS00302 /* MacOS9Metrics.swift in Sources */,
-				DS00402 /* MacOS9Modifiers.swift in Sources */,
-				DS00502 /* MacOS9TitleBar.swift in Sources */,
-				DS00602 /* MacOS9Window.swift in Sources */,
-				DS00702 /* MacOS9Button.swift in Sources */,
-				DS00802 /* MacOS9Panel.swift in Sources */,
-				DS00902 /* MacOS9Label.swift in Sources */,
-				DS01002 /* MacOS9TextField.swift in Sources */,
-				DS01102 /* MacOS9ListRow.swift in Sources */,
-				DS01202 /* MacOS9Divider.swift in Sources */,
-				DS01302 /* MacOS9Screen.swift in Sources */,
-				DS01402 /* MacOS9Theme.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1136,7 +1080,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeuLabApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Radar Local";
+				INFOPLIST_KEY_CFBundleDisplayName = MeuLab;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "MeuLab usa sua localização para alertar quando aviões interessantes passarem perto de você.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MeuLab usa sua localização para calcular a distância até aeronaves, mostrar clima local e prever passes de satélite visíveis da sua posição.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MeuLab precisa de acesso para salvar imagens de satélite na sua galeria.";
@@ -1189,7 +1133,7 @@
 				ENABLE_RESOURCE_ACCESS_USB = NO;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = MeuLabApp/Info.plist;
-				INFOPLIST_KEY_CFBundleDisplayName = "Radar Local";
+				INFOPLIST_KEY_CFBundleDisplayName = MeuLab;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "MeuLab usa sua localização para alertar quando aviões interessantes passarem perto de você.";
 				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MeuLab usa sua localização para calcular a distância até aeronaves, mostrar clima local e prever passes de satélite visíveis da sua posição.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MeuLab precisa de acesso para salvar imagens de satélite na sua galeria.";

@@ -7,14 +7,14 @@ struct BibleView: View {
     @State private var selectedChapter: BibleChapter? = nil
 
     enum BibleTab: String, CaseIterable {
-        case navegar  = "Navegar"
-        case buscar   = "Buscar"
+        case navegar = "Navegar"
+        case buscar = "Buscar"
         case aleatorio = "Aleatório"
 
         var icon: String {
             switch self {
-            case .navegar:   return "books.vertical"
-            case .buscar:    return "magnifyingglass"
+            case .navegar: return "books.vertical"
+            case .buscar: return "magnifyingglass"
             case .aleatorio: return "dice"
             }
         }
@@ -23,17 +23,9 @@ struct BibleView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient — parchment/mahogany feel matching the HTML design
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.24, green: 0.15, blue: 0.13).opacity(0.18),
-                        Color(red: 0.96, green: 0.90, blue: 0.83).opacity(0.06),
-                        Color(.systemBackground),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                // Mac OS 9 window background
+                MacOS9Colors.windowBackground
+                    .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     // Custom tab picker
@@ -106,7 +98,13 @@ struct BibleView: View {
             }
         }
         .padding(4)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(
+            MacOS9Colors.panelBackground, in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+        )
+        .overlay(
+            RoundedRectangle(cornerRadius: 14, style: .continuous)
+                .strokeBorder(MacOS9Colors.border, lineWidth: 1)
+        )
     }
 }
 

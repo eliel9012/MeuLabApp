@@ -7,37 +7,18 @@ struct StatCard: View {
     let color: Color
 
     var body: some View {
-        VStack(spacing: 8) {
-            HStack {
-                Image(systemName: icon)
-                    .font(.caption)
-                    .foregroundStyle(color)
-
-                Text(title)
-                    .font(.caption2)
-                    .fontWeight(.medium)
-                    .foregroundStyle(.secondary)
-                    .lineLimit(1)
-            }
-
-            Text(value)
-                .font(.headline)
-                .fontWeight(.bold)
-                .monospacedDigit()
-                .lineLimit(1)
-                .minimumScaleFactor(0.7)
-        }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 12)
-        .padding(.horizontal, 8)
-        .glassCard(cornerRadius: 10)
+        MacOS9StatCard(title: title, value: value, icon: icon, color: color)
     }
 }
 
 #Preview {
-    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-        StatCard(title: "Uptime", value: "2d 4h 12m", icon: "clock", color: .blue)
-        StatCard(title: "Requests", value: "1.2k", icon: "arrow.up.arrow.down", color: .green)
+    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
+        StatCard(
+            title: "Uptime", value: "2d 4h 12m", icon: "clock", color: MacOS9Colors.statusGreen)
+        StatCard(
+            title: "Requests", value: "1.2k", icon: "arrow.up.arrow.down",
+            color: MacOS9Colors.statusBlue)
     }
     .padding()
+    .background(MacOS9Colors.windowBackground)
 }

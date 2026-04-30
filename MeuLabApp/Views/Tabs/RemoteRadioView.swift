@@ -22,8 +22,8 @@ struct RemoteRadioView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Wood cabinet background
-                woodBackground
+                // Mac OS 9 window background
+                MacOS9Colors.windowBackground.ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 0) {
@@ -303,19 +303,16 @@ struct RemoteRadioView: View {
                         .font(.system(size: 14, weight: .bold, design: .monospaced))
                         .foregroundStyle(vm.mode == radioMode ? woodDark : cream.opacity(0.7))
                         .frame(width: 60, height: 36)
-                        .background {
-                            if vm.mode == radioMode {
-                                Capsule()
-                                    .fill(amber)
-                                    .shadow(color: amberGlow.opacity(0.4), radius: 6)
-                            } else {
-                                Capsule()
-                                    .fill(woodLight.opacity(0.3))
-                                    .overlay(
-                                        Capsule().stroke(brass.opacity(0.4), lineWidth: 1)
-                                    )
-                            }
-                        }
+                        .background(
+                            Capsule()
+                                .fill(
+                                    vm.mode == radioMode
+                                        ? MacOS9Colors.contentPanel : MacOS9Colors.panelBackground
+                                )
+                                .overlay(
+                                    Capsule().stroke(MacOS9Colors.border, lineWidth: 1)
+                                )
+                        )
                 }
             }
         }

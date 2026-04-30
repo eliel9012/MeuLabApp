@@ -238,11 +238,11 @@ private struct IntelligenceWorkflowCard: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.ultraThinMaterial)
+                    .fill(MacOS9Colors.panelBackground)
             )
             .overlay(
                 RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(tint.opacity(0.18), lineWidth: 1)
+                    .stroke(MacOS9Colors.border.opacity(0.6), lineWidth: 1)
             )
         }
         .buttonStyle(.plain)
@@ -296,17 +296,21 @@ struct IntelligenceViewModern: View {
             .init(
                 icon: "airplane.departure",
                 title: "Briefing Agora",
-                subtitle: "Monte a leitura inicial do laboratório com risco, contexto e próxima ação.",
+                subtitle:
+                    "Monte a leitura inicial do laboratório com risco, contexto e próxima ação.",
                 tint: IntelligenceTheme.mint,
-                prompt: "Monte um briefing operacional agora com radar, sistema, clima, alertas e próxima ação.",
+                prompt:
+                    "Monte um briefing operacional agora com radar, sistema, clima, alertas e próxima ação.",
                 priority: 0
             ),
             .init(
                 icon: "bell.badge",
                 title: "Triar Alertas",
-                subtitle: "Ordene ADS-B e ACARS por impacto, urgência e o que merece atenção primeiro.",
+                subtitle:
+                    "Ordene ADS-B e ACARS por impacto, urgência e o que merece atenção primeiro.",
                 tint: .orange,
-                prompt: "Explique os alertas ativos de ADS-B e ACARS. Ordene por prioridade, impacto e próxima ação.",
+                prompt:
+                    "Explique os alertas ativos de ADS-B e ACARS. Ordene por prioridade, impacto e próxima ação.",
                 priority: totalAlerts > 0 ? 10 : 2
             ),
             .init(
@@ -314,7 +318,8 @@ struct IntelligenceViewModern: View {
                 title: "Revisar Sistema",
                 subtitle: "Cheque CPU, RAM, disco, Wi-Fi e sinais de degradação operacional.",
                 tint: IntelligenceTheme.accent,
-                prompt: "Faça um diagnóstico operacional do sistema e da infraestrutura. Aponte risco, evidência e próxima ação.",
+                prompt:
+                    "Faça um diagnóstico operacional do sistema e da infraestrutura. Aponte risco, evidência e próxima ação.",
                 priority: cpu >= 75 ? 9 : 3
             ),
             .init(
@@ -322,7 +327,8 @@ struct IntelligenceViewModern: View {
                 title: "Ler ACARS",
                 subtitle: "Resuma mensagens recentes, voos quentes e qualquer mudança de padrão.",
                 tint: IntelligenceTheme.amber,
-                prompt: "Resuma as mensagens ACARS recentes, destaque anomalias, voos relevantes e o que mudou agora.",
+                prompt:
+                    "Resuma as mensagens ACARS recentes, destaque anomalias, voos relevantes e o que mudou agora.",
                 priority: appState.acarsMessages.isEmpty ? 1 : 5
             ),
             .init(
@@ -338,7 +344,8 @@ struct IntelligenceViewModern: View {
                 title: "Risco Climático",
                 subtitle: "Leia chuva, vento e previsão com foco no impacto operacional.",
                 tint: .cyan,
-                prompt: "Leia o clima atual e a previsão com foco operacional, chuva, vento e impacto no laboratório.",
+                prompt:
+                    "Leia o clima atual e a previsão com foco operacional, chuva, vento e impacto no laboratório.",
                 priority: 2
             ),
             .init(
@@ -346,7 +353,8 @@ struct IntelligenceViewModern: View {
                 title: "Próxima Ação",
                 subtitle: "Diga qual tela abrir agora e qual pergunta rende mais valor.",
                 tint: .pink,
-                prompt: "Com base no estado atual do laboratório, qual é a próxima ação mais útil agora?",
+                prompt:
+                    "Com base no estado atual do laboratório, qual é a próxima ação mais útil agora?",
                 priority: 6
             ),
         ]
@@ -365,17 +373,8 @@ struct IntelligenceViewModern: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.10),
-                        Color.mint.opacity(0.08),
-                        Color.orange.opacity(0.07),
-                        Color.clear,
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                MacOS9Colors.windowBackground
+                    .ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     ScrollViewReader { proxy in
@@ -418,7 +417,9 @@ struct IntelligenceViewModern: View {
                             Button {
                                 incidentMode.toggle()
                             } label: {
-                                Label(incidentMode ? "Sair Modo Incidente" : "Modo Incidente", systemImage: "exclamationmark.shield")
+                                Label(
+                                    incidentMode ? "Sair Modo Incidente" : "Modo Incidente",
+                                    systemImage: "exclamationmark.shield")
                             }
 
                             Button(role: .destructive) {
@@ -475,9 +476,11 @@ struct IntelligenceViewModern: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Copiloto Operacional")
                         .font(.title2.bold())
-                    Text("Uma mesa única para entender o estado do radar, do sistema e dos eventos que pedem decisão.")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "Uma mesa única para entender o estado do radar, do sistema e dos eventos que pedem decisão."
+                    )
+                    .font(.subheadline)
+                    .foregroundStyle(.secondary)
                 }
                 Spacer()
                 VStack(alignment: .trailing, spacing: 8) {
@@ -489,14 +492,20 @@ struct IntelligenceViewModern: View {
                     statusPill(
                         title: "Alertas",
                         value: "\(appState.adsbAlerts.count + appState.acarsAlerts.count) ativos",
-                        tint: appState.adsbAlerts.isEmpty && appState.acarsAlerts.isEmpty ? IntelligenceTheme.accent : .orange
+                        tint: appState.adsbAlerts.isEmpty && appState.acarsAlerts.isEmpty
+                            ? IntelligenceTheme.accent : .orange
                     )
                 }
             }
 
             HStack(spacing: 12) {
-                quickMetric(title: "Radar", value: "\(appState.adsbSummary?.totalNow ?? appState.aircraftList.count)", tint: IntelligenceTheme.mint)
-                quickMetric(title: "CPU", value: "\(Int(appState.systemStatus?.cpu?.usagePercent ?? 0))%", tint: IntelligenceTheme.accent)
+                quickMetric(
+                    title: "Radar",
+                    value: "\(appState.adsbSummary?.totalNow ?? appState.aircraftList.count)",
+                    tint: IntelligenceTheme.mint)
+                quickMetric(
+                    title: "CPU", value: "\(Int(appState.systemStatus?.cpu?.usagePercent ?? 0))%",
+                    tint: IntelligenceTheme.accent)
                 quickMetric(
                     title: "ACARS",
                     value: appState.acarsSummary == nil && appState.acarsMessages.isEmpty
@@ -514,11 +523,11 @@ struct IntelligenceViewModern: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(MacOS9Colors.panelBackground)
         )
         .overlay(
             RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(Color.white.opacity(0.18), lineWidth: 1)
+                .stroke(MacOS9Colors.border, lineWidth: 1)
         )
     }
 
@@ -529,7 +538,8 @@ struct IntelligenceViewModern: View {
             Text("Comece pelos blocos que reduzem incerteza mais rápido.")
                 .font(.caption)
                 .foregroundStyle(.secondary)
-            let columns = isWide
+            let columns =
+                isWide
                 ? [GridItem(.flexible()), GridItem(.flexible()), GridItem(.flexible())]
                 : [GridItem(.flexible()), GridItem(.flexible())]
             LazyVGrid(columns: columns, spacing: 12) {
@@ -572,7 +582,9 @@ struct IntelligenceViewModern: View {
                                     }
                                     .frame(width: isWide ? 240 : 210, alignment: .leading)
                                     .padding(14)
-                                    .background(RoundedRectangle(cornerRadius: 18).fill(.thinMaterial))
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 18).fill(
+                                            MacOS9Colors.panelBackground))
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -600,7 +612,8 @@ struct IntelligenceViewModern: View {
                                 .foregroundStyle(item.delta.hasPrefix("+") ? .green : .orange)
                         }
                         .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 16).fill(.thinMaterial))
+                        .background(
+                            RoundedRectangle(cornerRadius: 16).fill(MacOS9Colors.panelBackground))
                     }
                 }
             }
@@ -622,7 +635,7 @@ struct IntelligenceViewModern: View {
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
-                        .background(Capsule().fill(.thinMaterial))
+                        .background(Capsule().fill(MacOS9Colors.panelBackground))
                     }
                 }
             }
@@ -647,7 +660,8 @@ struct IntelligenceViewModern: View {
                             Spacer()
                         }
                         .padding(10)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(.thinMaterial))
+                        .background(
+                            RoundedRectangle(cornerRadius: 14).fill(MacOS9Colors.panelBackground))
                     }
                 }
             }
@@ -680,9 +694,11 @@ struct IntelligenceViewModern: View {
                     .font(.caption.bold())
                     .foregroundStyle(.red)
                 if let sys = appState.systemStatus {
-                    Text("CPU \(Int(sys.cpu?.usagePercent ?? 0))% · RAM \(Int(sys.memory?.usedPercent ?? 0))%")
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
+                    Text(
+                        "CPU \(Int(sys.cpu?.usagePercent ?? 0))% · RAM \(Int(sys.memory?.usedPercent ?? 0))%"
+                    )
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
                 }
             }
 
@@ -693,7 +709,7 @@ struct IntelligenceViewModern: View {
                 .foregroundStyle(.secondary)
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.ultraThinMaterial))
+        .background(RoundedRectangle(cornerRadius: 18).fill(MacOS9Colors.panelBackground))
         .overlay(
             RoundedRectangle(cornerRadius: 18)
                 .stroke(Color.red.opacity(0.25), lineWidth: 1)
@@ -735,7 +751,7 @@ struct IntelligenceViewModern: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial))
+                .background(RoundedRectangle(cornerRadius: 20).fill(MacOS9Colors.panelBackground))
                 .overlay(
                     RoundedRectangle(cornerRadius: 20)
                         .stroke(Color.white.opacity(0.14), lineWidth: 1)
@@ -854,7 +870,7 @@ struct IntelligenceViewModern: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-            .background(RoundedRectangle(cornerRadius: 20).fill(.thinMaterial))
+            .background(RoundedRectangle(cornerRadius: 20).fill(MacOS9Colors.panelBackground))
 
             Spacer(minLength: 40)
         }
@@ -868,7 +884,7 @@ struct IntelligenceViewModern: View {
                 .focused($isInputFocused)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 22).fill(.ultraThinMaterial))
+                .background(RoundedRectangle(cornerRadius: 22).fill(MacOS9Colors.panelBackground))
                 .onSubmit { Task { await sendUserMessage() } }
 
             Button {
@@ -906,10 +922,14 @@ struct IntelligenceViewModern: View {
                                         .font(.subheadline.weight(.medium))
                                         .foregroundStyle(.primary)
                                         .lineLimit(1)
-                                    Text(session.updatedAt.formatted(.relative(presentation: .named)))
-                                        .font(.caption2)
-                                        .foregroundStyle(.secondary)
-                                    if let lastMessage = session.messages.last(where: { $0.role != .system }) {
+                                    Text(
+                                        session.updatedAt.formatted(.relative(presentation: .named))
+                                    )
+                                    .font(.caption2)
+                                    .foregroundStyle(.secondary)
+                                    if let lastMessage = session.messages.last(where: {
+                                        $0.role != .system
+                                    }) {
                                         Text(lastMessage.text)
                                             .font(.caption)
                                             .foregroundStyle(.tertiary)
@@ -970,7 +990,7 @@ struct IntelligenceViewModern: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.thinMaterial))
+        .background(RoundedRectangle(cornerRadius: 18).fill(MacOS9Colors.panelBackground))
     }
 
     private func bootstrapIfNeeded() {
@@ -1168,22 +1188,23 @@ struct IntelligenceViewModern: View {
         if let tab = action.tab, !tab.isEmpty, let contextIdentifier = action.contextIdentifier,
             !contextIdentifier.isEmpty
         {
-            let kind: String? = switch tab {
-            case ContentView.Tab.map.rawValue, ContentView.Tab.adsb.rawValue:
-                "aircraft"
-            case ContentView.Tab.satellite.rawValue:
-                "satellite_pass"
-            case ContentView.Tab.acars.rawValue:
-                "acars"
-            case ContentView.Tab.weather.rawValue:
-                "weather_day"
-            case ContentView.Tab.alerts.rawValue:
-                "alert"
-            case ContentView.Tab.system.rawValue:
-                "system"
-            default:
-                nil
-            }
+            let kind: String? =
+                switch tab {
+                case ContentView.Tab.map.rawValue, ContentView.Tab.adsb.rawValue:
+                    "aircraft"
+                case ContentView.Tab.satellite.rawValue:
+                    "satellite_pass"
+                case ContentView.Tab.acars.rawValue:
+                    "acars"
+                case ContentView.Tab.weather.rawValue:
+                    "weather_day"
+                case ContentView.Tab.alerts.rawValue:
+                    "alert"
+                case ContentView.Tab.system.rawValue:
+                    "system"
+                default:
+                    nil
+                }
             var userInfo: [String: String] = [
                 "tab": tab,
                 "identifier": contextIdentifier,
@@ -1203,7 +1224,9 @@ struct IntelligenceViewModern: View {
                 let contextIdentifier = action.contextIdentifier
             {
                 if let focused = appState.aircraftList.first(where: {
-                    let values = [$0.callsign, $0.registration, $0.hex].compactMap { $0?.lowercased() }
+                    let values = [$0.callsign, $0.registration, $0.hex].compactMap {
+                        $0?.lowercased()
+                    }
                     return values.contains(contextIdentifier.lowercased())
                 }) {
                     appState.mapFocusAircraft = focused
@@ -1238,7 +1261,8 @@ struct IntelligenceViewModern: View {
     }
 }
 
-private struct FlexibleChipStack<Data: RandomAccessCollection, Content: View>: View where Data.Element: Identifiable {
+private struct FlexibleChipStack<Data: RandomAccessCollection, Content: View>: View
+where Data.Element: Identifiable {
     let data: Data
     let content: (Data.Element) -> Content
 

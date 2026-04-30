@@ -91,37 +91,9 @@ private struct SystemPanelBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [SystemTheme.surfaceTop, SystemTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.28), SystemTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: SystemTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.07), radius: 14, x: 0, y: 6)
+        MacOS9Colors.panelBackground
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -129,7 +101,7 @@ extension View {
     fileprivate func systemPanel(cornerRadius: CGFloat = 18, highlight: Color = SystemTheme.piBlue)
         -> some View
     {
-        background(SystemPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+        mac9Panel()
     }
 }
 
@@ -477,30 +449,7 @@ struct SystemView: View {
                 .padding(.top, isCompactLayout ? 8 : 4)
                 .padding(.bottom, 20)
             }
-            .background {
-                ZStack {
-                    LinearGradient(
-                        colors: [SystemTheme.cloud, SystemTheme.canvasMid, SystemTheme.canvasEnd],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-
-                    RadialGradient(
-                        colors: [SystemTheme.piGreen.opacity(0.10), .clear],
-                        center: .topLeading,
-                        startRadius: 20,
-                        endRadius: 420
-                    )
-
-                    RadialGradient(
-                        colors: [SystemTheme.piRed.opacity(0.08), .clear],
-                        center: .topTrailing,
-                        startRadius: 30,
-                        endRadius: 360
-                    )
-                }
-                .ignoresSafeArea()
-            }
+            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
             .navigationTitle("Sistema")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

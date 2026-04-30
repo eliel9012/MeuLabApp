@@ -319,11 +319,7 @@ struct SatelliteView: View {
             .foregroundStyle(.secondary)
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
-        )
+        .mac9Panel()
     }
 
     @ViewBuilder
@@ -395,11 +391,7 @@ struct SatelliteView: View {
             .cornerRadius(16)
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color(.systemBackground))
-                .shadow(color: .black.opacity(0.08), radius: 8, x: 0, y: 2)
-        )
+        .mac9Panel()
         .onAppear {
             // Select first page once to trigger exactly one initial image load.
             if lastPassCarouselSelection == nil {
@@ -652,10 +644,10 @@ struct SatelliteImageCarouselCard: View {
                     .foregroundStyle(.secondary)
             }
             .padding(12)
-            .background(Color(.systemBackground))
+            .background(MacOS9Colors.panelBackground)
         }
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.1), radius: 4, x: 0, y: 2)
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+        .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
         .padding(.horizontal, 4)
         .onTapGesture {
             onTap()

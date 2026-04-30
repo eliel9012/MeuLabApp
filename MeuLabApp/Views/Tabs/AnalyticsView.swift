@@ -74,37 +74,9 @@ private struct AnalyticsPanelBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [AnalyticsTheme.surfaceTop, AnalyticsTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.26), AnalyticsTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: AnalyticsTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.06), radius: 16, x: 0, y: 6)
+        MacOS9Colors.panelBackground
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -113,23 +85,9 @@ private struct AnalyticsInsetBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(AnalyticsTheme.insetSurface)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.08), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(highlight.opacity(0.16), lineWidth: 1)
-            }
-            .shadow(color: AnalyticsTheme.shadow.opacity(0.05), radius: 14, x: 0, y: 8)
+        MacOS9Colors.contentPanel
+            .overlay(Mac9BevelBorder(isRaised: false))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -139,7 +97,7 @@ extension View {
     )
         -> some View
     {
-        background(AnalyticsPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+        mac9Panel()
     }
 
     fileprivate func analyticsInsetPanel(
@@ -147,7 +105,7 @@ extension View {
     )
         -> some View
     {
-        background(AnalyticsInsetBackground(cornerRadius: cornerRadius, highlight: highlight))
+        mac9Sunken()
     }
 }
 
@@ -490,33 +448,7 @@ struct AnalyticsView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 20)
             }
-            .background {
-                ZStack {
-                    LinearGradient(
-                        colors: [
-                            AnalyticsTheme.cloud, AnalyticsTheme.canvasMid,
-                            AnalyticsTheme.canvasEnd,
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-
-                    RadialGradient(
-                        colors: [AnalyticsTheme.green.opacity(0.10), .clear],
-                        center: .topLeading,
-                        startRadius: 20,
-                        endRadius: 420
-                    )
-
-                    RadialGradient(
-                        colors: [AnalyticsTheme.blue.opacity(0.08), .clear],
-                        center: .topTrailing,
-                        startRadius: 30,
-                        endRadius: 380
-                    )
-                }
-                .ignoresSafeArea()
-            }
+            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
             .navigationTitle(focus.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

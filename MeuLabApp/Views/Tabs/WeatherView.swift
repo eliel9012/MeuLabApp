@@ -62,37 +62,9 @@ private struct WeatherPanelBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [WeatherTheme.surfaceTop, WeatherTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.28), WeatherTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: WeatherTheme.shadow.opacity(0.08), radius: 24, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.07), radius: 16, x: 0, y: 6)
+        MacOS9Colors.panelBackground
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -101,36 +73,27 @@ private struct WeatherInsetBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(WeatherTheme.insetSurface)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.10), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(highlight.opacity(0.16), lineWidth: 1)
-            }
+        MacOS9Colors.contentPanel
+            .overlay(Mac9BevelBorder(isRaised: false))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
-private extension View {
-    func weatherPanel(cornerRadius: CGFloat = 22, highlight: Color = WeatherTheme.skyBlue)
+extension View {
+    fileprivate func weatherPanel(
+        cornerRadius: CGFloat = 22, highlight: Color = WeatherTheme.skyBlue
+    )
         -> some View
     {
-        background(WeatherPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+        mac9Panel()
     }
 
-    func weatherInsetPanel(cornerRadius: CGFloat = 18, highlight: Color = WeatherTheme.skyBlue)
+    fileprivate func weatherInsetPanel(
+        cornerRadius: CGFloat = 18, highlight: Color = WeatherTheme.skyBlue
+    )
         -> some View
     {
-        background(WeatherInsetBackground(cornerRadius: cornerRadius, highlight: highlight))
+        mac9Sunken()
     }
 }
 
@@ -246,78 +209,7 @@ private struct WeatherAtmosphereBackground: View {
     @State private var animate = false
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack {
-                LinearGradient(
-                    colors: style.gradients,
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-
-                RadialGradient(
-                    colors: [style.accent.opacity(0.18), .clear],
-                    center: .topTrailing,
-                    startRadius: 30,
-                    endRadius: 360
-                )
-
-                if style.showsSun {
-                    Circle()
-                        .fill(
-                            RadialGradient(
-                                colors: [WeatherTheme.sunAmber.opacity(0.75), .clear],
-                                center: .center,
-                                startRadius: 12,
-                                endRadius: 140
-                            )
-                        )
-                        .frame(width: 220, height: 220)
-                        .offset(x: geometry.size.width * 0.24, y: -geometry.size.height * 0.26)
-                }
-
-                if style.showsStars {
-                    ForEach(0..<18, id: \.self) { index in
-                        Circle()
-                            .fill(Color.white.opacity(index.isMultiple(of: 3) ? 0.80 : 0.45))
-                            .frame(width: index.isMultiple(of: 4) ? 4 : 2, height: index.isMultiple(of: 4) ? 4 : 2)
-                            .offset(
-                                x: starX(index: index, size: geometry.size),
-                                y: starY(index: index, size: geometry.size)
-                            )
-                    }
-                }
-
-                if style.showsClouds {
-                    ForEach(0..<4, id: \.self) { index in
-                        cloudBlob(index: index, size: geometry.size)
-                    }
-                }
-
-                if style.showsRain {
-                    ForEach(0..<18, id: \.self) { index in
-                        Capsule(style: .continuous)
-                            .fill(Color.white.opacity(style == .stormDay ? 0.28 : 0.18))
-                            .frame(width: 2, height: CGFloat(26 + (index % 3) * 14))
-                            .rotationEffect(.degrees(12))
-                            .offset(
-                                x: rainX(index: index, size: geometry.size),
-                                y: animate ? geometry.size.height / 2 + 220 : -geometry.size.height / 2 - 120
-                            )
-                            .animation(
-                                .linear(duration: 1.3 + Double(index) * 0.05)
-                                    .repeatForever(autoreverses: false)
-                                    .delay(Double(index) * 0.06),
-                                value: animate
-                            )
-                    }
-                }
-            }
-            .ignoresSafeArea()
-            .onAppear {
-                animate = true
-            }
-        }
-        .allowsHitTesting(false)
+        MacOS9Colors.windowBackground.ignoresSafeArea()
     }
 
     private func cloudBlob(index: Int, size: CGSize) -> some View {
@@ -365,7 +257,10 @@ private struct WeatherToolbarTitle: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [WeatherTheme.sunAmber.opacity(0.18), WeatherTheme.skyBlue.opacity(0.12)],
+                            colors: [
+                                WeatherTheme.sunAmber.opacity(0.18),
+                                WeatherTheme.skyBlue.opacity(0.12),
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -435,13 +330,17 @@ private struct WeatherDayChip: View {
             HStack {
                 Text(day.title)
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(isSelected ? Color.white.opacity(0.88) : WeatherTheme.ink.opacity(0.62))
+                    .foregroundStyle(
+                        isSelected ? Color.white.opacity(0.88) : WeatherTheme.ink.opacity(0.62))
 
                 Spacer()
 
                 Image(systemName: day.icon)
                     .font(.subheadline.weight(.bold))
-                    .foregroundStyle(isSelected ? .white : day.rainChance >= 45 ? WeatherTheme.rainBlue : WeatherTheme.sunAmber)
+                    .foregroundStyle(
+                        isSelected
+                            ? .white
+                            : day.rainChance >= 45 ? WeatherTheme.rainBlue : WeatherTheme.sunAmber)
             }
 
             Text(day.maxTempLabel)
@@ -452,11 +351,13 @@ private struct WeatherDayChip: View {
             HStack(spacing: 8) {
                 Label("\(day.rainChance)%", systemImage: "drop.fill")
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(isSelected ? Color.white.opacity(0.9) : WeatherTheme.ink.opacity(0.56))
+                    .foregroundStyle(
+                        isSelected ? Color.white.opacity(0.9) : WeatherTheme.ink.opacity(0.56))
 
                 Text(day.shortDate)
                     .font(.caption2.weight(.semibold))
-                    .foregroundStyle(isSelected ? Color.white.opacity(0.74) : WeatherTheme.ink.opacity(0.50))
+                    .foregroundStyle(
+                        isSelected ? Color.white.opacity(0.74) : WeatherTheme.ink.opacity(0.50))
             }
         }
         .padding(14)
@@ -591,7 +492,9 @@ private struct WeatherForecastRow: View {
         HStack(spacing: 14) {
             Image(systemName: day.icon)
                 .font(.title3.weight(.semibold))
-                .foregroundStyle(day.rainChance >= 45 ? WeatherTheme.rainBlue : WeatherTheme.sunAmber)
+                .foregroundStyle(
+                    day.rainChance >= 45 ? WeatherTheme.rainBlue : WeatherTheme.sunAmber
+                )
                 .frame(width: 24)
 
             VStack(alignment: .leading, spacing: 4) {
@@ -661,7 +564,10 @@ private struct TemperatureRail: View {
                 Capsule()
                     .fill(
                         LinearGradient(
-                            colors: [WeatherTheme.skyBlue, WeatherTheme.sunAmber, Color.red.opacity(0.80)],
+                            colors: [
+                                WeatherTheme.skyBlue, WeatherTheme.sunAmber,
+                                Color.red.opacity(0.80),
+                            ],
                             startPoint: .leading,
                             endPoint: .trailing
                         )
@@ -753,7 +659,8 @@ private enum WeatherClock {
     }
 
     static func parseDateTime(_ raw: String) -> Date? {
-        if let iso = Formatters.isoDate.date(from: raw) ?? Formatters.isoDateNoFrac.date(from: raw) {
+        if let iso = Formatters.isoDate.date(from: raw) ?? Formatters.isoDateNoFrac.date(from: raw)
+        {
             return iso
         }
         return localDateTime.date(from: raw)
@@ -785,11 +692,7 @@ struct WeatherView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 24)
             }
-            .background {
-                WeatherAtmosphereBackground(
-                    style: appState.weather.map { WeatherAtmosphere(current: $0.current) } ?? .clearDay
-                )
-            }
+            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
             .navigationTitle("Clima")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -909,7 +812,8 @@ struct WeatherView: View {
             await appState.refreshWeather()
 
             try? await Task.sleep(nanoseconds: 1_500_000_000)
-            guard appState.weather == nil, appState.weatherError == nil, !appState.weatherLoading else {
+            guard appState.weather == nil, appState.weatherError == nil, !appState.weatherLoading
+            else {
                 return
             }
             await appState.refreshWeather()
@@ -940,7 +844,9 @@ struct WeatherView: View {
     }
 
     @ViewBuilder
-    private func currentWeatherSection(_ weather: WeatherData, style: WeatherAtmosphere) -> some View {
+    private func currentWeatherSection(_ weather: WeatherData, style: WeatherAtmosphere)
+        -> some View
+    {
         VStack(alignment: .leading, spacing: 20) {
             HStack(alignment: .top, spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
@@ -1308,12 +1214,14 @@ struct WeatherView: View {
             )
 
             if insights.hourly.isEmpty {
-                Text("Esse dia ainda não tem previsão horária detalhada disponível. A leitura acima usa os dados diários consolidados.")
-                    .font(.subheadline)
-                    .foregroundStyle(WeatherTheme.ink.opacity(0.62))
-                    .padding(18)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .weatherInsetPanel(cornerRadius: 20, highlight: tint)
+                Text(
+                    "Esse dia ainda não tem previsão horária detalhada disponível. A leitura acima usa os dados diários consolidados."
+                )
+                .font(.subheadline)
+                .foregroundStyle(WeatherTheme.ink.opacity(0.62))
+                .padding(18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .weatherInsetPanel(cornerRadius: 20, highlight: tint)
             } else {
                 ScrollView(.horizontal, showsIndicators: false) {
                     HStack(spacing: 12) {
@@ -1414,15 +1322,19 @@ struct WeatherView: View {
         days.append(
             contentsOf: weather.forecast.map { day in
                 let date = Formatters.apiDate.date(from: day.date)
-                let weekday = date.map { WeatherClock.weekdayShort.string(from: $0).capitalized } ?? day.formattedDate
+                let weekday =
+                    date.map { WeatherClock.weekdayShort.string(from: $0).capitalized }
+                    ?? day.formattedDate
                 let shortDate = date.map { WeatherClock.shortDate.string(from: $0) } ?? day.date
 
                 return WeatherDayCardModel(
                     id: day.date,
                     title: weekday,
                     shortDate: shortDate,
-                    rowTitle: date.map { WeatherClock.detailDate.string(from: $0).capitalized } ?? day.formattedDate,
-                    description: day.description ?? rainSummary(chance: day.rainChance, mm: day.rainMm),
+                    rowTitle: date.map { WeatherClock.detailDate.string(from: $0).capitalized }
+                        ?? day.formattedDate,
+                    description: day.description
+                        ?? rainSummary(chance: day.rainChance, mm: day.rainMm),
                     icon: day.weatherIcon,
                     maxTempC: day.maxTempC,
                     minTempC: day.minTempC,
@@ -1444,22 +1356,28 @@ struct WeatherView: View {
         return days.first(where: { $0.id == selectedDayID }) ?? days.first
     }
 
-    private func weatherInsights(for day: WeatherDayCardModel, weather: WeatherData) -> WeatherDayInsights {
+    private func weatherInsights(for day: WeatherDayCardModel, weather: WeatherData)
+        -> WeatherDayInsights
+    {
         let hourly = (weather.hourly ?? []).filter { $0.dayKey == day.id }
         let rainyHours = hourly.filter { $0.rainChance >= 35 || $0.rainMm >= 0.15 }
         let peakRain = hourly.max(by: { $0.rainMm < $1.rainMm })
         let totalRain = hourly.isEmpty ? day.rainMm : hourly.reduce(0) { $0 + $1.rainMm }
         let maxChance = max(day.rainChance, hourly.map(\.rainChance).max() ?? 0)
-        let dryHours = hourly.isEmpty ? max(0, 24 - Int(Double(day.rainChance) / 100 * 24)) :
-            hourly.filter { $0.rainChance < 20 && $0.rainMm < 0.1 }.count
+        let dryHours =
+            hourly.isEmpty
+            ? max(0, 24 - Int(Double(day.rainChance) / 100 * 24))
+            : hourly.filter { $0.rainChance < 20 && $0.rainMm < 0.1 }.count
         let humidityValues = hourly.compactMap(\.humidity)
-        let humidityAverage = humidityValues.isEmpty ? nil :
-            Int(round(Double(humidityValues.reduce(0, +)) / Double(humidityValues.count)))
+        let humidityAverage =
+            humidityValues.isEmpty
+            ? nil : Int(round(Double(humidityValues.reduce(0, +)) / Double(humidityValues.count)))
 
         let rainWindow: String
         if let first = rainyHours.first, let last = rainyHours.last {
-            rainWindow = first.timeLabel == last.timeLabel ?
-                first.timeLabel : "\(first.timeLabel) - \(last.timeLabel)"
+            rainWindow =
+                first.timeLabel == last.timeLabel
+                ? first.timeLabel : "\(first.timeLabel) - \(last.timeLabel)"
         } else if day.rainChance >= 40 {
             rainWindow = "Chance distribuida ao longo do dia"
         } else {
@@ -1468,7 +1386,8 @@ struct WeatherView: View {
 
         let wettestHourText: String
         if let peakRain, peakRain.rainMm > 0.05 {
-            wettestHourText = "\(peakRain.timeLabel) • \(peakRain.rainMm.formattedBR(decimals: 1)) mm"
+            wettestHourText =
+                "\(peakRain.timeLabel) • \(peakRain.rainMm.formattedBR(decimals: 1)) mm"
         } else if day.rainMm > 0 {
             wettestHourText = "Volume leve distribuído"
         } else {
@@ -1533,7 +1452,8 @@ struct WeatherView: View {
         return "Tempo mais seco"
     }
 
-    private func rainNarrative(for day: WeatherDayCardModel, insights: WeatherDayInsights) -> String {
+    private func rainNarrative(for day: WeatherDayCardModel, insights: WeatherDayInsights) -> String
+    {
         if insights.maxRainChance >= 75 || insights.rainTotal >= 12 {
             return "Chance alta de chuva consistente"
         }
@@ -1547,15 +1467,19 @@ struct WeatherView: View {
     }
 
     private func heroSummary(for current: CurrentWeather) -> String {
-        let rainText = current.precipMm > 0
+        let rainText =
+            current.precipMm > 0
             ? "\(current.precipMm.formattedBR(decimals: 1)) mm agora"
             : "sem chuva no momento"
         return "Sensação de \(current.feelsLikeC)°C, \(rainText) e UV \(current.uvIndex)."
     }
 
     private func updatedWeatherText(_ timestamp: String) -> String {
-        guard let date = WeatherClock.parseDateTime(timestamp) else { return "Atualização indisponível" }
-        return "Atualizado \(Formatters.relativeDate.localizedString(for: date, relativeTo: Date()))"
+        guard let date = WeatherClock.parseDateTime(timestamp) else {
+            return "Atualização indisponível"
+        }
+        return
+            "Atualizado \(Formatters.relativeDate.localizedString(for: date, relativeTo: Date()))"
     }
 
     private func formattedClock(_ raw: String?) -> String {
@@ -1586,8 +1510,8 @@ struct WeatherView: View {
     }
 }
 
-private extension WeatherDayCardModel {
-    var detailTemperatureRange: String {
+extension WeatherDayCardModel {
+    fileprivate var detailTemperatureRange: String {
         "\(minTempLabel) - \(maxTempLabel)"
     }
 }

@@ -18,10 +18,12 @@ struct MeuLabApp: App {
                 .environmentObject(appState)
                 .environmentObject(pushManager)
                 .environmentObject(notificationFeed)
+                .mac9Theme()
                 .onAppear {
                     scheduleDeferredStartup()
                 }
-                .onReceive(NotificationCenter.default.publisher(for: .pushNotificationReceived)) { notification in
+                .onReceive(NotificationCenter.default.publisher(for: .pushNotificationReceived)) {
+                    notification in
                     handlePushNotification(notification)
                 }
                 .onChange(of: scenePhase) { _, newPhase in
@@ -85,7 +87,8 @@ struct MeuLabApp: App {
 
     private func handlePushNotification(_ notification: Notification) {
         guard let userInfo = notification.userInfo,
-              let category = userInfo["category"] as? String else {
+            let category = userInfo["category"] as? String
+        else {
             return
         }
 
@@ -93,13 +96,17 @@ struct MeuLabApp: App {
         switch category {
         case "adsb_alert":
             // Navega para tab ADS-B ou Radar
-            NotificationCenter.default.post(name: .navigateToTab, object: nil, userInfo: ["tab": "radar"])
+            NotificationCenter.default.post(
+                name: .navigateToTab, object: nil, userInfo: ["tab": "radar"])
         case "acars_alert":
-            NotificationCenter.default.post(name: .navigateToTab, object: nil, userInfo: ["tab": "acars"])
+            NotificationCenter.default.post(
+                name: .navigateToTab, object: nil, userInfo: ["tab": "acars"])
         case "weather_alert":
-            NotificationCenter.default.post(name: .navigateToTab, object: nil, userInfo: ["tab": "weather"])
+            NotificationCenter.default.post(
+                name: .navigateToTab, object: nil, userInfo: ["tab": "weather"])
         case "satellite":
-            NotificationCenter.default.post(name: .navigateToTab, object: nil, userInfo: ["tab": "satellite"])
+            NotificationCenter.default.post(
+                name: .navigateToTab, object: nil, userInfo: ["tab": "satellite"])
         default:
             break
         }

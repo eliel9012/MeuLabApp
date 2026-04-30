@@ -53,5 +53,14 @@
 		<string>fetch</string>
 		<string>remote-notification</string>
 	</array>
+	<key>UIAppFonts</key>
+	<array>
+		<string>AppleGaramond-Light.ttf</string>
+		<string>AppleGaramond-LightItalic.ttf</string>
+		<string>AppleGaramond.ttf</string>
+		<string>AppleGaramond-Bold.ttf</string>
+		<string>Charcoal.ttf</string>
+		<string>Geneva.ttf</string>
+	</array>
 </dict>
 </plist>

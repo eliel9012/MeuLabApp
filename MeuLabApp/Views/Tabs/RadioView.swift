@@ -61,43 +61,17 @@ private struct RadioPanelBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [RadioTheme.surfaceTop, RadioTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.28), RadioTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: RadioTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.07), radius: 14, x: 0, y: 6)
+        MacOS9Colors.panelBackground
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
-private extension View {
-    func radioPanel(cornerRadius: CGFloat = 20, highlight: Color = RadioTheme.blue) -> some View {
-        background(RadioPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+extension View {
+    fileprivate func radioPanel(cornerRadius: CGFloat = 20, highlight: Color = RadioTheme.blue)
+        -> some View
+    {
+        mac9Panel()
     }
 }
 
@@ -108,7 +82,9 @@ private struct RadioToolbarTitle: View {
                 Circle()
                     .fill(
                         LinearGradient(
-                            colors: [RadioTheme.green.opacity(0.18), RadioTheme.blue.opacity(0.12)],
+                            colors: [
+                                RadioTheme.green.opacity(0.18), RadioTheme.blue.opacity(0.12),
+                            ],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
@@ -197,8 +173,10 @@ struct RadioView: View {
                 let safeInsets = proxy.safeAreaInsets
                 let horizontalInset = isWide ? 24.0 : 16.0
                 let availableWidth = proxy.size.width - safeInsets.leading - safeInsets.trailing
-                let contentWidth = min(contentMaxWidth, max(availableWidth - (horizontalInset * 2), 280))
-                let artworkSize = isWide ? min(contentWidth * 0.56, 420) : min(contentWidth * 0.74, 248)
+                let contentWidth = min(
+                    contentMaxWidth, max(availableWidth - (horizontalInset * 2), 280))
+                let artworkSize =
+                    isWide ? min(contentWidth * 0.56, 420) : min(contentWidth * 0.74, 248)
 
                 ZStack {
                     immersiveBackground
@@ -209,7 +187,7 @@ struct RadioView: View {
                         compactLayout(contentWidth: contentWidth, artworkSize: artworkSize)
                     }
                 }
-                .frame(width: proxy.size.width) // Garantia extra para o ZStack não escapar horizontalmente
+                .frame(width: proxy.size.width)  // Garantia extra para o ZStack não escapar horizontalmente
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -311,40 +289,14 @@ struct RadioView: View {
         }
     }
 
-    @ViewBuilder
     private var immersiveBackground: some View {
-        ZStack {
-            if let artworkURL = effectiveArtworkURL {
-                AsyncImage(url: artworkURL) { phase in
-                    switch phase {
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                    default:
-                        placeholderArtwork
-                    }
-                }
-            } else {
-                placeholderArtwork
-            }
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity) // Limita a expansão ao tamanho proposto
-        .clipped() // Corta a sobra da imagem gerada pelo aspecto ratio
-        .blur(radius: 40)
-        .overlay(Color.black.opacity(0.48))
-        .overlay(
-            LinearGradient(
-                colors: [Color.black.opacity(0.28), Color.clear, Color.black.opacity(0.34)],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-        )
-        .ignoresSafeArea()
+        MacOS9Colors.windowBackground.ignoresSafeArea()
     }
 
     @ViewBuilder
-    private func stationHeroSection(size: CGFloat, contentWidth: CGFloat, compact: Bool) -> some View {
+    private func stationHeroSection(size: CGFloat, contentWidth: CGFloat, compact: Bool)
+        -> some View
+    {
         if compact {
             let compactWidth = contentWidth
             let compactArtworkSize = min(size, 220)
@@ -551,15 +503,19 @@ struct RadioView: View {
         guard let np = appState.nowPlaying else { return false }
         // Hide when it's a station promo with unknown artist
         if isStationPromo(np)
-            && np.artist.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() == "desconhecido" {
+            && np.artist.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                == "desconhecido"
+        {
             return true
         }
         // Also hide when the title already includes the artist to avoid duplication
         let artist = effectiveArtist.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !artist.isEmpty else { return false }
         let title = effectiveTitle.trimmingCharacters(in: .whitespacesAndNewlines)
-        let normalizedTitle = title.folding(options: .diacriticInsensitive, locale: .current).lowercased()
-        let normalizedArtist = artist.folding(options: .diacriticInsensitive, locale: .current).lowercased()
+        let normalizedTitle = title.folding(options: .diacriticInsensitive, locale: .current)
+            .lowercased()
+        let normalizedArtist = artist.folding(options: .diacriticInsensitive, locale: .current)
+            .lowercased()
         return normalizedTitle.contains(normalizedArtist)
     }
 
@@ -612,7 +568,9 @@ struct RadioView: View {
         .frame(width: contentWidth, alignment: .center)
     }
 
-    private func factSection(title: String, systemImage: String, tint: Color, isLoading: Bool, text: String)
+    private func factSection(
+        title: String, systemImage: String, tint: Color, isLoading: Bool, text: String
+    )
         -> some View
     {
         VStack(alignment: .leading, spacing: 10) {
@@ -866,7 +824,9 @@ struct RadioView: View {
         .buttonStyle(.plain)
     }
 
-    private func immersiveInfoPill(title: String, value: String, icon: String, tint: Color) -> some View {
+    private func immersiveInfoPill(title: String, value: String, icon: String, tint: Color)
+        -> some View
+    {
         HStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.caption.weight(.bold))

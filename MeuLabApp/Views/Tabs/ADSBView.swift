@@ -80,37 +80,9 @@ private struct ADSBPanelBackground: View {
     let highlight: Color
 
     var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [ADSBTheme.surfaceTop, ADSBTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.28), ADSBTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: ADSBTheme.shadow.opacity(0.10), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.08), radius: 14, x: 0, y: 6)
+        MacOS9Colors.panelBackground
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -118,7 +90,7 @@ extension View {
     fileprivate func adsbPanel(cornerRadius: CGFloat = 18, highlight: Color = ADSBTheme.radarBlue)
         -> some View
     {
-        background(ADSBPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+        mac9Panel()
     }
 }
 
@@ -263,30 +235,7 @@ struct ADSBView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 20)
             }
-            .background {
-                ZStack {
-                    LinearGradient(
-                        colors: [ADSBTheme.cloud, ADSBTheme.canvasMid, ADSBTheme.canvasEnd],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-
-                    RadialGradient(
-                        colors: [ADSBTheme.radarBlue.opacity(0.12), .clear],
-                        center: .topLeading,
-                        startRadius: 20,
-                        endRadius: 420
-                    )
-
-                    RadialGradient(
-                        colors: [ADSBTheme.radarGreen.opacity(0.10), .clear],
-                        center: .topTrailing,
-                        startRadius: 30,
-                        endRadius: 360
-                    )
-                }
-                .ignoresSafeArea()
-            }
+            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
             .navigationTitle("ADS-B")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -1864,30 +1813,7 @@ struct ADSBAirlineFullscreenView: View {
                 .padding(.horizontal)
                 .padding(.bottom, 24)
             }
-            .background {
-                ZStack {
-                    LinearGradient(
-                        colors: [ADSBTheme.cloud, ADSBTheme.canvasMid, ADSBTheme.canvasEnd],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-
-                    RadialGradient(
-                        colors: [ADSBTheme.radarBlue.opacity(0.12), .clear],
-                        center: .topLeading,
-                        startRadius: 20,
-                        endRadius: 420
-                    )
-
-                    RadialGradient(
-                        colors: [ADSBTheme.radarGreen.opacity(0.10), .clear],
-                        center: .topTrailing,
-                        startRadius: 30,
-                        endRadius: 360
-                    )
-                }
-                .ignoresSafeArea()
-            }
+            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
             .navigationTitle(airline.name)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -2711,18 +2637,7 @@ struct AircraftDetailView: View {
             .frame(maxWidth: .infinity)
             .padding(isWide ? 20 : 16)
         }
-        .background {
-            LinearGradient(
-                colors: [
-                    Color.cyan.opacity(0.08),
-                    Color.blue.opacity(0.05),
-                    Color(.systemBackground),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-        }
+        .background(MacOS9Colors.windowBackground.ignoresSafeArea())
         .navigationTitle("Detalhes do Voo")
         .sheet(isPresented: $showClassificationSheet) {
             AirlineClassificationSheet(
