@@ -89,23 +89,28 @@ public enum MacOS9Typography {
 
     // MARK: Geneva (Body, labels, lists)
 
-    /// Geneva 10pt — primary body text (HTML: "Body text for most content")
+    /// System body text. The classic Geneva TTF is MacRoman and breaks Portuguese accents.
     public static func body(_ size: CGFloat = 13) -> Font {
-        font([geneva, "Geneva"], fallback: genevaFallback, size: size)
+        .system(size: size)
     }
 
-    /// Geneva 10pt bold, letter-spaced — highlighted body text
+    /// System bold body text. Kept Unicode-safe for Portuguese labels and content.
     public static func bodyBold(_ size: CGFloat = 13) -> Font {
-        font([geneva, "Geneva"], fallback: genevaFallback, size: size)
+        .system(size: size, weight: .bold)
     }
 
-    /// Geneva 9pt — smaller body / list items
+    /// System caption text. Kept Unicode-safe for Portuguese labels and content.
     public static func caption(_ size: CGFloat = 11) -> Font {
-        font([geneva, "Geneva"], fallback: genevaFallback, size: size)
+        .system(size: size)
     }
 
-    /// Geneva 7pt — disclaimer / fine print
+    /// System fine print. Kept Unicode-safe for Portuguese labels and content.
     public static func finePrint(_ size: CGFloat = 9) -> Font {
+        .system(size: size)
+    }
+
+    /// Classic Geneva for ASCII-only decorative labels.
+    public static func classicBody(_ size: CGFloat = 13) -> Font {
         font([geneva, "Geneva"], fallback: genevaFallback, size: size)
     }
 

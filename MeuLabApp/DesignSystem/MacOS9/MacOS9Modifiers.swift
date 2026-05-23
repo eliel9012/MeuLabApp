@@ -123,7 +123,7 @@ extension View {
             .padding(padding)
             .background(MacOS9Colors.contentPanel)
             .overlay(
-                RoundedRectangle(cornerRadius: MacOS9Metrics.panelCornerRadius)
+                Rectangle()
                     .strokeBorder(MacOS9Colors.accentBorder, lineWidth: MacOS9Metrics.borderWidth)
             )
     }

@@ -56,7 +56,6 @@ class PushNotificationManager: NSObject, ObservableObject {
     func handleDeviceToken(_ deviceToken: Data) {
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         self.deviceToken = tokenString
-        print("Device token: \(tokenString)")
 
         // Envia para o servidor
         Task {
@@ -82,7 +81,6 @@ class PushNotificationManager: NSObject, ObservableObject {
 
             _ = try await APIService.shared.registerDeviceToken(token: token, deviceInfo: deviceInfo)
             isRegistered = true
-            print("Token registrado no servidor")
         } catch {
             print("Erro ao registrar token no servidor: \(error)")
             isRegistered = false

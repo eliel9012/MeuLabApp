@@ -23,6 +23,7 @@ struct ContentView: View {
         case remoteRadio
         case intelligence
         case bible
+        case more
 
         var title: String {
             switch self {
@@ -42,6 +43,7 @@ struct ContentView: View {
             case .remoteRadio: return "SDR"
             case .intelligence: return "IA"
             case .bible: return "Bíblia"
+            case .more: return "Mais"
             }
         }
 
@@ -63,6 +65,7 @@ struct ContentView: View {
             case .remoteRadio: return "antenna.radiowaves.left.and.right.circle"
             case .intelligence: return "brain.head.profile"
             case .bible: return "book.closed"
+            case .more: return "ellipsis"
             }
         }
 
@@ -84,6 +87,7 @@ struct ContentView: View {
             case .remoteRadio: return "antenna.radiowaves.left.and.right.circle.fill"
             case .intelligence: return "brain.head.profile"
             case .bible: return "book.closed.fill"
+            case .more: return "ellipsis"
             }
         }
 
@@ -107,107 +111,19 @@ struct ContentView: View {
     }
 
     var body: some View {
-        TabView(selection: $selectedTab) {
-            // -- Tabs Primárias --
-            SwiftUI.Tab(value: Tab.adsb) {
-                tabView(for: .adsb)
-            } label: {
-                Label(Tab.adsb.title, systemImage: Tab.adsb.icon)
-            }
+        ZStack(alignment: .bottom) {
+            tabView(for: selectedTab)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .padding(.bottom, 76)
 
-            SwiftUI.Tab(value: Tab.satellite) {
-                tabView(for: .satellite)
-            } label: {
-                Label(Tab.satellite.title, systemImage: Tab.satellite.icon)
-            }
-
-            SwiftUI.Tab(value: Tab.system) {
-                tabView(for: .system)
-            } label: {
-                Label(Tab.system.title, systemImage: Tab.system.icon)
-            }
-
-            SwiftUI.Tab(value: Tab.radio) {
-                tabView(for: .radio)
-            } label: {
-                Label(Tab.radio.title, systemImage: Tab.radio.icon)
-            }
-
-            // -- Tabs Secundárias agrupadas em "Mais" --
-            TabSection("Mais") {
-                Group {
-                    SwiftUI.Tab(value: Tab.map) {
-                        tabView(for: .map)
-                    } label: {
-                        Label(Tab.map.title, systemImage: Tab.map.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.acars) {
-                        tabView(for: .acars)
-                    } label: {
-                        Label(Tab.acars.title, systemImage: Tab.acars.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.infra) {
-                        tabView(for: .infra)
-                    } label: {
-                        Label(Tab.infra.title, systemImage: Tab.infra.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.weather) {
-                        tabView(for: .weather)
-                    } label: {
-                        Label(Tab.weather.title, systemImage: Tab.weather.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.alerts) {
-                        tabView(for: .alerts)
-                    } label: {
-                        Label(Tab.alerts.title, systemImage: Tab.alerts.icon)
-                    }
-                }
-
-                Group {
-                    SwiftUI.Tab(value: Tab.flightSearch) {
-                        tabView(for: .flightSearch)
-                    } label: {
-                        Label(Tab.flightSearch.title, systemImage: Tab.flightSearch.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.export) {
-                        tabView(for: .export)
-                    } label: {
-                        Label(Tab.export.title, systemImage: Tab.export.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.remote) {
-                        tabView(for: .remote)
-                    } label: {
-                        Label(Tab.remote.title, systemImage: Tab.remote.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.remoteRadio) {
-                        tabView(for: .remoteRadio)
-                    } label: {
-                        Label(Tab.remoteRadio.title, systemImage: Tab.remoteRadio.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.intelligence) {
-                        tabView(for: .intelligence)
-                    } label: {
-                        Label(Tab.intelligence.title, systemImage: Tab.intelligence.icon)
-                    }
-
-                    SwiftUI.Tab(value: Tab.bible) {
-                        tabView(for: .bible)
-                    } label: {
-                        Label(Tab.bible.title, systemImage: Tab.bible.icon)
-                    }
-                }
+            MacOS9RootTabBar(
+                selectedTab: bottomBarSelection,
+                tabs: Tab.primaryTabs + [.more]
+            ) { tab in
+                selectedTab = tab
+                appState.setActiveTab(tab.rawValue)
             }
         }
-        .tabViewStyle(.sidebarAdaptable)
-        .tabBarMinimizeBehavior(.onScrollDown)
         .tint(MacOS9Colors.selection)
         .background(MacOS9Colors.windowBackground)
         .adaptiveTheme()
@@ -259,6 +175,10 @@ struct ContentView: View {
         }
     }
 
+    private var bottomBarSelection: Tab {
+        selectedTab.isPrimary ? selectedTab : .more
+    }
+
     private static func launchTabOverride() -> Tab? {
         let env = ProcessInfo.processInfo.environment
         guard let raw = env["MEULAB_INITIAL_TAB"]?.trimmingCharacters(in: .whitespacesAndNewlines),
@@ -289,9 +209,109 @@ struct ContentView: View {
         case .remoteRadio: RemoteRadioView()
         case .intelligence: IntelligenceView()
         case .bible: BibleView()
+        case .more: MoreMenuView(tabs: Tab.secondaryTabs) { selectedTab = $0 }
         }
     }
 
+}
+
+private struct MacOS9RootTabBar: View {
+    let selectedTab: ContentView.Tab
+    let tabs: [ContentView.Tab]
+    let select: (ContentView.Tab) -> Void
+
+    var body: some View {
+        HStack(spacing: 0) {
+            ForEach(tabs, id: \.self) { tab in
+                let isSelected = selectedTab == tab
+                Button {
+                    select(tab)
+                } label: {
+                    MacOS9RootTabItem(tab: tab, isSelected: isSelected)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(6)
+        .background(MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+        .padding(.horizontal, 12)
+        .padding(.bottom, 8)
+    }
+}
+
+private struct MacOS9RootTabItem: View {
+    let tab: ContentView.Tab
+    let isSelected: Bool
+
+    private var iconName: String {
+        isSelected ? tab.filledIcon : tab.icon
+    }
+
+    var body: some View {
+        VStack(spacing: 3) {
+            Image(systemName: iconName)
+                .font(.system(size: 20, weight: .semibold))
+                .frame(height: 22)
+            Text(tab.title)
+                .font(MacOS9Typography.caption(10))
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
+        }
+        .foregroundStyle(MacOS9Colors.primaryText)
+        .frame(maxWidth: .infinity)
+        .frame(height: 56)
+        .background(isSelected ? MacOS9Colors.labelBadge : MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: !isSelected))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+    }
+}
+
+private struct MoreMenuView: View {
+    let tabs: [ContentView.Tab]
+    let select: (ContentView.Tab) -> Void
+
+    var body: some View {
+        NavigationStack {
+            ScrollView {
+                VStack(spacing: 0) {
+                    ForEach(tabs, id: \.self) { tab in
+                        Button {
+                            select(tab)
+                        } label: {
+                            HStack(spacing: 14) {
+                                Image(systemName: tab.icon)
+                                    .font(.system(size: 20, weight: .semibold))
+                                    .frame(width: 28)
+                                    .foregroundStyle(MacOS9Colors.selection)
+                                Text(tab.title)
+                                    .font(MacOS9Typography.body(18))
+                                    .foregroundStyle(MacOS9Colors.primaryText)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14, weight: .bold))
+                                    .foregroundStyle(MacOS9Colors.secondaryText)
+                            }
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 14)
+                            .background(MacOS9Colors.contentPanel)
+                        }
+                        .buttonStyle(.plain)
+
+                        Rectangle()
+                            .fill(MacOS9Colors.border.opacity(0.2))
+                            .frame(height: 1)
+                            .padding(.leading, 58)
+                    }
+                }
+                .mac9Panel()
+                .padding(16)
+            }
+            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
+            .navigationTitle("Mais")
+        }
+    }
 }
 
 #Preview {

@@ -67,10 +67,6 @@ actor APIService {
         config.waitsForConnectivity = false
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         self.session = URLSession(configuration: config)
-
-        #if DEBUG
-            Secrets.debugPrintStatus()
-        #endif
     }
 
     /// Called from MainActor when NetworkEnvironment detects a change.

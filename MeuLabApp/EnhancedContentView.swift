@@ -145,6 +145,8 @@ struct EnhancedContentView: View {
                     IntelligenceView()
                 case .bible:
                     BibleView()
+                case .more:
+                    EmptyView()
                 }
             }
         }

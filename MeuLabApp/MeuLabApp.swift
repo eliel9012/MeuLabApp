@@ -14,7 +14,6 @@ struct MeuLabApp: App {
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .radarSplash()
                 .environmentObject(appState)
                 .environmentObject(pushManager)
                 .environmentObject(notificationFeed)
@@ -45,7 +44,7 @@ struct MeuLabApp: App {
         guard startupTask == nil else { return }
 
         startupTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 300_000_000)
+            try? await Task.sleep(nanoseconds: 100_000_000)
             guard !Task.isCancelled else { return }
 
             _ = NetworkEnvironment.shared
@@ -53,11 +52,6 @@ struct MeuLabApp: App {
             setupPushNotificationsIfNeeded()
             notificationFeed.start()
             appState.setRefreshEnabled(true)
-            if #available(iOS 18.0, *) {
-                Task {
-                    await LabEntityIndexer.shared.reindexIfNeeded()
-                }
-            }
             startupTask = nil
         }
     }

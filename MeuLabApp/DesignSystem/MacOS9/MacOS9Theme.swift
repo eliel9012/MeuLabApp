@@ -11,7 +11,6 @@ extension View {
         self
             .preferredColorScheme(.light)
             .tint(MacOS9Colors.selection)
-            .font(MacOS9Typography.body())
             .foregroundStyle(MacOS9Colors.primaryText)
             .background(MacOS9Colors.windowBackground)
             .onAppear { MacOS9Theme.applyAppearance() }
@@ -71,11 +70,7 @@ enum MacOS9Theme {
         appearance.backgroundColor = UIColor(MacOS9Colors.titleBar)
         appearance.shadowColor = UIColor(MacOS9Colors.border)
 
-        let normalFont = MacOS9Typography.uiFont(
-            ["GenevaPlain", "Geneva"],
-            fallback: .systemFont(ofSize: 10),
-            size: 10
-        )
+        let normalFont = UIFont.systemFont(ofSize: 10)
         let itemAppearance = UITabBarItemAppearance()
         itemAppearance.normal.titleTextAttributes = [
             .font: normalFont,

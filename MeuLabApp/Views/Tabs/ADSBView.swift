@@ -21,58 +21,22 @@ private func adsbRGBA(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, _ alpha
 }
 
 private enum ADSBTheme {
-    static let radarBlue = Color(red: 0.11, green: 0.31, blue: 0.82)
-    static let radarBlueDeep = Color(red: 0.05, green: 0.13, blue: 0.38)
-    static let radarGreen = Color(red: 0.31, green: 0.90, blue: 0.35)
-    static let radarMint = Color(red: 0.73, green: 0.98, blue: 0.62)
-    static let ink = adsbAdaptiveColor(
-        light: adsbRGBA(0.08, 0.11, 0.20),
-        dark: adsbRGBA(0.92, 0.95, 1.00)
-    )
-    static let secondaryInk = adsbAdaptiveColor(
-        light: adsbRGBA(0.26, 0.31, 0.42),
-        dark: adsbRGBA(0.76, 0.82, 0.92)
-    )
-    static let tertiaryInk = adsbAdaptiveColor(
-        light: adsbRGBA(0.43, 0.48, 0.58),
-        dark: adsbRGBA(0.61, 0.68, 0.79)
-    )
-    static let sectionInk = adsbAdaptiveColor(
-        light: adsbRGBA(0.05, 0.13, 0.38),
-        dark: adsbRGBA(0.34, 0.52, 0.98)
-    )
-    static let mist = adsbAdaptiveColor(
-        light: adsbRGBA(0.94, 0.97, 1.00),
-        dark: adsbRGBA(0.09, 0.11, 0.18)
-    )
-    static let cloud = adsbAdaptiveColor(
-        light: adsbRGBA(0.97, 0.99, 1.00),
-        dark: adsbRGBA(0.04, 0.06, 0.12)
-    )
-    static let canvasMid = adsbAdaptiveColor(
-        light: adsbRGBA(1.00, 1.00, 1.00),
-        dark: adsbRGBA(0.06, 0.08, 0.15)
-    )
-    static let canvasEnd = adsbAdaptiveColor(
-        light: adsbRGBA(0.96, 0.99, 0.98),
-        dark: adsbRGBA(0.08, 0.10, 0.17)
-    )
-    static let surfaceTop = adsbAdaptiveColor(
-        light: adsbRGBA(1.00, 1.00, 1.00, 0.98),
-        dark: adsbRGBA(0.13, 0.16, 0.24, 0.98)
-    )
-    static let surfaceStroke = adsbAdaptiveColor(
-        light: adsbRGBA(1.00, 1.00, 1.00, 0.92),
-        dark: adsbRGBA(0.26, 0.31, 0.42, 0.88)
-    )
-    static let toolbarBubble = adsbAdaptiveColor(
-        light: adsbRGBA(1.00, 1.00, 1.00, 0.78),
-        dark: adsbRGBA(0.16, 0.20, 0.28, 0.94)
-    )
-    static let shadow = adsbAdaptiveColor(
-        light: adsbRGBA(0.06, 0.13, 0.34),
-        dark: adsbRGBA(0.00, 0.00, 0.00)
-    )
+    static let radarBlue = MacOS9Colors.statusBlue
+    static let radarBlueDeep = MacOS9Colors.selection
+    static let radarGreen = MacOS9Colors.statusGreen
+    static let radarMint = MacOS9Colors.statusGreen.opacity(0.2)
+    static let ink = MacOS9Colors.primaryText
+    static let secondaryInk = MacOS9Colors.secondaryText
+    static let tertiaryInk = MacOS9Colors.secondaryText
+    static let sectionInk = MacOS9Colors.selection
+    static let mist = MacOS9Colors.windowBackground
+    static let cloud = MacOS9Colors.contentPanel
+    static let canvasMid = MacOS9Colors.windowBackground
+    static let canvasEnd = MacOS9Colors.windowBackground
+    static let surfaceTop = MacOS9Colors.panelBackground
+    static let surfaceStroke = MacOS9Colors.border
+    static let toolbarBubble = MacOS9Colors.panelBackground
+    static let shadow = MacOS9Colors.dropShadow
 }
 
 private struct ADSBPanelBackground: View {
@@ -98,39 +62,21 @@ private struct ADSBToolbarTitle: View {
     var body: some View {
         HStack(spacing: 10) {
             ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                ADSBTheme.radarGreen.opacity(0.22),
-                                ADSBTheme.radarBlue.opacity(0.12),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                Rectangle()
+                    .fill(MacOS9Colors.panelBackground)
                     .frame(width: 28, height: 28)
+                    .overlay(Mac9BevelBorder(isRaised: true))
+                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
-                Circle()
-                    .stroke(ADSBTheme.radarGreen.opacity(0.45), lineWidth: 1.2)
-                    .frame(width: 28, height: 28)
-
-                Circle()
+                Rectangle()
                     .fill(ADSBTheme.radarGreen)
-                    .frame(width: 6, height: 6)
-                    .shadow(color: ADSBTheme.radarGreen.opacity(0.45), radius: 6, x: 0, y: 0)
+                    .frame(width: 8, height: 8)
             }
 
             Text("ADS-B")
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .font(MacOS9Typography.editorialBold(24))
                 .tracking(0.8)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [ADSBTheme.radarBlueDeep, ADSBTheme.radarBlue],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .foregroundStyle(MacOS9Colors.selection)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("ADS-B")
@@ -162,13 +108,10 @@ private struct ADSBSourceChip: View {
         .padding(.horizontal, 12)
         .padding(.vertical, 9)
         .background(
-            Capsule()
-                .fill(tint.opacity(isActive ? 0.16 : 0.08))
+            MacOS9Colors.panelBackground
         )
-        .overlay(
-            Capsule()
-                .stroke(tint.opacity(isActive ? 0.28 : 0.12), lineWidth: 1)
-        )
+        .overlay(Mac9BevelBorder(isRaised: isActive))
+        .overlay(Rectangle().strokeBorder(tint.opacity(isActive ? 0.8 : 0.35), lineWidth: 1))
     }
 }
 
@@ -480,16 +423,16 @@ struct ADSBView: View {
             HStack(alignment: .center, spacing: 14) {
                 // Large number
                 Text("\(total)")
-                    .font(.system(size: isCompactLayout ? 44 : 52, weight: .bold, design: .rounded))
+                    .font(MacOS9Typography.editorialBold(isCompactLayout ? 44 : 52))
                     .monospacedDigit()
                     .foregroundStyle(ADSBTheme.ink)
 
                 VStack(alignment: .leading, spacing: 3) {
                     Text("Aeronaves")
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(15))
                         .foregroundStyle(ADSBTheme.ink)
                     Text("no ar agora")
-                        .font(.caption.weight(.medium))
+                        .font(MacOS9Typography.caption(13))
                         .foregroundStyle(ADSBTheme.secondaryInk)
                 }
 
@@ -502,13 +445,15 @@ struct ADSBView: View {
                         .frame(width: 8, height: 8)
                         .shadow(color: ADSBTheme.radarGreen.opacity(0.6), radius: 4)
                     Text("LIVE")
-                        .font(.system(size: 10, weight: .black, design: .rounded))
+                        .font(MacOS9Typography.menuLabel(10))
                         .tracking(1.2)
                         .foregroundStyle(ADSBTheme.radarGreen)
                 }
                 .padding(.horizontal, 10)
                 .padding(.vertical, 6)
-                .background(ADSBTheme.radarGreen.opacity(0.12), in: Capsule())
+                .background(MacOS9Colors.panelBackground)
+                .overlay(Mac9BevelBorder(isRaised: true))
+                .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
             }
 
             Divider()
@@ -529,25 +474,11 @@ struct ADSBView: View {
         }
         .padding(isCompactLayout ? 16 : 20)
         .background {
-            RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
-                .overlay {
-                    LinearGradient(
-                        colors: [
-                            ADSBTheme.radarGreen.opacity(0.08),
-                            ADSBTheme.radarBlue.opacity(0.05),
-                            .clear,
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                    .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                }
-                .overlay {
-                    RoundedRectangle(cornerRadius: 24, style: .continuous)
-                        .strokeBorder(Color.white.opacity(0.35), lineWidth: 1)
-                }
+            MacOS9Colors.panelBackground
+                .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 4, y: 4)
         }
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 
     private func liveMetaPill(icon: String, text: String) -> some View {
@@ -1247,15 +1178,11 @@ struct MiniStatCard: View {
     var body: some View {
         VStack(spacing: compact ? 6 : 10) {
             ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [color.opacity(0.20), color.opacity(0.08)],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                Rectangle()
+                    .fill(MacOS9Colors.panelBackground)
                     .frame(width: compact ? 36 : 44, height: compact ? 36 : 44)
+                    .overlay(Mac9BevelBorder(isRaised: true))
+                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
                 Image(systemName: icon)
                     .font(.system(size: compact ? 15 : 18, weight: .semibold))
@@ -1263,33 +1190,21 @@ struct MiniStatCard: View {
             }
 
             Text(value)
-                .font(.system(size: compact ? 22 : 26, weight: .bold, design: .rounded))
+                .font(MacOS9Typography.editorialBold(compact ? 22 : 26))
                 .monospacedDigit()
                 .foregroundStyle(ADSBTheme.ink)
                 .minimumScaleFactor(0.8)
 
             Text(label)
-                .font(.caption2.weight(.medium))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(ADSBTheme.secondaryInk)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, compact ? 12 : 16)
         .padding(.horizontal, compact ? 6 : 8)
-        .background(
-            LinearGradient(
-                colors: [
-                    Color(.secondarySystemGroupedBackground),
-                    color.opacity(compact ? 0.06 : 0.04),
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-        )
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .strokeBorder(color.opacity(compact ? 0.18 : 0.10), lineWidth: 1)
-        )
+        .background(MacOS9Colors.contentPanel)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(color.opacity(compact ? 0.8 : 0.6), lineWidth: 1))
     }
 }
 
@@ -1302,18 +1217,11 @@ struct AverageStatCard: View {
     var body: some View {
         HStack(spacing: 12) {
             ZStack {
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                ADSBTheme.radarBlue.opacity(0.14),
-                                ADSBTheme.radarBlue.opacity(0.06),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
+                Rectangle()
+                    .fill(MacOS9Colors.panelBackground)
                     .frame(width: 40, height: 40)
+                    .overlay(Mac9BevelBorder(isRaised: true))
+                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
                 Image(systemName: icon)
                     .font(.system(size: 16, weight: .semibold))
@@ -1326,7 +1234,7 @@ struct AverageStatCard: View {
                     .foregroundStyle(ADSBTheme.tertiaryInk)
 
                 Text(value)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .font(MacOS9Typography.bodyBold(16))
                     .monospacedDigit()
                     .foregroundStyle(ADSBTheme.ink)
                     .minimumScaleFactor(0.7)
@@ -1342,12 +1250,9 @@ struct AverageStatCard: View {
         }
         .padding(14)
         .frame(maxWidth: .infinity)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .strokeBorder(ADSBTheme.radarBlue.opacity(0.08), lineWidth: 1)
-        )
+        .background(MacOS9Colors.contentPanel)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
