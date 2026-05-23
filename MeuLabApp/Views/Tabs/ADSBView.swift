@@ -2040,6 +2040,8 @@ struct TuyaPrimaryMetricCard: View {
             Label(title, systemImage: icon)
                 .font(.caption.weight(.semibold))
                 .foregroundStyle(ADSBTheme.secondaryInk)
+                .lineLimit(1)
+                .minimumScaleFactor(0.75)
 
             Text(value)
                 .font(.system(size: 28, weight: .bold, design: .rounded))

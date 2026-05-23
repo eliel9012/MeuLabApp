@@ -126,13 +126,7 @@ struct BibleChaptersView: View {
             }
             .padding()
         }
-        .background {
-            LinearGradient(
-                colors: [Color.amber.opacity(0.06), Color(.systemBackground)],
-                startPoint: .top, endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        }
+        .background(MacOS9Colors.windowBackground.ignoresSafeArea())
         .navigationTitle(book.name)
         .navigationBarTitleDisplayMode(.large)
         .navigationDestination(for: Int.self) { chapter in

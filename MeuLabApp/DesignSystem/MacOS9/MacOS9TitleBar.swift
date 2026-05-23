@@ -16,29 +16,14 @@ struct MacOS9TitleBar: View {
             Rectangle()
                 .fill(isActive ? MacOS9Colors.titleBar : MacOS9Colors.panelBackground)
 
-            // Decorative stripes (left side)
-            GeometryReader { geo in
-                HStack(spacing: 0) {
-                    // Left stripes — from edge to button cluster
-                    stripeRegion()
-                        .frame(width: 36)
-
-                    Spacer()
-
-                    // Right stripes — from right button to edge
-                    stripeRegion()
-                        .frame(width: 36)
-                }
-                .frame(height: geo.size.height)
-            }
-
             // Main content: close — title — zoom
             HStack(spacing: 4) {
                 // Close button
                 Mac9TitleBarButton(symbol: "xmark", action: onClose)
                     .padding(.leading, 4)
 
-                Spacer()
+                stripeRegion()
+                    .frame(maxWidth: .infinity)
 
                 // Title text
                 Text(title)
@@ -48,8 +33,11 @@ struct MacOS9TitleBar: View {
                     )
                     .lineLimit(1)
                     .minimumScaleFactor(0.7)
+                    .padding(.horizontal, 6)
+                    .background(isActive ? MacOS9Colors.titleBar : MacOS9Colors.panelBackground)
 
-                Spacer()
+                stripeRegion()
+                    .frame(maxWidth: .infinity)
 
                 // Zoom / collapse button
                 Mac9TitleBarButton(symbol: "plus", action: onZoom)

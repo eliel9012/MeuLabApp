@@ -208,7 +208,8 @@ struct ContentView: View {
         }
         .tabViewStyle(.sidebarAdaptable)
         .tabBarMinimizeBehavior(.onScrollDown)
-        .tint(.blue)
+        .tint(MacOS9Colors.selection)
+        .background(MacOS9Colors.windowBackground)
         .adaptiveTheme()
         .onAppear {
             if !didApplyLaunchTab {

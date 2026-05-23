@@ -378,7 +378,9 @@ struct AdaptiveThemeModifier: ViewModifier {
     
     func body(content: Content) -> some View {
         content
-            .preferredColorScheme(preferredColorScheme)
+            .preferredColorScheme(.light)
+            .tint(MacOS9Colors.selection)
+            .background(MacOS9Colors.windowBackground)
             .onAppear {
                 setupThemeTimer()
             }

@@ -40,14 +40,15 @@ struct Mac9ButtonStyle: ButtonStyle {
             .padding(.vertical, MacOS9Metrics.buttonPaddingV)
             .frame(minHeight: 36)
             .background(
-                configuration.isPressed ? MacOS9Colors.buttonPressed : MacOS9Colors.windowBackground
+                (configuration.isPressed
+                    ? MacOS9Colors.buttonPressed : MacOS9Colors.windowBackground)
+                    .shadow(
+                        color: configuration.isPressed ? .clear : MacOS9Colors.dropShadow,
+                        radius: 0, x: 1, y: 1
+                    )
             )
             .overlay(Mac9BevelBorder(isRaised: !configuration.isPressed, width: 1))
             .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
-            .shadow(
-                color: configuration.isPressed ? .clear : MacOS9Colors.dropShadow,
-                radius: 0, x: 1, y: 1
-            )
             .offset(x: configuration.isPressed ? 1 : 0, y: configuration.isPressed ? 1 : 0)
     }
 }
@@ -61,14 +62,14 @@ struct Mac9ProminentButtonStyle: ButtonStyle {
             .padding(.vertical, MacOS9Metrics.buttonPaddingV)
             .frame(minHeight: 36)
             .background(
-                configuration.isPressed ? MacOS9Colors.buttonPressed : MacOS9Colors.titleBar
+                (configuration.isPressed ? MacOS9Colors.buttonPressed : MacOS9Colors.titleBar)
+                    .shadow(
+                        color: configuration.isPressed ? .clear : MacOS9Colors.dropShadow,
+                        radius: 0, x: 1, y: 1
+                    )
             )
             .overlay(Mac9BevelBorder(isRaised: !configuration.isPressed, width: 2))
             .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
-            .shadow(
-                color: configuration.isPressed ? .clear : MacOS9Colors.dropShadow,
-                radius: 0, x: 1, y: 1
-            )
             .offset(x: configuration.isPressed ? 1 : 0, y: configuration.isPressed ? 1 : 0)
     }
 }
@@ -81,10 +82,12 @@ struct FloatingBarGlass: ViewModifier {
 
     func body(content: Content) -> some View {
         content
-            .background(MacOS9Colors.windowBackground.opacity(0.92))
+            .background(
+                MacOS9Colors.windowBackground.opacity(0.92)
+                    .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
+            )
             .overlay(Mac9BevelBorder(isRaised: true, width: 1))
             .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
-            .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
     }
 }
 

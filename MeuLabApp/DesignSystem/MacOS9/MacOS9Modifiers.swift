@@ -58,17 +58,20 @@ extension View {
     func mac9Panel(padding: CGFloat = MacOS9Metrics.windowPadding) -> some View {
         self
             .padding(padding)
-            .background(MacOS9Colors.panelBackground)
+            .background(
+                // Shadow on background shape only — prevents text ghosting
+                MacOS9Colors.panelBackground
+                    .shadow(
+                        color: MacOS9Colors.dropShadow,
+                        radius: MacOS9Metrics.dropShadowBlur,
+                        x: MacOS9Metrics.dropShadowX,
+                        y: MacOS9Metrics.dropShadowY
+                    )
+            )
             .overlay(Mac9BevelBorder(isRaised: true))
             .overlay(
                 Rectangle()
                     .strokeBorder(MacOS9Colors.border, lineWidth: MacOS9Metrics.borderWidth)
-            )
-            .shadow(
-                color: MacOS9Colors.dropShadow,
-                radius: MacOS9Metrics.dropShadowBlur,
-                x: MacOS9Metrics.dropShadowX,
-                y: MacOS9Metrics.dropShadowY
             )
     }
 
@@ -87,17 +90,19 @@ extension View {
     /// Window-level container: window background + outer bevel + hard shadow
     func mac9Window() -> some View {
         self
-            .background(MacOS9Colors.windowBackground)
+            .background(
+                MacOS9Colors.windowBackground
+                    .shadow(
+                        color: MacOS9Colors.dropShadow,
+                        radius: 0,
+                        x: MacOS9Metrics.dropShadowX,
+                        y: MacOS9Metrics.dropShadowY
+                    )
+            )
             .overlay(Mac9BevelBorder(isRaised: true, width: 2))
             .overlay(
                 Rectangle()
                     .strokeBorder(MacOS9Colors.border, lineWidth: MacOS9Metrics.borderWidth)
-            )
-            .shadow(
-                color: MacOS9Colors.dropShadow,
-                radius: 0,
-                x: MacOS9Metrics.dropShadowX,
-                y: MacOS9Metrics.dropShadowY
             )
     }
 
@@ -138,17 +143,19 @@ extension View {
     func glassCard(tint color: Color, cornerRadius: CGFloat = 16) -> some View {
         self
             .padding(MacOS9Metrics.windowPadding)
-            .background(MacOS9Colors.panelBackground)
+            .background(
+                MacOS9Colors.panelBackground
+                    .shadow(
+                        color: MacOS9Colors.dropShadow,
+                        radius: 0,
+                        x: MacOS9Metrics.dropShadowX,
+                        y: MacOS9Metrics.dropShadowY
+                    )
+            )
             .overlay(Mac9BevelBorder(isRaised: true))
             .overlay(
                 Rectangle()
                     .strokeBorder(color.opacity(0.8), lineWidth: MacOS9Metrics.borderWidth)
-            )
-            .shadow(
-                color: MacOS9Colors.dropShadow,
-                radius: 0,
-                x: MacOS9Metrics.dropShadowX,
-                y: MacOS9Metrics.dropShadowY
             )
     }
 

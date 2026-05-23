@@ -19,15 +19,17 @@ struct MacOS9Panel<Content: View>: View {
     var body: some View {
         content
             .padding(padding)
-            .background(background)
+            .background(
+                background
+                    .shadow(
+                        color: style == .raised ? MacOS9Colors.dropShadow : .clear,
+                        radius: 0,
+                        x: MacOS9Metrics.dropShadowX,
+                        y: MacOS9Metrics.dropShadowY
+                    )
+            )
             .overlay(bevel)
             .overlay(border)
-            .shadow(
-                color: style == .raised ? MacOS9Colors.dropShadow : .clear,
-                radius: 0,
-                x: MacOS9Metrics.dropShadowX,
-                y: MacOS9Metrics.dropShadowY
-            )
     }
 
     @ViewBuilder

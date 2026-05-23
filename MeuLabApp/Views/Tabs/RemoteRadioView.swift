@@ -8,16 +8,15 @@ struct RemoteRadioView: View {
     @State private var gainIsAuto = true
     @State private var manualGain: Double = 30
 
-    // Vintage color palette
-    private let woodDark = Color(red: 0.25, green: 0.15, blue: 0.08)
-    private let woodMid = Color(red: 0.35, green: 0.22, blue: 0.12)
-    private let woodLight = Color(red: 0.45, green: 0.30, blue: 0.18)
-    private let amber = Color(red: 1.0, green: 0.85, blue: 0.55)
-    private let amberDim = Color(red: 0.8, green: 0.65, blue: 0.35)
-    private let amberGlow = Color(red: 1.0, green: 0.9, blue: 0.6)
-    private let cream = Color(red: 0.96, green: 0.93, blue: 0.86)
-    private let brass = Color(red: 0.72, green: 0.60, blue: 0.35)
-    private let dialBg = Color(red: 0.12, green: 0.10, blue: 0.08)
+    private let woodDark = MacOS9Colors.border
+    private let woodMid = MacOS9Colors.panelBackground
+    private let woodLight = MacOS9Colors.windowBackground
+    private let amber = MacOS9Colors.labelBadge
+    private let amberDim = MacOS9Colors.secondaryText
+    private let amberGlow = MacOS9Colors.scrollbarThumb
+    private let cream = MacOS9Colors.contentPanel
+    private let brass = MacOS9Colors.statusOrange
+    private let dialBg = MacOS9Colors.contentPanel
 
     var body: some View {
         NavigationStack {
@@ -40,7 +39,7 @@ struct RemoteRadioView: View {
                             backendBanner(
                                 title: "Aviso de Hardware",
                                 icon: "exclamationmark.triangle.fill",
-                                tint: .orange
+                                tint: MacOS9Colors.statusOrange
                             )
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
@@ -199,12 +198,7 @@ struct RemoteRadioView: View {
 
     private var woodBackground: some View {
         ZStack {
-            LinearGradient(
-                colors: [woodDark, woodMid, woodDark],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            MacOS9Colors.windowBackground.ignoresSafeArea()
 
             // Subtle wood grain texture overlay
             GeometryReader { geo in

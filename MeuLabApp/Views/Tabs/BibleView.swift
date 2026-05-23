@@ -56,12 +56,12 @@ struct BibleView: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Text("ACF")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
+                        .font(MacOS9Typography.caption())
+                        .foregroundStyle(MacOS9Colors.secondaryText)
                         .padding(.horizontal, 8)
                         .padding(.vertical, 3)
-                        .background(.ultraThinMaterial, in: Capsule())
+                        .background(MacOS9Colors.labelBadge)
+                        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
             }
         }
@@ -78,19 +78,17 @@ struct BibleView: View {
                     }
                 } label: {
                     Label(tab.rawValue, systemImage: tab.icon)
-                        .font(.subheadline)
-                        .fontWeight(selectedTab == tab ? .semibold : .regular)
-                        .foregroundStyle(selectedTab == tab ? .primary : .secondary)
+                        .font(MacOS9Typography.menuLabel())
+                        .foregroundStyle(
+                            selectedTab == tab
+                                ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 8)
                         .background {
                             if selectedTab == tab {
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(Color.amber.opacity(0.18))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                            .strokeBorder(Color.amber.opacity(0.4), lineWidth: 1)
-                                    )
+                                Rectangle()
+                                    .fill(MacOS9Colors.selection)
+                                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                             }
                         }
                 }
@@ -99,11 +97,10 @@ struct BibleView: View {
         }
         .padding(4)
         .background(
-            MacOS9Colors.panelBackground, in: RoundedRectangle(cornerRadius: 14, style: .continuous)
+            MacOS9Colors.panelBackground
         )
         .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .strokeBorder(MacOS9Colors.border, lineWidth: 1)
+            Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1)
         )
     }
 }
@@ -111,9 +108,9 @@ struct BibleView: View {
 // MARK: - Amber Color Extension
 
 extension Color {
-    static let amber = Color(red: 0.83, green: 0.69, blue: 0.22)
-    static let mogno = Color(red: 0.24, green: 0.15, blue: 0.13)
-    static let parchment = Color(red: 0.96, green: 0.90, blue: 0.83)
+    static let amber = MacOS9Colors.statusOrange
+    static let mogno = MacOS9Colors.border
+    static let parchment = MacOS9Colors.contentPanel
 }
 
 #Preview {

@@ -11,6 +11,8 @@ extension View {
         self
             .preferredColorScheme(.light)
             .tint(MacOS9Colors.selection)
+            .font(MacOS9Typography.body())
+            .foregroundStyle(MacOS9Colors.primaryText)
             .background(MacOS9Colors.windowBackground)
             .onAppear { MacOS9Theme.applyAppearance() }
     }
@@ -32,8 +34,11 @@ enum MacOS9Theme {
     // MARK: Navigation Bar
 
     private static func configureNavigationBar() {
-        let uiTitleFont =
-            UIFont(name: "Charcoal", size: 14) ?? UIFont.systemFont(ofSize: 14, weight: .medium)
+        let uiTitleFont = MacOS9Typography.uiFont(
+            ["Charcoal"],
+            fallback: .systemFont(ofSize: 12, weight: .bold),
+            size: 12
+        )
 
         let appearance = UINavigationBarAppearance()
         appearance.configureWithOpaqueBackground()
@@ -44,8 +49,11 @@ enum MacOS9Theme {
             .foregroundColor: UIColor(MacOS9Colors.primaryText),
         ]
         appearance.largeTitleTextAttributes = [
-            .font: UIFont(name: "AppleGaramond-Light", size: 28)
-                ?? UIFont.systemFont(ofSize: 28, weight: .light),
+            .font: MacOS9Typography.uiFont(
+                ["AppleGaramondLight", "AppleGaramond-Light"],
+                fallback: .systemFont(ofSize: 24, weight: .light),
+                size: 24
+            ),
             .foregroundColor: UIColor(MacOS9Colors.primaryText),
         ]
 
@@ -63,7 +71,11 @@ enum MacOS9Theme {
         appearance.backgroundColor = UIColor(MacOS9Colors.titleBar)
         appearance.shadowColor = UIColor(MacOS9Colors.border)
 
-        let normalFont = UIFont(name: "Geneva", size: 10) ?? UIFont.systemFont(ofSize: 10)
+        let normalFont = MacOS9Typography.uiFont(
+            ["GenevaPlain", "Geneva"],
+            fallback: .systemFont(ofSize: 10),
+            size: 10
+        )
         let itemAppearance = UITabBarItemAppearance()
         itemAppearance.normal.titleTextAttributes = [
             .font: normalFont,

@@ -164,10 +164,10 @@ private enum ChatStore {
 // MARK: - Modern Intelligence View (iOS 26+ com Foundation Models)
 
 private enum IntelligenceTheme {
-    static let accent = Color(red: 0.16, green: 0.42, blue: 0.94)
-    static let mint = Color(red: 0.12, green: 0.74, blue: 0.48)
-    static let amber = Color(red: 0.96, green: 0.63, blue: 0.19)
-    static let panel = Color.white.opacity(0.12)
+    static let accent = MacOS9Colors.statusBlue
+    static let mint = MacOS9Colors.statusGreen
+    static let amber = MacOS9Colors.statusOrange
+    static let panel = MacOS9Colors.panelBackground
 }
 
 private struct OperationalWorkflowItem: Identifiable {

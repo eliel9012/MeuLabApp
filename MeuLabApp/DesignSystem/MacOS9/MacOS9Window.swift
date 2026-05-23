@@ -18,17 +18,19 @@ struct MacOS9Window<Content: View>: View {
             content
                 .frame(maxWidth: .infinity)
         }
-        .background(MacOS9Colors.windowBackground)
+        .background(
+            MacOS9Colors.windowBackground
+                .shadow(
+                    color: MacOS9Colors.dropShadow,
+                    radius: 0,
+                    x: MacOS9Metrics.dropShadowX,
+                    y: MacOS9Metrics.dropShadowY
+                )
+        )
         .overlay(Mac9BevelBorder(isRaised: true, width: 2))
         .overlay(
             Rectangle()
                 .strokeBorder(MacOS9Colors.border, lineWidth: MacOS9Metrics.borderWidth)
-        )
-        .shadow(
-            color: MacOS9Colors.dropShadow,
-            radius: 0,
-            x: MacOS9Metrics.dropShadowX,
-            y: MacOS9Metrics.dropShadowY
         )
     }
 }

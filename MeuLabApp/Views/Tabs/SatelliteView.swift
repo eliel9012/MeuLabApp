@@ -646,8 +646,12 @@ struct SatelliteImageCarouselCard: View {
             .padding(12)
             .background(MacOS9Colors.panelBackground)
         }
+        .background(
+            // Shadow on background shape only — prevents text ghosting
+            MacOS9Colors.panelBackground
+                .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
+        )
         .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
-        .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
         .padding(.horizontal, 4)
         .onTapGesture {
             onTap()

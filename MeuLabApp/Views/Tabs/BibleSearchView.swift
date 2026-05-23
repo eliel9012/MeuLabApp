@@ -32,12 +32,9 @@ struct BibleSearchView: View {
                 }
             }
             .padding(12)
-            .background(
-                .ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-            )
+            .background(MacOS9Colors.contentPanel)
             .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.amber.opacity(0.3), lineWidth: 1)
+                Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1)
             )
             .padding(.horizontal)
             .padding(.top, 12)

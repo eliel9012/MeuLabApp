@@ -57,9 +57,9 @@ public enum MacOS9Colors {
     // MARK: Button
     public static let buttonFace = windowBackground
     public static let buttonBorder = border
-    public static let buttonPressed = Color(red: 0.700, green: 0.700, blue: 0.700)
+    public static let buttonPressed = Color(red: 0.667, green: 0.667, blue: 0.667)
 
     // MARK: Scrollbar
-    public static let scrollbarTrack = Color(red: 0.800, green: 0.800, blue: 0.800)
-    public static let scrollbarThumb = Color(red: 0.600, green: 0.600, blue: 0.600)
+    public static let scrollbarTrack = Color(red: 0.667, green: 0.667, blue: 0.667)
+    public static let scrollbarThumb = Color(red: 0.600, green: 0.600, blue: 1.000)
 }
