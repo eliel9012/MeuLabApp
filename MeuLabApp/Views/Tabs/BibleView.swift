@@ -23,21 +23,23 @@ struct BibleView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Mac OS 9 window background
                 MacOS9Colors.windowBackground
                     .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Custom tab picker
+                    BibleHeader(selectedTab: selectedTab)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 10)
+                        .padding(.bottom, 8)
+
                     bibleTabPicker
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                        .padding(.bottom, 4)
+                        .padding(.horizontal, 16)
+                        .padding(.bottom, 10)
 
-                    Divider()
-                        .opacity(0.3)
+                    Rectangle()
+                        .fill(MacOS9Colors.border)
+                        .frame(height: 1)
 
-                    // Tab content
                     switch selectedTab {
                     case .navegar:
                         BibleNavigateView(
@@ -51,16 +53,17 @@ struct BibleView: View {
                     }
                 }
             }
-            .navigationTitle("📖 A Bíblia")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("A Bíblia")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Text("ACF")
-                        .font(MacOS9Typography.caption())
-                        .foregroundStyle(MacOS9Colors.secondaryText)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
+                        .font(MacOS9Typography.menuLabel(12))
+                        .foregroundStyle(MacOS9Colors.primaryText)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
                         .background(MacOS9Colors.labelBadge)
+                        .overlay(Mac9BevelBorder(isRaised: true))
                         .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
             }
@@ -70,38 +73,67 @@ struct BibleView: View {
     // MARK: - Tab Picker
 
     private var bibleTabPicker: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 0) {
             ForEach(BibleTab.allCases, id: \.self) { tab in
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedTab = tab
-                    }
+                    selectedTab = tab
                 } label: {
                     Label(tab.rawValue, systemImage: tab.icon)
-                        .font(MacOS9Typography.menuLabel())
+                        .font(MacOS9Typography.menuLabel(12))
                         .foregroundStyle(
                             selectedTab == tab
                                 ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background {
-                            if selectedTab == tab {
-                                Rectangle()
-                                    .fill(MacOS9Colors.selection)
-                                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
-                            }
-                        }
+                        .frame(height: 44)
+                        .background(selectedTab == tab ? MacOS9Colors.selection : MacOS9Colors.panelBackground)
+                        .overlay(Mac9BevelBorder(isRaised: selectedTab != tab))
+                        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
-        .background(
-            MacOS9Colors.panelBackground
-        )
-        .overlay(
-            Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1)
-        )
+        .background(MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+    }
+}
+
+private struct BibleHeader: View {
+    let selectedTab: BibleView.BibleTab
+
+    private var subtitle: String {
+        switch selectedTab {
+        case .navegar: return "Livros e capítulos"
+        case .buscar: return "Busca textual"
+        case .aleatorio: return "Versículo aleatório"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "book.closed")
+                .font(.system(size: 22, weight: .semibold))
+                .frame(width: 40, height: 40)
+                .background(MacOS9Colors.contentPanel)
+                .overlay(Mac9BevelBorder(isRaised: true))
+                .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("A Bíblia")
+                    .font(MacOS9Typography.editorialTitle(28))
+                    .foregroundStyle(MacOS9Colors.primaryText)
+                Text(subtitle)
+                    .font(MacOS9Typography.caption(12))
+                    .foregroundStyle(MacOS9Colors.secondaryText)
+            }
+
+            Spacer()
+        }
+        .padding(12)
+        .background(MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 

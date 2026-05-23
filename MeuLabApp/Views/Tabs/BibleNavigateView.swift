@@ -7,20 +7,20 @@ struct BibleNavigateView: View {
     @Binding var selectedChapter: BibleChapter?
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 20) {
-                    ForEach([BibleBook.Testament.old, .new], id: \.self) { testament in
-                        let books = BibleCatalogue.books.filter { $0.testament == testament }
-                        TestamentSection(testament: testament.rawValue, books: books)
-                    }
+        ScrollView {
+            LazyVStack(spacing: 14) {
+                ForEach([BibleBook.Testament.old, .new], id: \.self) { testament in
+                    let books = BibleCatalogue.books.filter { $0.testament == testament }
+                    TestamentSection(testament: testament.rawValue, books: books)
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
             }
-            .navigationDestination(for: BibleBook.self) { book in
-                BibleChaptersView(book: book)
-            }
+            .padding(.horizontal, 16)
+            .padding(.vertical, 12)
+            .padding(.bottom, 92)
+        }
+        .background(MacOS9Colors.windowBackground)
+        .navigationDestination(for: BibleBook.self) { book in
+            BibleChaptersView(book: book)
         }
     }
 }
@@ -35,32 +35,31 @@ private struct TestamentSection: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
-            // Section header
             Button {
-                withAnimation(.spring(response: 0.3, dampingFraction: 0.8)) {
-                    isExpanded.toggle()
-                }
+                isExpanded.toggle()
             } label: {
                 HStack {
                     Text(testament)
-                        .font(.title3)
-                        .fontWeight(.bold)
-                        .foregroundStyle(Color.amber)
+                        .font(MacOS9Typography.editorialBold(22))
+                        .foregroundStyle(MacOS9Colors.selection)
 
                     Spacer()
 
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundStyle(MacOS9Colors.secondaryText)
                 }
-                .padding(.vertical, 4)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 7)
+                .background(MacOS9Colors.labelBadge)
+                .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
             }
             .buttonStyle(.plain)
 
             if isExpanded {
                 LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 110, maximum: 160), spacing: 10)],
-                    spacing: 10
+                    columns: [GridItem(.adaptive(minimum: 118, maximum: 170), spacing: 8)],
+                    spacing: 8
                 ) {
                     ForEach(books) { book in
                         NavigationLink(value: book) {
@@ -71,8 +70,10 @@ private struct TestamentSection: View {
                 }
             }
         }
-        .padding(14)
-        .glassCard(cornerRadius: 16)
+        .padding(10)
+        .background(MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -84,27 +85,22 @@ private struct BookCard: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(book.name)
-                .font(.subheadline)
-                .fontWeight(.medium)
+                .font(MacOS9Typography.bodyBold(15))
                 .multilineTextAlignment(.center)
-                .foregroundStyle(.primary)
+                .foregroundStyle(MacOS9Colors.primaryText)
                 .minimumScaleFactor(0.75)
                 .lineLimit(2)
 
             Text("\(book.chapterCount) cap.")
-                .font(.caption2)
-                .foregroundStyle(.secondary)
+                .font(MacOS9Typography.caption(11))
+                .foregroundStyle(MacOS9Colors.secondaryText)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 10)
+        .frame(minHeight: 58)
         .padding(.horizontal, 6)
-        .background(
-            Color.amber.opacity(0.10), in: RoundedRectangle(cornerRadius: 10, style: .continuous)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .strokeBorder(Color.amber.opacity(0.30), lineWidth: 1)
-        )
+        .background(MacOS9Colors.contentPanel)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.statusOrange.opacity(0.75), lineWidth: 1))
     }
 }
 
@@ -112,23 +108,34 @@ private struct BookCard: View {
 
 struct BibleChaptersView: View {
     let book: BibleBook
-    private let columns = [GridItem(.adaptive(minimum: 52, maximum: 64), spacing: 10)]
+    private let columns = [GridItem(.adaptive(minimum: 56, maximum: 70), spacing: 8)]
 
     var body: some View {
         ScrollView {
-            LazyVGrid(columns: columns, spacing: 10) {
-                ForEach(1...book.chapterCount, id: \.self) { chapter in
-                    NavigationLink(value: chapter) {
-                        ChapterButton(number: chapter)
+            VStack(alignment: .leading, spacing: 12) {
+                Text("\(book.chapterCount) capítulos")
+                    .font(MacOS9Typography.menuLabel(12))
+                    .foregroundStyle(MacOS9Colors.secondaryText)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 5)
+                    .background(MacOS9Colors.labelBadge)
+                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+
+                LazyVGrid(columns: columns, spacing: 8) {
+                    ForEach(1...book.chapterCount, id: \.self) { chapter in
+                        NavigationLink(value: chapter) {
+                            ChapterButton(number: chapter)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    .buttonStyle(.plain)
                 }
             }
-            .padding()
+            .padding(16)
+            .padding(.bottom, 92)
         }
         .background(MacOS9Colors.windowBackground.ignoresSafeArea())
         .navigationTitle(book.name)
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
         .navigationDestination(for: Int.self) { chapter in
             BibleChapterView(bookSlug: book.slug, bookName: book.name, chapterNumber: chapter)
         }
@@ -140,12 +147,12 @@ private struct ChapterButton: View {
 
     var body: some View {
         Text("\(number)")
-            .font(.callout)
-            .fontWeight(.semibold)
-            .frame(width: 52, height: 52)
-            .background(Color.amber.opacity(0.12), in: Circle())
-            .overlay(Circle().strokeBorder(Color.amber.opacity(0.35), lineWidth: 1))
-            .foregroundStyle(.primary)
+            .font(MacOS9Typography.bodyBold(16))
+            .frame(width: 56, height: 44)
+            .background(MacOS9Colors.contentPanel)
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+            .foregroundStyle(MacOS9Colors.primaryText)
     }
 }
 
@@ -193,9 +200,9 @@ struct BibleChapterView: View {
             PlaybackControlBar(viewModel: readerViewModel, highlightedIndex: $highlightedVerseIndex)
                 .padding(Edge.Set.horizontal, 16)
                 .padding(Edge.Set.vertical, 12)
-                .background(Color.amber.opacity(0.08))
-                .borderTop(Color.amber.opacity(0.2), height: 1)
-                .borderBottom(Color.amber.opacity(0.2), height: 1)
+                .background(MacOS9Colors.panelBackground)
+                .borderTop(MacOS9Colors.border, height: 1)
+                .borderBottom(MacOS9Colors.border, height: 1)
 
             ScrollViewReader { proxy in
                 ScrollView {
@@ -218,13 +225,7 @@ struct BibleChapterView: View {
                     .padding(.vertical, 12)
                     .padding(.bottom, 44)
                 }
-                .background {
-                    LinearGradient(
-                        colors: [Color.amber.opacity(0.05), Color(.systemBackground)],
-                        startPoint: .top, endPoint: .bottom
-                    )
-                    .ignoresSafeArea()
-                }
+                .background(MacOS9Colors.windowBackground.ignoresSafeArea())
                 .onChange(of: readerViewModel.highlightedVerseIndex) { oldValue, newValue in
                     if newValue != highlightedVerseIndex {
                         highlightedVerseIndex = newValue
@@ -289,30 +290,21 @@ struct VerseRowWithReader: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(verse.number)")
-                .font(.system(size: fontSize * 0.72, weight: .bold))
-                .foregroundStyle(isHighlighted ? Color.white : Color.amber)
+                .font(MacOS9Typography.bodyBold(fontSize * 0.72))
+                .foregroundStyle(isHighlighted ? MacOS9Colors.selectedText : MacOS9Colors.statusOrange)
                 .frame(minWidth: 24, alignment: .trailing)
                 .padding(.top, 3)
 
             Text(verse.text)
                 .font(.system(size: fontSize))
-                .foregroundStyle(isHighlighted ? Color.white : .primary)
+                .foregroundStyle(isHighlighted ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                 .lineSpacing(4)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isHighlighted ? Color.amber.opacity(0.7) : Color.clear)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 8)
-                .strokeBorder(
-                    isHighlighted ? Color.amber : Color.amber.opacity(0.2),
-                    lineWidth: isHighlighted ? 2 : 1
-                )
-        )
+        .background(isHighlighted ? MacOS9Colors.selection : MacOS9Colors.contentPanel)
+        .overlay(Rectangle().strokeBorder(isHighlighted ? MacOS9Colors.border : MacOS9Colors.bevelShadowSubtle, lineWidth: 1))
         .contentShape(Rectangle())
         .onTapGesture(perform: onTap)
     }
@@ -327,17 +319,16 @@ struct PlaybackControlBar: View {
     var body: some View {
         VStack(spacing: 12) {
             HStack(spacing: 12) {
-                // Stop Button
                 Button(action: { viewModel.stop() }) {
                     Image(systemName: "stop.fill")
                         .frame(width: 36, height: 36)
-                        .background(Color.red.opacity(0.2))
-                        .foregroundStyle(.red)
-                        .clipShape(Circle())
+                        .background(MacOS9Colors.contentPanel)
+                        .foregroundStyle(MacOS9Colors.statusRed)
+                        .overlay(Mac9BevelBorder(isRaised: true))
+                        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
                 .disabled(!viewModel.isPlaying && !viewModel.isPaused)
 
-                // Play/Pause Button
                 Button(action: {
                     if viewModel.isPlaying {
                         viewModel.pause()
@@ -351,8 +342,12 @@ struct PlaybackControlBar: View {
                     Image(
                         systemName: viewModel.isPlaying ? "pause.circle.fill" : "play.circle.fill"
                     )
-                    .font(.system(size: 40))
-                    .foregroundStyle(.blue)
+                    .font(.system(size: 34))
+                    .frame(width: 42, height: 36)
+                    .background(MacOS9Colors.contentPanel)
+                    .foregroundStyle(MacOS9Colors.statusBlue)
+                    .overlay(Mac9BevelBorder(isRaised: true))
+                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
 
                 Spacer()
@@ -362,25 +357,23 @@ struct PlaybackControlBar: View {
                     Text(
                         viewModel.isPlaying ? "Lendo..." : viewModel.isPaused ? "Pausado" : "Parado"
                     )
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(MacOS9Typography.caption(11))
+                    .foregroundStyle(MacOS9Colors.secondaryText)
 
                     Text("\(viewModel.highlightedVerseIndex + 1)/\(viewModel.verses.count)")
-                        .font(.caption2)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.primary)
+                        .font(MacOS9Typography.bodyBold(12))
+                        .foregroundStyle(MacOS9Colors.primaryText)
                 }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 10)
-            .background(Color.amber.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .background(MacOS9Colors.contentPanel)
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
-            // Speed Info
             if viewModel.isPlaying || viewModel.isPaused {
                 Text("Toque em um versículo para pular")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .font(MacOS9Typography.caption(11))
+                    .foregroundStyle(MacOS9Colors.secondaryText)
                     .frame(maxWidth: .infinity, alignment: .center)
             }
         }
