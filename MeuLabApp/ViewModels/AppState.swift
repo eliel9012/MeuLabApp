@@ -159,9 +159,9 @@ class AppState: ObservableObject {
     private var acarsInFlight = false
 
     // Intervalos de cada módulo quando a tab está ativa
-    private let adsbTimerInterval: TimeInterval = 2.0
-    private let adsbSummaryInterval: TimeInterval = 2.0
-    private let adsbAircraftInterval: TimeInterval = 4.0
+    private let adsbTimerInterval: TimeInterval = 4.0
+    private let adsbSummaryInterval: TimeInterval = 8.0
+    private let adsbAircraftInterval: TimeInterval = 10.0
     private let systemInterval: TimeInterval = 5.0
     private let firestickInterval: TimeInterval = 10.0
     private let radioInterval: TimeInterval = 3.0
@@ -177,11 +177,11 @@ class AppState: ObservableObject {
     private let systemdInterval: TimeInterval = 30.0
     private let satDumpStatusInterval: TimeInterval = 60.0
     private let adsbHistoryInterval: TimeInterval = 300.0
-    private let adsbAlertsInterval: TimeInterval = 60.0
-    private let tuyaSensorInterval: TimeInterval = 30.0
+    private let adsbAlertsInterval: TimeInterval = 120.0
+    private let tuyaSensorInterval: TimeInterval = 120.0
     private let acarsHistoryInterval: TimeInterval = 300.0
     private let acarsAlertsInterval: TimeInterval = 60.0
-    private let metricsInterval: TimeInterval = 10.0
+    private let metricsInterval: TimeInterval = 60.0
 
     private var lastADSBSummaryRefresh: Date?
     private var lastADSBListRefresh: Date?
@@ -245,10 +245,6 @@ class AppState: ObservableObject {
         guard !hasBootstrapped else { return }
         hasBootstrapped = true
         startRefreshTimers()
-
-        Task { @MainActor [weak self] in
-            await self?.refreshActiveTabNow(force: true)
-        }
     }
 
     func setRefreshEnabled(_ enabled: Bool) {
@@ -344,6 +340,8 @@ class AppState: ObservableObject {
     // --- Grupos de refresh isolados ---
 
     private func tickADSBExtras(_ now: Date) async {
+        guard adsbSummary != nil || !aircraftList.isEmpty else { return }
+
         let doHistory = shouldRefresh(
             last: lastADSBHistoryRefresh, interval: adsbHistoryInterval, now: now)
         let doAlerts = shouldRefresh(

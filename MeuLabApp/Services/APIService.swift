@@ -62,8 +62,8 @@ actor APIService {
 
     private init() {
         let config = URLSessionConfiguration.default
-        config.timeoutIntervalForRequest = 10
-        config.timeoutIntervalForResource = 30
+        config.timeoutIntervalForRequest = 4
+        config.timeoutIntervalForResource = 8
         config.waitsForConnectivity = false
         config.requestCachePolicy = .reloadIgnoringLocalCacheData
         self.session = URLSession(configuration: config)

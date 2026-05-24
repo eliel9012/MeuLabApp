@@ -92,12 +92,12 @@ private struct RadioToolbarTitle: View {
                     .frame(width: 28, height: 28)
 
                 Image(systemName: "dot.radiowaves.left.and.right")
-                    .font(.system(size: 14, weight: .bold))
+                    .font(MacOS9Typography.bodyBold(14))
                     .foregroundStyle(RadioTheme.blue)
             }
 
             Text("Rádio")
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .font(MacOS9Typography.bodyBold(23))
                 .tracking(0.5)
                 .foregroundStyle(
                     LinearGradient(
@@ -121,16 +121,16 @@ private struct RadioInfoChip: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.caption2.weight(.semibold))
+                .font(MacOS9Typography.finePrint(9))
                 .foregroundStyle(RadioTheme.ink.opacity(0.56))
 
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(tint)
 
                 Text(value)
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(RadioTheme.ink)
                     .lineLimit(1)
             }
@@ -200,7 +200,7 @@ struct RadioView: View {
                             .environmentObject(appState)
                     } label: {
                         Image(systemName: "music.note.list")
-                            .font(.system(size: 18, weight: .semibold))
+                            .font(MacOS9Typography.bodyBold(18))
                             .foregroundStyle(RadioTheme.blue)
                             .padding(8)
                             .background(
@@ -310,7 +310,7 @@ struct RadioView: View {
 
                 VStack(spacing: 8) {
                     Text(effectiveTitle)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .font(MacOS9Typography.bodyBold(17))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .lineLimit(3)
@@ -319,7 +319,7 @@ struct RadioView: View {
 
                     if !shouldHideArtistLine {
                         Text(effectiveArtist.isEmpty ? "Diário FM" : effectiveArtist)
-                            .font(.headline)
+                            .font(MacOS9Typography.bodyBold(15))
                             .foregroundStyle(.white.opacity(0.78))
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
@@ -329,7 +329,7 @@ struct RadioView: View {
 
                     if let album = effectiveAlbum, !album.isEmpty {
                         Text(album)
-                            .font(.subheadline)
+                            .font(MacOS9Typography.body(13))
                             .foregroundStyle(.white.opacity(0.62))
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
@@ -370,7 +370,7 @@ struct RadioView: View {
 
                 VStack(spacing: 8) {
                     Text(effectiveTitle)
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .font(MacOS9Typography.bodyBold(32))
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
@@ -379,7 +379,7 @@ struct RadioView: View {
 
                     if !shouldHideArtistLine {
                         Text(effectiveArtist.isEmpty ? "Diário FM" : effectiveArtist)
-                            .font(.title3)
+                            .font(MacOS9Typography.windowTitle(17))
                             .foregroundStyle(.white.opacity(0.78))
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
@@ -389,7 +389,7 @@ struct RadioView: View {
 
                     if let album = effectiveAlbum, !album.isEmpty {
                         Text(album)
-                            .font(.subheadline.weight(.medium))
+                            .font(MacOS9Typography.bodyBold(13))
                             .foregroundStyle(.white.opacity(0.62))
                             .multilineTextAlignment(.center)
                             .lineLimit(2)
@@ -576,7 +576,7 @@ struct RadioView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Label(title, systemImage: systemImage)
-                    .font(.subheadline.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .foregroundStyle(RadioTheme.ink)
                 Spacer()
                 if isLoading {
@@ -586,7 +586,7 @@ struct RadioView: View {
             }
 
             Text(text)
-                .font(.caption)
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(RadioTheme.ink.opacity(0.82))
                 .fixedSize(horizontal: false, vertical: true)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -647,14 +647,14 @@ struct RadioView: View {
         VStack(alignment: .leading, spacing: 5) {
             HStack(spacing: 6) {
                 Image(systemName: icon)
-                    .font(.caption)
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(tint)
                 Text(title)
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(RadioTheme.ink.opacity(0.56))
             }
             Text(value)
-                .font(.caption.weight(.semibold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(RadioTheme.ink)
                 .lineLimit(1)
         }
@@ -668,14 +668,14 @@ struct RadioView: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Label("Últimas tocadas", systemImage: "music.note.list")
-                    .font(.subheadline.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .foregroundStyle(RadioTheme.ink)
                 Spacer()
                 NavigationLink("Ver histórico") {
                     RadioSongsView()
                         .environmentObject(appState)
                 }
-                .font(.caption.weight(.semibold))
+                .font(MacOS9Typography.caption(11))
             }
 
             if loadingRecentTracks && recentTracks.isEmpty {
@@ -687,7 +687,7 @@ struct RadioView: View {
                 .padding(.vertical, 10)
             } else if recentTracks.isEmpty {
                 Text("Sem histórico recente disponível.")
-                    .font(.caption)
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(RadioTheme.ink.opacity(0.56))
                     .padding(.vertical, 6)
             } else {
@@ -699,11 +699,11 @@ struct RadioView: View {
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(track.title)
-                                    .font(.caption.weight(.semibold))
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(RadioTheme.ink)
                                     .lineLimit(1)
                                 Text(track.artist)
-                                    .font(.caption2)
+                                    .font(MacOS9Typography.finePrint(9))
                                     .foregroundStyle(RadioTheme.ink.opacity(0.56))
                                     .lineLimit(1)
                             }
@@ -711,7 +711,7 @@ struct RadioView: View {
                             Spacer()
 
                             Text(relativeTimestamp(track.timestamp) ?? "agora")
-                                .font(.caption2)
+                                .font(MacOS9Typography.finePrint(9))
                                 .foregroundStyle(RadioTheme.ink.opacity(0.56))
                         }
                         .padding(isWide ? 12 : 10)
@@ -752,7 +752,7 @@ struct RadioView: View {
                         .fill(RadioTheme.blue.opacity(0.12))
                         .overlay(
                             Image(systemName: "music.note")
-                                .font(.caption2)
+                                .font(MacOS9Typography.finePrint(9))
                                 .foregroundStyle(RadioTheme.blue)
                         )
                 }
@@ -764,7 +764,7 @@ struct RadioView: View {
                 .fill(RadioTheme.blue.opacity(0.12))
                 .overlay(
                     Image(systemName: "music.note")
-                        .font(.caption2)
+                        .font(MacOS9Typography.finePrint(9))
                         .foregroundStyle(RadioTheme.blue)
                 )
                 .frame(width: size, height: size)
@@ -806,7 +806,7 @@ struct RadioView: View {
                         .tint(.white)
                 } else {
                     Image(systemName: player.isPlaying ? "pause.fill" : "play.fill")
-                        .font(.largeTitle.weight(.bold))
+                        .font(MacOS9Typography.windowTitle(26))
                         .foregroundStyle(.white)
                         .offset(x: player.isPlaying ? 0 : 2)
                 }
@@ -818,7 +818,7 @@ struct RadioView: View {
     private func playbackIconButton(systemName: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: isWide ? 32 : 26, weight: .semibold))
+                .font(MacOS9Typography.bodyBold(isWide ? 32 : 26))
                 .frame(width: isWide ? 54 : 46, height: isWide ? 54 : 46)
         }
         .buttonStyle(.plain)
@@ -829,16 +829,16 @@ struct RadioView: View {
     {
         HStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.caption.weight(.bold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(tint)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.caption2.weight(.semibold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(.white.opacity(0.6))
 
                 Text(value)
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(.white)
                     .lineLimit(2)
                     .minimumScaleFactor(0.8)
@@ -1308,17 +1308,17 @@ struct RadioSongsView: View {
 
             VStack(alignment: .leading, spacing: 3) {
                 Text(track.title)
-                    .font(.headline)
+                    .font(MacOS9Typography.bodyBold(15))
                     .lineLimit(1)
 
                 Text(track.artist)
-                    .font(.subheadline)
+                    .font(MacOS9Typography.body(13))
                     .foregroundStyle(.secondary)
                     .lineLimit(1)
 
                 if let album = track.album, !album.isEmpty {
                     Text(album)
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                         .lineLimit(1)
                 }
@@ -1329,8 +1329,8 @@ struct RadioSongsView: View {
             VStack(alignment: .trailing, spacing: 4) {
                 if isNow {
                     Text("AGORA")
-                        .font(.caption2)
-                        .fontWeight(.bold)
+                        .font(MacOS9Typography.finePrint(9))
+                        
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Color.red.opacity(0.12))
@@ -1338,14 +1338,14 @@ struct RadioSongsView: View {
                         .clipShape(Capsule())
                 } else if let rel = relativeTimestamp(track.timestamp) {
                     Text(rel)
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                 }
 
                 if let urlString = track.itunesUrl, let url = URL(string: urlString) {
                     Link(destination: url) {
                         Image(systemName: "link")
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                     }
                 }

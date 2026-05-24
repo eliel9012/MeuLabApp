@@ -54,7 +54,7 @@ struct MeuLabApp: App {
             appState.bootstrapIfNeeded()
             appState.setRefreshEnabled(true)
 
-            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            try? await Task.sleep(nanoseconds: 20_000_000_000)
             guard !Task.isCancelled else { return }
             setupPushNotificationsIfNeeded()
             notificationFeed.start()
