@@ -806,16 +806,7 @@ struct ADSBView: View {
     // MARK: - Helpers
 
     private func filteredAircraft(for filter: MovementFilter) -> [Aircraft] {
-        print("[ADSBView] 🔍 Filtering aircraft for: \(filter.title)")
-        print("[ADSBView]   Total aircraft in list: \(appState.aircraftList.count)")
-
         let filtered = appState.aircraftList.filter { filter.matches($0) }
-        print("[ADSBView]   Filtered count: \(filtered.count)")
-
-        if filtered.count > 0, let first = filtered.first {
-            print(
-                "[ADSBView]   First aircraft: \(first.callsign) - VR: \(first.verticalRateFpm) fpm")
-        }
 
         switch filter {
         case .climbing:

@@ -28,7 +28,6 @@ struct MeuLabApp: App {
                 .onChange(of: scenePhase) { _, newPhase in
                     if newPhase == .active {
                         scheduleDeferredStartup()
-                        notificationFeed.start()
                         appState.setRefreshEnabled(true)
                     } else if newPhase == .background {
                         startupTask?.cancel()
@@ -44,14 +43,17 @@ struct MeuLabApp: App {
         guard startupTask == nil else { return }
 
         startupTask = Task { @MainActor in
-            try? await Task.sleep(nanoseconds: 100_000_000)
+            try? await Task.sleep(nanoseconds: 250_000_000)
             guard !Task.isCancelled else { return }
 
             _ = NetworkEnvironment.shared
             appState.bootstrapIfNeeded()
+            appState.setRefreshEnabled(true)
+
+            try? await Task.sleep(nanoseconds: 2_000_000_000)
+            guard !Task.isCancelled else { return }
             setupPushNotificationsIfNeeded()
             notificationFeed.start()
-            appState.setRefreshEnabled(true)
             startupTask = nil
         }
     }

@@ -87,26 +87,26 @@ public enum MacOS9Typography {
         font([charcoal], fallback: charcoalFallback, size: size)
     }
 
-    // MARK: Geneva (Body, labels, lists)
+    // MARK: Charcoal Body (Mac OS 9 system UI)
 
-    /// System body text. The classic Geneva TTF is MacRoman and breaks Portuguese accents.
+    /// Charcoal body text. This is the Mac OS 9 UI face and supports Portuguese accents.
     public static func body(_ size: CGFloat = 13) -> Font {
-        .system(size: size)
+        font([charcoal], fallback: charcoalFallback, size: size)
     }
 
-    /// System bold body text. Kept Unicode-safe for Portuguese labels and content.
+    /// Bold body text using Charcoal where available.
     public static func bodyBold(_ size: CGFloat = 13) -> Font {
-        .system(size: size, weight: .bold)
+        font([charcoal], fallback: charcoalFallback, size: size).weight(.bold)
     }
 
-    /// System caption text. Kept Unicode-safe for Portuguese labels and content.
+    /// Charcoal caption text.
     public static func caption(_ size: CGFloat = 11) -> Font {
-        .system(size: size)
+        font([charcoal], fallback: charcoalFallback, size: size)
     }
 
-    /// System fine print. Kept Unicode-safe for Portuguese labels and content.
+    /// Charcoal fine print.
     public static func finePrint(_ size: CGFloat = 9) -> Font {
-        .system(size: size)
+        font([charcoal], fallback: charcoalFallback, size: size)
     }
 
     /// Classic Geneva for ASCII-only decorative labels.
