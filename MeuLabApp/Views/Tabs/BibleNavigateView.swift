@@ -8,14 +8,14 @@ struct BibleNavigateView: View {
 
     var body: some View {
         ScrollView {
-            LazyVStack(spacing: 14) {
+            LazyVStack(spacing: 10) {
                 ForEach([BibleBook.Testament.old, .new], id: \.self) { testament in
                     let books = BibleCatalogue.books.filter { $0.testament == testament }
                     TestamentSection(testament: testament.rawValue, books: books)
                 }
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
+            .padding(.horizontal, 12)
+            .padding(.vertical, 10)
             .padding(.bottom, 92)
         }
         .background(MacOS9Colors.windowBackground)
@@ -34,13 +34,13 @@ private struct TestamentSection: View {
     @State private var isExpanded = true
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
+        VStack(alignment: .leading, spacing: 8) {
             Button {
                 isExpanded.toggle()
             } label: {
                     HStack {
                         Text(testament)
-                        .font(MacOS9Typography.windowTitle(18))
+                        .font(MacOS9Typography.windowTitle(16))
                         .foregroundStyle(MacOS9Colors.selection)
 
                     Spacer()
@@ -50,7 +50,7 @@ private struct TestamentSection: View {
                         .foregroundStyle(MacOS9Colors.secondaryText)
                 }
                 .padding(.horizontal, 8)
-                .padding(.vertical, 7)
+                .frame(height: 36)
                 .background(MacOS9Colors.labelBadge)
                 .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
             }
@@ -58,7 +58,7 @@ private struct TestamentSection: View {
 
             if isExpanded {
                 LazyVGrid(
-                    columns: [GridItem(.adaptive(minimum: 118, maximum: 170), spacing: 8)],
+                    columns: [GridItem(.adaptive(minimum: 108, maximum: 160), spacing: 8)],
                     spacing: 8
                 ) {
                     ForEach(books) { book in
@@ -70,7 +70,7 @@ private struct TestamentSection: View {
                 }
             }
         }
-        .padding(10)
+        .padding(8)
         .background(MacOS9Colors.panelBackground)
         .overlay(Mac9BevelBorder(isRaised: true))
         .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
@@ -85,19 +85,19 @@ private struct BookCard: View {
     var body: some View {
         VStack(spacing: 4) {
             Text(book.name)
-                .font(MacOS9Typography.bodyBold(15))
+                .font(MacOS9Typography.bodyBold(13))
                 .multilineTextAlignment(.center)
                 .foregroundStyle(MacOS9Colors.primaryText)
                 .minimumScaleFactor(0.75)
                 .lineLimit(2)
 
             Text("\(book.chapterCount) cap.")
-                .font(MacOS9Typography.caption(11))
+                .font(MacOS9Typography.caption(10))
                 .foregroundStyle(MacOS9Colors.secondaryText)
         }
         .frame(maxWidth: .infinity)
-        .frame(minHeight: 58)
-        .padding(.horizontal, 6)
+        .frame(minHeight: 46)
+        .padding(.horizontal, 5)
         .background(MacOS9Colors.contentPanel)
         .overlay(Mac9BevelBorder(isRaised: true))
         .overlay(Rectangle().strokeBorder(MacOS9Colors.statusOrange.opacity(0.75), lineWidth: 1))

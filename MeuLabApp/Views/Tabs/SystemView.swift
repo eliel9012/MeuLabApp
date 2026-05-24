@@ -163,35 +163,18 @@ private struct RaspberryPiGlyph: View {
 
 private struct SystemToolbarTitle: View {
     var body: some View {
-        HStack(spacing: 10) {
-            ZStack {
-                Circle()
-                    .fill(
-                        LinearGradient(
-                            colors: [
-                                SystemTheme.piGreen.opacity(0.2), SystemTheme.piBlue.opacity(0.12),
-                            ],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-                    .frame(width: 28, height: 28)
-
-                Image(systemName: "cpu")
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundStyle(SystemTheme.piBlue)
-            }
+        HStack(spacing: 8) {
+            Image(systemName: "cpu")
+                .font(MacOS9Typography.bodyBold(13))
+                .foregroundStyle(MacOS9Colors.selection)
+                .frame(width: 24, height: 24)
+                .background(MacOS9Colors.labelBadge)
+                .overlay(Mac9BevelBorder(isRaised: true))
+                .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
             Text("Sistema")
-                .font(.system(size: 23, weight: .black, design: .rounded))
-                .tracking(0.5)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [SystemTheme.piLeaf, SystemTheme.piBlue],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(MacOS9Typography.windowTitle(18))
+                .foregroundStyle(MacOS9Colors.primaryText)
         }
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Sistema")
@@ -208,7 +191,7 @@ private struct SystemInfoChip: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.caption2.weight(.semibold))
+                .font(MacOS9Typography.finePrint(9))
                 .foregroundStyle(SystemTheme.ink.opacity(0.56))
 
             HStack(spacing: 6) {
@@ -216,26 +199,21 @@ private struct SystemInfoChip: View {
                     RaspberryPiGlyph(size: 16)
                 } else if let icon {
                     Image(systemName: icon)
-                        .font(.caption.weight(.bold))
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(tint)
                 }
 
                 Text(value)
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.bodyBold(12))
                     .foregroundStyle(SystemTheme.ink)
                     .lineLimit(1)
             }
         }
-        .padding(.horizontal, 12)
-        .padding(.vertical, 9)
-        .background(
-            Capsule()
-                .fill(tint.opacity(0.10))
-        )
-        .overlay(
-            Capsule()
-                .stroke(tint.opacity(0.18), lineWidth: 1)
-        )
+        .padding(.horizontal, 10)
+        .padding(.vertical, 7)
+        .background(MacOS9Colors.contentPanel)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -248,16 +226,16 @@ private struct SystemQuickMetric: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.caption.weight(.bold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(tint)
 
             Text(value)
-                .font(.callout.bold())
+                .font(MacOS9Typography.bodyBold(13))
                 .monospacedDigit()
                 .foregroundStyle(SystemTheme.ink)
 
             Text(label)
-                .font(.caption)
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(SystemTheme.ink.opacity(0.56))
         }
     }
@@ -353,23 +331,23 @@ private struct SystemAnalyticsLaunchTile: View {
                         .frame(width: 34, height: 34)
 
                     Image(systemName: destination.icon)
-                        .font(.system(size: 14, weight: .semibold))
+                        .font(MacOS9Typography.bodyBold(14))
                         .foregroundStyle(destination.tint)
                 }
 
                 Spacer()
 
                 Image(systemName: "arrow.up.right")
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(destination.tint.opacity(0.82))
             }
 
             Text(destination.title)
-                .font(.headline)
+                .font(MacOS9Typography.bodyBold(15))
                 .foregroundStyle(SystemTheme.ink)
 
             Text(destination.subtitle)
-                .font(.caption)
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(SystemTheme.ink.opacity(0.58))
                 .lineLimit(2)
         }
@@ -514,14 +492,14 @@ struct SystemView: View {
                                     let l15 = cpu.load15min
                                 {
                                     Text("Load Avg")
-                                        .font(.caption2)
+                                        .font(MacOS9Typography.finePrint(9))
                                         .foregroundStyle(.secondary)
                                     Text(String(format: "%.2f  %.2f  %.2f", l1, l5, l15))
-                                        .font(.callout.monospacedDigit())
+                                        .font(MacOS9Typography.body(13))
                                 }
 
                                 Text("\(cpu.cores ?? 4) cores")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -549,15 +527,15 @@ struct SystemView: View {
                                     let l15 = cpu.load15min
                                 {
                                     Text("Load Avg")
-                                        .font(.caption2)
+                                        .font(MacOS9Typography.finePrint(9))
                                         .foregroundStyle(.secondary)
                                     Text(String(format: "%.2f  %.2f  %.2f", l1, l5, l15))
-                                        .font(.caption)
+                                        .font(MacOS9Typography.caption(11))
                                         .monospacedDigit()
                                 }
 
                                 Text("\(cpu.cores ?? 4) Cores")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                                     .padding(.top, 2)
                             }
@@ -578,10 +556,10 @@ struct SystemView: View {
                         ProgressView(value: Double(used), total: Double(total)) {
                             HStack {
                                 Text("\(used) MB usado")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                 Spacer()
                                 Text(String(format: "%.1f%%", memory.usedPercent ?? 0))
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .monospacedDigit()
                             }
                         }
@@ -592,7 +570,7 @@ struct SystemView: View {
                             Spacer()
                             Label("\(available) MB livre", systemImage: "checkmark.circle")
                         }
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                     }
                 }
@@ -609,10 +587,10 @@ struct SystemView: View {
                         ProgressView(value: used, total: total) {
                             HStack {
                                 Text(String(format: "%.1f GB usado", used))
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                 Spacer()
                                 Text(String(format: "%.1f%%", disk.usedPercent ?? 0))
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .monospacedDigit()
                             }
                         }
@@ -627,7 +605,7 @@ struct SystemView: View {
                                 String(format: "%.1f GB livre", available),
                                 systemImage: "checkmark.circle")
                         }
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                     }
                 }
@@ -641,8 +619,8 @@ struct SystemView: View {
                     VStack(alignment: .leading, spacing: 4) {
                         if let ssid = wifi.ssid {
                             Text(ssid)
-                                .font(.subheadline)
-                                .fontWeight(.medium)
+                                .font(MacOS9Typography.body(13))
+                                
                         }
 
                         if let signal = wifi.signalDbm {
@@ -650,7 +628,7 @@ struct SystemView: View {
                                 Image(systemName: "antenna.radiowaves.left.and.right")
                                 Text("\(signal) dBm")
                             }
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                             .monospacedDigit()
                         }
@@ -676,7 +654,7 @@ struct SystemView: View {
             SystemCard(title: "TVs (Fire Stick)", icon: "tv", color: .red) {
                 if let err = appState.firestickError, appState.firestickDeviceStatuses.isEmpty {
                     Text(err)
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                 } else {
                     VStack(spacing: 10) {
@@ -695,7 +673,7 @@ struct SystemView: View {
                                         id: item.device.id, name: item.device.name)
                                 } label: {
                                     Image(systemName: "camera")
-                                        .font(.system(size: 16, weight: .semibold))
+                                        .font(MacOS9Typography.bodyBold(16))
                                 }
                                 .adaptiveGlassButton()
                             }
@@ -713,13 +691,13 @@ struct SystemView: View {
                     ForEach(appState.processes.prefix(5)) { process in
                         HStack {
                             Text(process.command)
-                                .font(.subheadline)
+                                .font(MacOS9Typography.body(13))
                                 .lineLimit(1)
 
                             Spacer()
 
                             Text(String(format: "%.1f%%", process.cpuPercent))
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .monospacedDigit()
                                 .foregroundStyle(.secondary)
                         }
@@ -737,11 +715,11 @@ struct SystemView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text(partition.mount)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
+                                    .font(MacOS9Typography.body(13))
+                                    
                                 Spacer()
                                 Text(partition.usedPercent)
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                             }
                             ProgressView(
@@ -753,7 +731,7 @@ struct SystemView: View {
                             Text(
                                 "\(formatBytes(partition.usedBytes)) / \(formatBytes(partition.totalBytes))"
                             )
-                            .font(.caption2)
+                            .font(MacOS9Typography.finePrint(9))
                             .foregroundStyle(.secondary)
                         }
                     }
@@ -768,13 +746,13 @@ struct SystemView: View {
                     ForEach(appState.networkInterfaces) { iface in
                         HStack {
                             Text(iface.iface)
-                                .font(.subheadline)
+                                .font(MacOS9Typography.body(13))
                             Spacer()
                             VStack(alignment: .trailing, spacing: 2) {
                                 Text("RX \(formatBytes(iface.rxBytes))")
                                 Text("TX \(formatBytes(iface.txBytes))")
                             }
-                            .font(.caption2)
+                            .font(MacOS9Typography.finePrint(9))
                             .foregroundStyle(.secondary)
                         }
                         Divider()
@@ -799,40 +777,29 @@ struct SystemView: View {
         HStack(spacing: 0) {
             ForEach(SystemNode.allCases) { node in
                 Button {
-                    withAnimation(.easeInOut(duration: 0.25)) {
-                        selectedNode = node
-                    }
+                    selectedNode = node
                 } label: {
                     HStack(spacing: 8) {
                         Image(systemName: node.icon)
-                            .font(.system(size: 13, weight: .bold))
+                            .font(MacOS9Typography.bodyBold(13))
 
                         Text(node.label)
-                            .font(.subheadline.weight(.bold))
+                            .font(MacOS9Typography.bodyBold(13))
                     }
-                    .foregroundStyle(selectedNode == node ? .white : SystemTheme.ink.opacity(0.6))
+                    .foregroundStyle(selectedNode == node ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 10)
-                    .background {
-                        if selectedNode == node {
-                            Capsule()
-                                .fill(node.tint)
-                                .shadow(color: node.tint.opacity(0.3), radius: 8, y: 2)
-                        }
-                    }
+                    .frame(height: 40)
+                    .background(selectedNode == node ? MacOS9Colors.selection : MacOS9Colors.panelBackground)
+                    .overlay(Mac9BevelBorder(isRaised: selectedNode != node))
+                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
-        .background(
-            Capsule()
-                .fill(Color(.secondarySystemGroupedBackground))
-        )
-        .overlay(
-            Capsule()
-                .strokeBorder(Color.white.opacity(0.08), lineWidth: 1)
-        )
+        .background(MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 
     // MARK: - Mac Mini Content
@@ -869,14 +836,14 @@ struct SystemView: View {
                     VStack(alignment: .leading, spacing: 6) {
                         if let l1 = cpu.load1min, let l5 = cpu.load5min, let l15 = cpu.load15min {
                             Text("Load Avg")
-                                .font(.caption2)
+                                .font(MacOS9Typography.finePrint(9))
                                 .foregroundStyle(.secondary)
                             Text(String(format: "%.2f  %.2f  %.2f", l1, l5, l15))
-                                .font(.callout.monospacedDigit())
+                                .font(MacOS9Typography.body(13))
                         }
 
                         Text("\(cpu.cores ?? 8) cores")
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -893,10 +860,10 @@ struct SystemView: View {
                         ProgressView(value: Double(used), total: Double(total)) {
                             HStack {
                                 Text("\(used) MB usado")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                 Spacer()
                                 Text(String(format: "%.1f%%", memory.usedPercent ?? 0))
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .monospacedDigit()
                             }
                         }
@@ -907,7 +874,7 @@ struct SystemView: View {
                             Spacer()
                             Label("\(available) MB livre", systemImage: "checkmark.circle")
                         }
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                     }
                 }
@@ -924,10 +891,10 @@ struct SystemView: View {
                         ProgressView(value: used, total: total) {
                             HStack {
                                 Text(String(format: "%.1f GB usado", used))
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                 Spacer()
                                 Text(String(format: "%.1f%%", disk.usedPercent ?? 0))
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .monospacedDigit()
                             }
                         }
@@ -942,7 +909,7 @@ struct SystemView: View {
                                 String(format: "%.1f GB livre", available),
                                 systemImage: "checkmark.circle")
                         }
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                     }
                 }
@@ -956,11 +923,11 @@ struct SystemView: View {
                     ForEach(appState.macMiniProcesses.prefix(5)) { process in
                         HStack {
                             Text(process.command)
-                                .font(.subheadline)
+                                .font(MacOS9Typography.body(13))
                                 .lineLimit(1)
                             Spacer()
                             Text(String(format: "%.1f%%", process.cpuPercent))
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .monospacedDigit()
                                 .foregroundStyle(.secondary)
                         }
@@ -978,11 +945,11 @@ struct SystemView: View {
                         VStack(alignment: .leading, spacing: 4) {
                             HStack {
                                 Text(partition.mount)
-                                    .font(.subheadline)
-                                    .fontWeight(.medium)
+                                    .font(MacOS9Typography.body(13))
+                                    
                                 Spacer()
                                 Text(partition.usedPercent)
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                             }
                             ProgressView(
@@ -994,7 +961,7 @@ struct SystemView: View {
                             Text(
                                 "\(formatBytes(partition.usedBytes)) / \(formatBytes(partition.totalBytes))"
                             )
-                            .font(.caption2)
+                            .font(MacOS9Typography.finePrint(9))
                             .foregroundStyle(.secondary)
                         }
                     }
@@ -1013,13 +980,13 @@ struct SystemView: View {
                         ForEach(activeInterfaces) { iface in
                             HStack {
                                 Text(iface.iface)
-                                    .font(.subheadline)
+                                    .font(MacOS9Typography.body(13))
                                 Spacer()
                                 VStack(alignment: .trailing, spacing: 2) {
                                     Text("RX \(formatBytes(iface.rxBytes))")
                                     Text("TX \(formatBytes(iface.txBytes))")
                                 }
-                                .font(.caption2)
+                                .font(MacOS9Typography.finePrint(9))
                                 .foregroundStyle(.secondary)
                             }
                             Divider()
@@ -1036,11 +1003,11 @@ struct SystemView: View {
                 VStack(alignment: .leading, spacing: 10) {
                     HStack(spacing: 10) {
                         Label("Nó monitorado", systemImage: "desktopcomputer")
-                            .font(.subheadline.weight(.semibold))
+                            .font(MacOS9Typography.bodyBold(13))
                             .foregroundStyle(SystemTheme.ink.opacity(0.82))
 
                         Text("ONLINE")
-                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .font(MacOS9Typography.bodyBold(10))
                             .tracking(1.0)
                             .foregroundStyle(SystemTheme.piBlue)
                             .padding(.horizontal, 10)
@@ -1050,16 +1017,16 @@ struct SystemView: View {
 
                     HStack(spacing: 10) {
                         Image(systemName: "desktopcomputer")
-                            .font(.system(size: 22, weight: .semibold))
+                            .font(MacOS9Typography.bodyBold(22))
                             .foregroundStyle(SystemTheme.piBlue)
 
                         VStack(alignment: .leading, spacing: 2) {
                             Text("Mac Mini")
-                                .font(.system(size: 28, weight: .black, design: .rounded))
+                                .font(MacOS9Typography.bodyBold(28))
                                 .foregroundStyle(SystemTheme.ink)
 
                             Text(status.location)
-                                .font(.subheadline)
+                                .font(MacOS9Typography.body(13))
                                 .foregroundStyle(SystemTheme.ink.opacity(0.62))
                         }
                     }
@@ -1086,19 +1053,19 @@ struct SystemView: View {
                             .frame(width: 64, height: 64)
 
                         Image(systemName: "desktopcomputer")
-                            .font(.system(size: 26, weight: .semibold))
+                            .font(MacOS9Typography.bodyBold(26))
                             .foregroundStyle(SystemTheme.piBlue)
                     }
 
                     Text(statusUpdateText(status))
-                        .font(.caption2.weight(.semibold))
+                        .font(MacOS9Typography.finePrint(9))
                         .foregroundStyle(SystemTheme.ink.opacity(0.62))
                         .multilineTextAlignment(.trailing)
                 }
             }
 
             Text("Telemetria ao vivo do Mac Mini e seus serviços.")
-                .font(.callout)
+                .font(MacOS9Typography.body(13))
                 .foregroundStyle(SystemTheme.ink.opacity(0.62))
 
             ScrollView(.horizontal, showsIndicators: false) {
@@ -1144,11 +1111,11 @@ struct SystemView: View {
                     HStack(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("CPU")
-                                .font(.title3.weight(.bold))
+                                .font(MacOS9Typography.windowTitle(17))
                                 .foregroundStyle(SystemTheme.ink)
 
                             Text("Histórico das últimas 24 horas")
-                                .font(.subheadline)
+                                .font(MacOS9Typography.body(13))
                                 .foregroundStyle(SystemTheme.ink.opacity(0.58))
                         }
 
@@ -1159,7 +1126,7 @@ struct SystemView: View {
                                 format: "%.1f%% agora",
                                 cpuMetrics.dataPoints.last?.usage ?? cpuMetrics.average)
                         )
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .foregroundStyle(SystemTheme.piBlue)
                         .monospacedDigit()
                     }
@@ -1194,71 +1161,43 @@ struct SystemView: View {
     private func systemNodeBar(_ status: SystemStatus) -> some View {
         Group {
             if isCompactLayout {
-                VStack(alignment: .leading, spacing: 16) {
-                    HStack(alignment: .top) {
-                        VStack(alignment: .leading, spacing: 10) {
-                            HStack(spacing: 10) {
-                                Label("Nó monitorado", systemImage: "desktopcomputer")
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(SystemTheme.ink.opacity(0.82))
+                VStack(alignment: .leading, spacing: 12) {
+                    HStack(spacing: 8) {
+                        Label("Nó", systemImage: "desktopcomputer")
+                            .font(MacOS9Typography.bodyBold(13))
+                            .foregroundStyle(SystemTheme.ink.opacity(0.82))
 
-                                Text("ONLINE")
-                                    .font(.system(size: 10, weight: .black, design: .rounded))
-                                    .tracking(1.0)
-                                    .foregroundStyle(SystemTheme.piGreen)
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 5)
-                                    .background(SystemTheme.piGreen.opacity(0.14), in: Capsule())
-                            }
+                        Text("ONLINE")
+                            .font(MacOS9Typography.menuLabel(10))
+                            .foregroundStyle(SystemTheme.piGreen)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(MacOS9Colors.labelBadge)
+                            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
-                            HStack(spacing: 10) {
-                                RaspberryPiGlyph(size: 28)
+                        Spacer()
 
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(status.hostname)
-                                        .font(.system(size: 28, weight: .black, design: .rounded))
-                                        .foregroundStyle(SystemTheme.ink)
+                        Text(statusUpdateText(status))
+                            .font(MacOS9Typography.finePrint(9))
+                            .foregroundStyle(SystemTheme.ink.opacity(0.62))
+                    }
 
-                                    Text(status.location)
-                                        .font(.subheadline)
-                                        .foregroundStyle(SystemTheme.ink.opacity(0.62))
-                                }
-                            }
-                        }
+                    HStack(spacing: 10) {
+                        RaspberryPiGlyph(size: 24)
 
-                        Spacer(minLength: 12)
+                        VStack(alignment: .leading, spacing: 1) {
+                            Text(status.hostname)
+                                .font(MacOS9Typography.windowTitle(22))
+                                .foregroundStyle(SystemTheme.ink)
 
-                        VStack(alignment: .trailing, spacing: 8) {
-                            ZStack {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [
-                                                SystemTheme.piGreen.opacity(0.16),
-                                                SystemTheme.piBlue.opacity(0.10),
-                                            ],
-                                            startPoint: .topLeading,
-                                            endPoint: .bottomTrailing
-                                        )
-                                    )
-                                    .frame(width: 64, height: 64)
-
-                                Circle()
-                                    .stroke(SystemTheme.piGreen.opacity(0.22), lineWidth: 1.2)
-                                    .frame(width: 64, height: 64)
-
-                                RaspberryPiGlyph(size: 30)
-                            }
-
-                            Text(statusUpdateText(status))
-                                .font(.caption2.weight(.semibold))
+                            Text(status.location)
+                                .font(MacOS9Typography.body(13))
                                 .foregroundStyle(SystemTheme.ink.opacity(0.62))
-                                .multilineTextAlignment(.trailing)
                         }
                     }
 
-                    Text("Telemetria ao vivo do Raspberry Pi e dos dispositivos conectados.")
-                        .font(.callout)
+                    Text("Telemetria ao vivo do Raspberry Pi e dispositivos conectados.")
+                        .font(MacOS9Typography.body(13))
                         .foregroundStyle(SystemTheme.ink.opacity(0.62))
 
                     ScrollView(.horizontal, showsIndicators: false) {
@@ -1287,16 +1226,16 @@ struct SystemView: View {
                     VStack(alignment: .leading, spacing: 12) {
                         HStack(spacing: 10) {
                             Label("Nó monitorado", systemImage: "desktopcomputer")
-                                .font(.subheadline.weight(.semibold))
+                                .font(MacOS9Typography.bodyBold(13))
                                 .foregroundStyle(SystemTheme.ink.opacity(0.82))
 
                             Text("ONLINE")
-                                .font(.system(size: 10, weight: .black, design: .rounded))
-                                .tracking(1.0)
+                                .font(MacOS9Typography.menuLabel(10))
                                 .foregroundStyle(SystemTheme.piGreen)
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 5)
-                                .background(SystemTheme.piGreen.opacity(0.14), in: Capsule())
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(MacOS9Colors.labelBadge)
+                                .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                         }
 
                         HStack(spacing: 10) {
@@ -1304,17 +1243,17 @@ struct SystemView: View {
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(status.hostname)
-                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .font(MacOS9Typography.windowTitle(22))
                                     .foregroundStyle(SystemTheme.ink)
 
                                 Text(status.location)
-                                    .font(.subheadline)
+                                    .font(MacOS9Typography.body(13))
                                     .foregroundStyle(SystemTheme.ink.opacity(0.62))
                             }
                         }
 
                         Text("Telemetria ao vivo do Raspberry Pi e dos dispositivos conectados.")
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(SystemTheme.ink.opacity(0.56))
 
                         ViewThatFits(in: .horizontal) {
@@ -1395,7 +1334,7 @@ struct SystemView: View {
                         }
 
                         Text(statusUpdateText(status))
-                            .font(.caption.weight(.semibold))
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(SystemTheme.ink.opacity(0.62))
                             .multilineTextAlignment(.trailing)
                     }
@@ -1412,25 +1351,25 @@ struct SystemView: View {
                 VStack(alignment: .leading, spacing: 14) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Visão geral")
-                            .font(.caption.weight(.semibold))
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(SystemTheme.piBlue.opacity(0.72))
                             .textCase(.uppercase)
 
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(cpuUsageHeadline(status))
-                                .font(.system(size: 42, weight: .bold, design: .rounded))
+                                .font(MacOS9Typography.bodyBold(42))
                                 .monospacedDigit()
                                 .foregroundStyle(SystemTheme.ink)
 
                             if let temp = status.cpu?.temperatureC {
                                 Text("\(Int(temp))°C")
-                                    .font(.title3.weight(.bold))
+                                    .font(MacOS9Typography.windowTitle(17))
                                     .foregroundStyle(Color.fromName(status.cpu?.temperatureColor))
                             }
                         }
 
                         Text("uso do processador")
-                            .font(.subheadline)
+                            .font(MacOS9Typography.body(13))
                             .foregroundStyle(SystemTheme.ink.opacity(0.62))
                     }
 
@@ -1469,25 +1408,25 @@ struct SystemView: View {
                 HStack(spacing: 16) {
                     VStack(alignment: .leading, spacing: 6) {
                         Text("Visão geral")
-                            .font(.caption.weight(.semibold))
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(SystemTheme.piBlue.opacity(0.72))
                             .textCase(.uppercase)
 
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
                             Text(cpuUsageHeadline(status))
-                                .font(.system(size: 42, weight: .bold, design: .rounded))
+                                .font(MacOS9Typography.bodyBold(42))
                                 .monospacedDigit()
                                 .foregroundStyle(SystemTheme.ink)
 
                             if let temp = status.cpu?.temperatureC {
                                 Text("\(Int(temp))°C")
-                                    .font(.title3.weight(.bold))
+                                    .font(MacOS9Typography.windowTitle(17))
                                     .foregroundStyle(Color.fromName(status.cpu?.temperatureColor))
                             }
                         }
 
                         Text("uso do processador")
-                            .font(.subheadline)
+                            .font(MacOS9Typography.body(13))
                             .foregroundStyle(SystemTheme.ink.opacity(0.62))
                     }
 
@@ -1533,18 +1472,18 @@ struct SystemView: View {
             HStack {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Saúde em Tempo Real")
-                        .font(.title3.weight(.bold))
+                        .font(MacOS9Typography.windowTitle(18))
                         .foregroundStyle(SystemTheme.ink)
 
                     Text("CPU, RAM e temperatura do nó monitorado")
-                        .font(.subheadline)
+                        .font(MacOS9Typography.body(13))
                         .foregroundStyle(SystemTheme.ink.opacity(0.58))
                 }
 
                 Spacer()
             }
 
-            HStack(spacing: isCompactLayout ? 10 : 20) {
+            HStack(spacing: isCompactLayout ? 8 : 12) {
                 RealtimeGaugeCard(
                     title: "CPU",
                     value: status.cpu?.usagePercent ?? 0,
@@ -1587,11 +1526,11 @@ struct SystemView: View {
                     HStack(alignment: .firstTextBaseline) {
                         VStack(alignment: .leading, spacing: 4) {
                             Text("CPU")
-                                .font(.title3.weight(.bold))
+                                .font(MacOS9Typography.windowTitle(17))
                                 .foregroundStyle(SystemTheme.ink)
 
                             Text("Histórico das últimas 24 horas")
-                                .font(.subheadline)
+                                .font(MacOS9Typography.body(13))
                                 .foregroundStyle(SystemTheme.ink.opacity(0.58))
                         }
 
@@ -1602,7 +1541,7 @@ struct SystemView: View {
                                 format: "%.1f%% agora",
                                 cpuMetrics.dataPoints.last?.usage ?? cpuMetrics.average)
                         )
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .foregroundStyle(SystemTheme.piBlue)
                         .monospacedDigit()
                     }
@@ -1680,13 +1619,13 @@ struct SystemView: View {
         VStack(alignment: .leading, spacing: 14) {
             HStack {
                 Text("Históricos e Análises")
-                    .font(.headline)
+                    .font(MacOS9Typography.bodyBold(15))
                     .foregroundStyle(SystemTheme.ink)
 
                 Spacer()
 
                 Text("fullscreen")
-                    .font(.caption2.weight(.semibold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(SystemTheme.ink.opacity(0.48))
             }
 
@@ -1720,7 +1659,7 @@ struct SystemView: View {
                         analyticsDestination = .environment
                     } label: {
                         Label("Abrir histórico do sensor", systemImage: "arrow.up.right")
-                            .font(.subheadline.weight(.semibold))
+                            .font(MacOS9Typography.bodyBold(13))
                             .foregroundStyle(.cyan)
                             .padding(.horizontal, 14)
                             .padding(.vertical, 10)
@@ -1770,11 +1709,11 @@ struct SystemCard<Content: View>: View {
 
                     Image(systemName: icon)
                         .foregroundStyle(color)
-                        .font(.body.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                 }
 
                 Text(title)
-                    .font(.headline)
+                    .font(MacOS9Typography.bodyBold(15))
                     .foregroundStyle(SystemTheme.ink)
 
                 Spacer()
@@ -1812,15 +1751,14 @@ struct GaugeView: View {
                         ? String(format: "%.0f%@", value, suffix)
                         : String(format: "%.0f%@", value, suffix)
                 )
-                .font(.caption)
-                .fontWeight(.bold)
+                .font(MacOS9Typography.bodyBold(11))
                 .monospacedDigit()
                 .foregroundStyle(SystemTheme.ink)
             }
             .frame(width: 60, height: 60)
 
             Text(title)
-                .font(.caption2)
+                .font(MacOS9Typography.finePrint(9))
                 .foregroundStyle(SystemTheme.ink.opacity(0.56))
         }
     }
@@ -1851,23 +1789,25 @@ private struct RealtimeGaugeCard: View {
                 EmptyView()
             } currentValueLabel: {
                 Text(valueLabel)
-                    .font(.caption2.weight(.bold))
+                    .font(MacOS9Typography.bodyBold(11))
                     .monospacedDigit()
                     .foregroundStyle(SystemTheme.ink)
             }
             .gaugeStyle(.accessoryCircular)
             .tint(tint)
-            .scaleEffect(1.12)
+            .scaleEffect(0.98)
 
             Label(title, systemImage: symbol)
-                .font(.caption.weight(.semibold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(SystemTheme.ink.opacity(0.68))
                 .labelStyle(.titleAndIcon)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 18)
-        .background(Color(.secondarySystemGroupedBackground))
-        .clipShape(RoundedRectangle(cornerRadius: 22, style: .continuous))
+        .padding(.vertical, 12)
+        .padding(.horizontal, 6)
+        .background(MacOS9Colors.contentPanel)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
@@ -2045,22 +1985,22 @@ private struct SystemChartTooltip: View {
                     .frame(width: 8, height: 8)
 
                 Text(point.valueText)
-                    .font(.headline.weight(.bold))
+                    .font(MacOS9Typography.bodyBold(15))
                     .foregroundStyle(SystemTheme.ink)
                     .monospacedDigit()
             }
 
             Text("CPU")
-                .font(.caption.weight(.semibold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(SystemTheme.ink)
 
             Text(point.timestampText)
-                .font(.caption2)
+                .font(MacOS9Typography.finePrint(9))
                 .foregroundStyle(SystemTheme.ink.opacity(0.58))
 
             if let loadText = point.loadText {
                 Text(loadText)
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(SystemTheme.ink.opacity(0.58))
             }
         }
@@ -2082,11 +2022,11 @@ private struct SystemTrendStat: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title)
-                .font(.caption.weight(.semibold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(SystemTheme.ink.opacity(0.56))
 
             Text(value)
-                .font(.headline.weight(.bold))
+                .font(MacOS9Typography.bodyBold(15))
                 .monospacedDigit()
                 .foregroundStyle(tint)
         }
@@ -2114,11 +2054,11 @@ private struct FirestickRowView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(item.device.name)
-                    .font(.subheadline)
-                    .fontWeight(.medium)
+                    .font(MacOS9Typography.body(13))
+                    
 
                 Text(subtitle(tvOn: tvOn, showing: showing, adbState: adbState, package: pkg))
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(.secondary)
                     .lineLimit(2)
             }
@@ -2184,7 +2124,7 @@ private struct FirestickSnapshotView: View {
                                     .foregroundStyle(.secondary)
                                 if let error {
                                     Text(error)
-                                        .font(.caption)
+                                        .font(MacOS9Typography.caption(11))
                                         .foregroundStyle(.secondary)
                                 }
                             }
@@ -2208,7 +2148,7 @@ private struct FirestickSnapshotView: View {
                             .foregroundStyle(.secondary)
                         if let error {
                             Text(error)
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -2219,7 +2159,7 @@ private struct FirestickSnapshotView: View {
                     Text(
                         "Atualizado \(Formatters.relativeDate.localizedString(for: lastUpdated, relativeTo: Date()))"
                     )
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(.secondary)
                     .padding(.bottom, 6)
                 }
@@ -2318,7 +2258,7 @@ private struct FirestickDetailView: View {
                     }
                 } else {
                     Text("Toque em Atualizar para gerar um link temporario.")
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                 }
             }

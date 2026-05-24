@@ -28,13 +28,13 @@ struct BibleView: View {
 
                 VStack(spacing: 0) {
                     BibleHeader(selectedTab: selectedTab)
-                        .padding(.horizontal, 16)
-                        .padding(.top, 10)
-                        .padding(.bottom, 8)
+                        .padding(.horizontal, 12)
+                        .padding(.top, 8)
+                        .padding(.bottom, 6)
 
                     bibleTabPicker
-                        .padding(.horizontal, 16)
-                        .padding(.bottom, 10)
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 8)
 
                     Rectangle()
                         .fill(MacOS9Colors.border)
@@ -84,7 +84,7 @@ struct BibleView: View {
                             selectedTab == tab
                                 ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                         .frame(maxWidth: .infinity)
-                        .frame(height: 44)
+                        .frame(height: 38)
                         .background(selectedTab == tab ? MacOS9Colors.selection : MacOS9Colors.panelBackground)
                         .overlay(Mac9BevelBorder(isRaised: selectedTab != tab))
                         .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
@@ -113,24 +113,24 @@ private struct BibleHeader: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "book.closed")
-                .font(MacOS9Typography.bodyBold(22))
-                .frame(width: 40, height: 40)
+                .font(MacOS9Typography.bodyBold(18))
+                .frame(width: 34, height: 34)
                 .background(MacOS9Colors.contentPanel)
                 .overlay(Mac9BevelBorder(isRaised: true))
                 .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("A Bíblia")
-                    .font(MacOS9Typography.windowTitle(20))
+                    .font(MacOS9Typography.windowTitle(17))
                     .foregroundStyle(MacOS9Colors.primaryText)
                 Text(subtitle)
-                    .font(MacOS9Typography.caption(12))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(MacOS9Colors.secondaryText)
             }
 
             Spacer()
         }
-        .padding(12)
+        .padding(9)
         .background(MacOS9Colors.panelBackground)
         .overlay(Mac9BevelBorder(isRaised: true))
         .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))

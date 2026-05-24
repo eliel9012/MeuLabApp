@@ -273,28 +273,49 @@ private struct MoreMenuView: View {
     let select: (ContentView.Tab) -> Void
 
     var body: some View {
-        NavigationStack {
+        VStack(spacing: 10) {
+            HStack(spacing: 10) {
+                Image(systemName: "ellipsis")
+                    .font(MacOS9Typography.bodyBold(16))
+                    .frame(width: 28, height: 28)
+                    .background(MacOS9Colors.labelBadge)
+                    .overlay(Mac9BevelBorder(isRaised: true))
+                    .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+
+                Text("Mais")
+                    .font(MacOS9Typography.windowTitle(18))
+                    .foregroundStyle(MacOS9Colors.primaryText)
+
+                Spacer()
+            }
+            .padding(10)
+            .background(MacOS9Colors.panelBackground)
+            .overlay(Mac9BevelBorder(isRaised: true))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+            .padding(.horizontal, 14)
+            .padding(.top, 10)
+
             ScrollView {
                 VStack(spacing: 0) {
                     ForEach(tabs, id: \.self) { tab in
                         Button {
                             select(tab)
                         } label: {
-                            HStack(spacing: 14) {
+                            HStack(spacing: 10) {
                                 Image(systemName: tab.icon)
-                                    .font(MacOS9Typography.bodyBold(20))
-                                    .frame(width: 28)
+                                    .font(MacOS9Typography.bodyBold(15))
+                                    .frame(width: 22)
                                     .foregroundStyle(MacOS9Colors.selection)
                                 Text(tab.title)
-                                    .font(MacOS9Typography.body(18))
+                                    .font(MacOS9Typography.bodyBold(14))
                                     .foregroundStyle(MacOS9Colors.primaryText)
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(MacOS9Typography.bodyBold(14))
+                                    .font(MacOS9Typography.bodyBold(11))
                                     .foregroundStyle(MacOS9Colors.secondaryText)
                             }
-                            .padding(.horizontal, 16)
-                            .padding(.vertical, 14)
+                            .padding(.horizontal, 12)
+                            .frame(height: 46)
                             .background(MacOS9Colors.contentPanel)
                         }
                         .buttonStyle(.plain)
@@ -302,15 +323,15 @@ private struct MoreMenuView: View {
                         Rectangle()
                             .fill(MacOS9Colors.border.opacity(0.2))
                             .frame(height: 1)
-                            .padding(.leading, 58)
+                            .padding(.leading, 44)
                     }
                 }
                 .mac9Panel()
-                .padding(16)
+                .padding(.horizontal, 14)
+                .padding(.bottom, 12)
             }
-            .background(MacOS9Colors.windowBackground.ignoresSafeArea())
-            .navigationTitle("Mais")
         }
+        .background(MacOS9Colors.windowBackground.ignoresSafeArea())
     }
 }
 
