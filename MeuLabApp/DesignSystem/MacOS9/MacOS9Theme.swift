@@ -50,9 +50,9 @@ enum MacOS9Theme {
         ]
         appearance.largeTitleTextAttributes = [
             .font: MacOS9Typography.uiFont(
-                ["AppleGaramondLight", "AppleGaramond-Light"],
-                fallback: .systemFont(ofSize: 24, weight: .light),
-                size: 24
+                ["Charcoal"],
+                fallback: .systemFont(ofSize: 20, weight: .bold),
+                size: 20
             ),
             .foregroundColor: UIColor(MacOS9Colors.primaryText),
         ]

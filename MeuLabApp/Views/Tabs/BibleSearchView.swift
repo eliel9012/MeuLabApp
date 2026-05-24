@@ -59,7 +59,7 @@ struct BibleSearchView: View {
     private var searchPrompt: some View {
         VStack(spacing: 12) {
             Image(systemName: "text.magnifyingglass")
-                .font(.system(size: 36))
+                .font(MacOS9Typography.body(36))
                 .foregroundStyle(MacOS9Colors.statusOrange)
             Text("Digite pelo menos 3 caracteres para buscar versículos.")
                 .font(MacOS9Typography.body(14))
@@ -74,7 +74,7 @@ struct BibleSearchView: View {
     private var noResultsView: some View {
         VStack(spacing: 12) {
             Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 36))
+                .font(MacOS9Typography.body(36))
                 .foregroundStyle(MacOS9Colors.secondaryText)
             Text("Nenhum versículo encontrado para \"\(query)\".")
                 .font(MacOS9Typography.body(14))

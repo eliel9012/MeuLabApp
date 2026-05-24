@@ -38,15 +38,15 @@ private struct TestamentSection: View {
             Button {
                 isExpanded.toggle()
             } label: {
-                HStack {
-                    Text(testament)
-                        .font(MacOS9Typography.editorialBold(22))
+                    HStack {
+                        Text(testament)
+                        .font(MacOS9Typography.windowTitle(18))
                         .foregroundStyle(MacOS9Colors.selection)
 
                     Spacer()
 
                     Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
-                        .font(.system(size: 12, weight: .bold))
+                        .font(MacOS9Typography.bodyBold(12))
                         .foregroundStyle(MacOS9Colors.secondaryText)
                 }
                 .padding(.horizontal, 8)
@@ -264,13 +264,13 @@ struct VerseRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 10) {
             Text("\(verse.number)")
-                .font(.system(size: fontSize * 0.72, weight: .bold))
+                .font(MacOS9Typography.bodyBold(fontSize * 0.72))
                 .foregroundStyle(Color.amber)
                 .frame(minWidth: 24, alignment: .trailing)
                 .padding(.top, 3)
 
             Text(verse.text)
-                .font(.system(size: fontSize))
+                .font(MacOS9Typography.body(fontSize))
                 .foregroundStyle(.primary)
                 .lineSpacing(4)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -296,7 +296,7 @@ struct VerseRowWithReader: View {
                 .padding(.top, 3)
 
             Text(verse.text)
-                .font(.system(size: fontSize))
+                .font(MacOS9Typography.body(fontSize))
                 .foregroundStyle(isHighlighted ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                 .lineSpacing(4)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -342,7 +342,7 @@ struct PlaybackControlBar: View {
                     Image(
                         systemName: viewModel.isPlaying ? "pause.circle.fill" : "play.circle.fill"
                     )
-                    .font(.system(size: 34))
+                    .font(MacOS9Typography.body(34))
                     .frame(width: 42, height: 36)
                     .background(MacOS9Colors.contentPanel)
                     .foregroundStyle(MacOS9Colors.statusBlue)

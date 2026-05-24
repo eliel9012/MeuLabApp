@@ -74,7 +74,7 @@ private struct ADSBToolbarTitle: View {
             }
 
             Text("ADS-B")
-                .font(MacOS9Typography.editorialBold(24))
+                .font(MacOS9Typography.bodyBold(24))
                 .tracking(0.8)
                 .foregroundStyle(MacOS9Colors.selection)
         }
@@ -92,7 +92,7 @@ private struct ADSBSourceChip: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(title)
-                .font(.caption2.weight(.semibold))
+                .font(MacOS9Typography.finePrint(9))
                 .foregroundStyle(ADSBTheme.secondaryInk)
 
             HStack(spacing: 6) {
@@ -101,7 +101,7 @@ private struct ADSBSourceChip: View {
                     .frame(width: 7, height: 7)
 
                 Text(value)
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(ADSBTheme.ink)
             }
         }
@@ -258,11 +258,11 @@ struct ADSBView: View {
                                     "Fonte do Radar",
                                     systemImage: "antenna.radiowaves.left.and.right"
                                 )
-                                .font(.subheadline.weight(.semibold))
+                                .font(MacOS9Typography.bodyBold(14))
                                 .foregroundStyle(ADSBTheme.ink.opacity(0.82))
 
                                 Text(appState.isOpenSkyEnabled ? "EXPANDIDO" : "LOCAL")
-                                    .font(.system(size: 10, weight: .black, design: .rounded))
+                                    .font(MacOS9Typography.menuLabel(10))
                                     .tracking(1.0)
                                     .foregroundStyle(
                                         appState.isOpenSkyEnabled
@@ -279,7 +279,7 @@ struct ADSBView: View {
                             }
 
                             Text("Escolha entre radar local e leitura global.")
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(12))
                                 .foregroundStyle(ADSBTheme.secondaryInk)
                         }
 
@@ -314,11 +314,11 @@ struct ADSBView: View {
                             Label(
                                 "Fonte do Radar", systemImage: "antenna.radiowaves.left.and.right"
                             )
-                            .font(.subheadline.weight(.semibold))
+                            .font(MacOS9Typography.bodyBold(14))
                             .foregroundStyle(ADSBTheme.ink.opacity(0.82))
 
                             Text(appState.isOpenSkyEnabled ? "EXPANDIDO" : "LOCAL")
-                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .font(MacOS9Typography.menuLabel(10))
                                 .tracking(1.0)
                                 .foregroundStyle(
                                     appState.isOpenSkyEnabled
@@ -335,7 +335,7 @@ struct ADSBView: View {
                         }
 
                         Text("Controle de cobertura e origem dos dados")
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(12))
                             .foregroundStyle(ADSBTheme.secondaryInk)
 
                         HStack(spacing: 10) {
@@ -423,7 +423,7 @@ struct ADSBView: View {
             HStack(alignment: .center, spacing: 14) {
                 // Large number
                 Text("\(total)")
-                    .font(MacOS9Typography.editorialBold(isCompactLayout ? 44 : 52))
+                    .font(MacOS9Typography.bodyBold(isCompactLayout ? 44 : 52))
                     .monospacedDigit()
                     .foregroundStyle(ADSBTheme.ink)
 
@@ -483,7 +483,7 @@ struct ADSBView: View {
 
     private func liveMetaPill(icon: String, text: String) -> some View {
         Label(text, systemImage: icon)
-            .font(.caption2.weight(.semibold))
+            .font(MacOS9Typography.caption(11))
             .foregroundStyle(ADSBTheme.secondaryInk)
     }
 
@@ -661,7 +661,7 @@ struct ADSBView: View {
                     showAircraftList = true
                 } label: {
                     Text("Ver Todas")
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .foregroundStyle(ADSBTheme.radarBlue)
                 }
             }
@@ -744,7 +744,7 @@ struct ADSBView: View {
                 ForEach(peaks, id: \.0) { day, value in
                     HStack(spacing: 12) {
                         Text(formatDay(day))
-                            .font(.caption.monospaced())
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                             .frame(width: 44, alignment: .leading)
 
@@ -770,7 +770,7 @@ struct ADSBView: View {
                         .frame(height: 8)
 
                         Text("\(value)")
-                            .font(.caption.monospaced().bold())
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.primary)
                             .frame(width: 32, alignment: .trailing)
                     }
@@ -880,7 +880,7 @@ private struct MovementAircraftSheet: View {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(spacing: 10) {
                         Label("\(aircraft.count) aeronaves", systemImage: "airplane")
-                            .font(.subheadline.weight(.semibold))
+                            .font(MacOS9Typography.bodyBold(13))
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
                             .materialCard(cornerRadius: 10)
@@ -890,7 +890,7 @@ private struct MovementAircraftSheet: View {
                                 ProgressView()
                                     .scaleEffect(0.75)
                                 Text("Buscando FlightAware...")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                             }
                             .padding(.horizontal, 10)
@@ -1010,7 +1010,7 @@ private struct MovementAircraftRow: View {
                                 .frame(width: 34, height: 34)
                                 .overlay(
                                     Image(systemName: "airplane")
-                                        .font(.caption)
+                                        .font(MacOS9Typography.caption(11))
                                         .foregroundStyle(.blue)
                                 )
                         }
@@ -1021,7 +1021,7 @@ private struct MovementAircraftRow: View {
                         .frame(width: 34, height: 34)
                         .overlay(
                             Image(systemName: "airplane")
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.blue)
                         )
                 }
@@ -1029,11 +1029,11 @@ private struct MovementAircraftRow: View {
                 VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
                         Text(ac.displayCallsign)
-                            .font(.headline)
+                            .font(MacOS9Typography.bodyBold(15))
                             .foregroundStyle(.primary)
                         if let reg = ac.registration, !reg.isEmpty {
                             Text(reg)
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.secondary)
                         }
                     }
@@ -1041,12 +1041,12 @@ private struct MovementAircraftRow: View {
                     HStack(spacing: 8) {
                         if let model = ac.model, !model.isEmpty {
                             Text(model)
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.secondary)
                         }
                         if let airline = ac.airline {
                             Text(airline)
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.blue)
                         }
                     }
@@ -1056,10 +1056,10 @@ private struct MovementAircraftRow: View {
 
                 VStack(alignment: .trailing, spacing: 3) {
                     Text("\(ac.altitudeFt) ft")
-                        .font(.caption.monospacedDigit())
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                     Text("\(ac.speedKt) kt")
-                        .font(.caption.monospacedDigit())
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
                 }
             }
@@ -1072,7 +1072,7 @@ private struct MovementAircraftRow: View {
                         ? "arrow.up"
                         : (ac.verticalRateFpm < 0 ? "arrow.down" : "arrow.left.and.right")
                 )
-                .font(.caption2.weight(.semibold))
+                .font(MacOS9Typography.finePrint(9))
                 .foregroundStyle(
                     ac.verticalRateFpm > 0
                         ? .green : (ac.verticalRateFpm < 0 ? .orange : .secondary)
@@ -1085,13 +1085,13 @@ private struct MovementAircraftRow: View {
                         .opacity(0.12), in: Capsule())
 
                 Text("\(abs(ac.verticalRateFpm)) fpm")
-                    .font(.caption2.monospacedDigit())
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(.secondary)
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(.tertiary)
             }
 
@@ -1101,13 +1101,13 @@ private struct MovementAircraftRow: View {
                     let origin = faFlight.origin?.bestCode ?? "-"
                     let destination = faFlight.destination?.bestCode ?? "-"
                     Text(origin)
-                        .font(.caption.weight(.semibold))
+                        .font(MacOS9Typography.caption(11))
                         .monospaced()
                     Image(systemName: "arrow.right")
-                        .font(.caption2)
+                        .font(MacOS9Typography.finePrint(9))
                         .foregroundStyle(.secondary)
                     Text(destination)
-                        .font(.caption.weight(.semibold))
+                        .font(MacOS9Typography.caption(11))
                         .monospaced()
 
                     Spacer()
@@ -1123,11 +1123,11 @@ private struct MovementAircraftRow: View {
 
                     if let outTime, let inTime {
                         Text("\(outTime) • \(inTime)")
-                            .font(.caption2.monospacedDigit())
+                            .font(MacOS9Typography.finePrint(9))
                             .foregroundStyle(.secondary)
                     } else {
                         Text("FlightAware")
-                            .font(.caption2)
+                            .font(MacOS9Typography.finePrint(9))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -1149,10 +1149,10 @@ struct SectionHeader: View {
     var body: some View {
         HStack(spacing: 6) {
             Image(systemName: icon)
-                .font(.subheadline.weight(.semibold))
+                .font(MacOS9Typography.bodyBold(13))
                 .foregroundStyle(ADSBTheme.sectionInk)
             Text(title)
-                .font(.subheadline.weight(.semibold))
+                .font(MacOS9Typography.bodyBold(13))
                 .foregroundStyle(ADSBTheme.sectionInk)
                 .textCase(.uppercase)
         }
@@ -1176,12 +1176,12 @@ struct MiniStatCard: View {
                     .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
                 Image(systemName: icon)
-                    .font(.system(size: compact ? 15 : 18, weight: .semibold))
+                    .font(MacOS9Typography.bodyBold(compact ? 15 : 18))
                     .foregroundStyle(color)
             }
 
             Text(value)
-                .font(MacOS9Typography.editorialBold(compact ? 22 : 26))
+                .font(MacOS9Typography.bodyBold(compact ? 22 : 26))
                 .monospacedDigit()
                 .foregroundStyle(ADSBTheme.ink)
                 .minimumScaleFactor(0.8)
@@ -1215,13 +1215,13 @@ struct AverageStatCard: View {
                     .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
                 Image(systemName: icon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(MacOS9Typography.bodyBold(16))
                     .foregroundStyle(ADSBTheme.radarBlue)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.caption2.weight(.semibold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(ADSBTheme.tertiaryInk)
 
                 Text(value)
@@ -1232,7 +1232,7 @@ struct AverageStatCard: View {
                     .lineLimit(1)
 
                 Text(subtitle)
-                    .font(.caption2.weight(.medium))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(ADSBTheme.tertiaryInk)
                     .lineLimit(1)
             }
@@ -1260,11 +1260,11 @@ private struct ADSBStatusPill: View {
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.caption2.weight(.semibold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(ADSBTheme.secondaryInk)
 
                 Text(value)
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(ADSBTheme.ink)
             }
         }
@@ -1292,18 +1292,18 @@ struct HighlightRowApple: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: icon)
-                .font(.title3)
+                .font(MacOS9Typography.windowTitle(17))
                 .foregroundStyle(iconColor)
                 .frame(width: 32)
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(title)
-                    .font(.caption2.weight(.semibold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(ADSBTheme.secondaryInk)
                     .textCase(.uppercase)
 
                 Text(callsign)
-                    .font(.subheadline.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .monospacedDigit()
             }
 
@@ -1311,11 +1311,11 @@ struct HighlightRowApple: View {
 
             VStack(alignment: .trailing, spacing: 1) {
                 Text(value)
-                    .font(.subheadline.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .monospacedDigit()
 
                 Text(subtitle)
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(ADSBTheme.secondaryInk)
             }
         }
@@ -1342,7 +1342,7 @@ struct AirlineChip: View {
                             .frame(width: 28, height: 28)
                             .overlay(
                                 Text(String(airline.name.prefix(1)))
-                                    .font(.caption.bold())
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(ADSBTheme.radarBlue)
                             )
                     }
@@ -1353,19 +1353,19 @@ struct AirlineChip: View {
                     .frame(width: 28, height: 28)
                     .overlay(
                         Text(String(airline.name.prefix(1)))
-                            .font(.caption.bold())
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(ADSBTheme.radarBlue)
                     )
             }
 
             VStack(alignment: .leading, spacing: 0) {
                 Text(airline.name)
-                    .font(.caption.weight(.semibold))
+                    .font(MacOS9Typography.caption(11))
                     .lineLimit(1)
                     .foregroundStyle(ADSBTheme.ink)
 
                 Text("\(airline.count) voos")
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(ADSBTheme.secondaryInk)
             }
         }
@@ -1398,7 +1398,7 @@ struct AircraftRowApple: View {
                     .frame(width: 40, height: 40)
 
                 Image(systemName: aircraft.movementIcon)
-                    .font(.system(size: 16, weight: .semibold))
+                    .font(MacOS9Typography.bodyBold(16))
                     .foregroundStyle(movementColor)
             }
 
@@ -1416,7 +1416,7 @@ struct AircraftRowApple: View {
                     }
 
                     Text(aircraft.displayCallsign)
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .monospacedDigit()
 
                     // Source badge
@@ -1424,7 +1424,7 @@ struct AircraftRowApple: View {
                         aircraft.isDualTracked
                             ? "DUAL" : (aircraft.source == .local ? "LOCAL" : "REDE")
                     )
-                    .font(.system(size: 8, weight: .bold))
+                    .font(MacOS9Typography.bodyBold(8))
                     .padding(.horizontal, 5)
                     .padding(.vertical, 2)
                     .background(badgeColor.opacity(0.15))
@@ -1434,7 +1434,7 @@ struct AircraftRowApple: View {
 
                 if let model = aircraft.model {
                     Text(model)
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(ADSBTheme.secondaryInk)
                 }
             }
@@ -1448,27 +1448,27 @@ struct AircraftRowApple: View {
                     // Distance is primary
                     let distFmt = Formatters.distanceDual(dist)
                     Text(distFmt.aviation)
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .monospacedDigit()
                         .foregroundStyle(.blue)
 
                     Text(distFmt.metric)
-                        .font(.caption2)
+                        .font(MacOS9Typography.finePrint(9))
                         .foregroundStyle(ADSBTheme.secondaryInk)
 
                     // Altitude secondary
                     Text(Formatters.altitudeDual(aircraft.altitudeFt).aviation)
-                        .font(.caption2)
+                        .font(MacOS9Typography.finePrint(9))
                         .foregroundStyle(.primary)
                 } else {
                     // Fallback to Altitude (Distance unavailable)
                     let alt = Formatters.altitudeDual(aircraft.altitudeFt)
                     Text(alt.aviation)
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .monospacedDigit()
 
                     Text(alt.metric)
-                        .font(.caption2)
+                        .font(MacOS9Typography.finePrint(9))
                         .foregroundStyle(ADSBTheme.secondaryInk)
                 }
             }
@@ -1495,23 +1495,23 @@ struct RecordBubble: View {
         VStack(spacing: 2) {
             HStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(ADSBTheme.radarBlue)
                 Text(value)
-                    .font(.caption.bold())
+                    .font(MacOS9Typography.caption(11))
                     .monospacedDigit()
                     .foregroundStyle(ADSBTheme.ink)
             }
 
             if let subtitle = subtitle {
                 Text(subtitle)
-                    .font(.system(size: 8))
+                    .font(MacOS9Typography.body(8))
                     .foregroundStyle(ADSBTheme.tertiaryInk)
                     .monospacedDigit()
             }
 
             Text(label)
-                .font(.system(size: 9))
+                .font(MacOS9Typography.body(9))
                 .foregroundStyle(ADSBTheme.secondaryInk)
         }
         .padding(.horizontal, 10)
@@ -1599,11 +1599,11 @@ struct ADSBAirlineFullscreenView: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(airline.name)
-                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .font(MacOS9Typography.bodyBold(28))
                                     .foregroundStyle(ADSBTheme.ink)
 
                                 Text("\(sortedAircraft.count) aeronaves monitoradas agora")
-                                    .font(.subheadline)
+                                    .font(MacOS9Typography.body(13))
                                     .foregroundStyle(ADSBTheme.secondaryInk)
                             }
 
@@ -1664,7 +1664,7 @@ struct ADSBAirlineFullscreenView: View {
                             SectionHeader(title: "Aeronaves da Companhia", icon: "airplane")
                             Spacer()
                             Text("\(sortedAircraft.count)")
-                                .font(.subheadline.weight(.bold))
+                                .font(MacOS9Typography.bodyBold(13))
                                 .foregroundStyle(ADSBTheme.radarBlue)
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 6)
@@ -1766,7 +1766,7 @@ private struct AirlineHeaderBadge: View {
             .fill(ADSBTheme.radarBlue.opacity(0.12))
             .overlay(
                 Text(String(airline.name.prefix(1)))
-                    .font(.headline.bold())
+                    .font(MacOS9Typography.bodyBold(15))
                     .foregroundStyle(ADSBTheme.radarBlue)
             )
     }
@@ -1778,11 +1778,11 @@ struct ErrorCard: View {
     var body: some View {
         VStack(spacing: 12) {
             Image(systemName: "exclamationmark.triangle.fill")
-                .font(.largeTitle)
+                .font(MacOS9Typography.windowTitle(26))
                 .foregroundStyle(.orange)
 
             Text(message)
-                .font(.subheadline)
+                .font(MacOS9Typography.body(13))
                 .foregroundStyle(.primary)
                 .multilineTextAlignment(.center)
         }
@@ -1801,11 +1801,11 @@ struct TuyaSensorCard: View {
             HStack(alignment: .top, spacing: 12) {
                 VStack(alignment: .leading, spacing: 4) {
                     Text("Sensor Casa")
-                        .font(.headline)
+                        .font(MacOS9Typography.bodyBold(15))
 
                     if let source = sensor.source, !source.isEmpty {
                         Text(source.capitalized)
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -1814,12 +1814,12 @@ struct TuyaSensorCard: View {
 
                 VStack(alignment: .trailing, spacing: 2) {
                     Text(lastUpdatedTimeText)
-                        .font(.caption.weight(.semibold))
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(.secondary)
 
                     if let date = sensor.lastUpdatedAt {
                         Text(date.timeAgoDisplay())
-                            .font(.caption2)
+                            .font(MacOS9Typography.finePrint(9))
                             .foregroundStyle(.tertiary)
                     }
                 }
@@ -1934,13 +1934,13 @@ struct TuyaPrimaryMetricCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
             Label(title, systemImage: icon)
-                .font(.caption.weight(.semibold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(ADSBTheme.secondaryInk)
                 .lineLimit(1)
                 .minimumScaleFactor(0.75)
 
             Text(value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .font(MacOS9Typography.bodyBold(28))
                 .monospacedDigit()
                 .foregroundStyle(color)
         }
@@ -1957,7 +1957,7 @@ struct TuyaInfoPill: View {
 
     var body: some View {
         Label(text, systemImage: icon)
-            .font(.caption.weight(.medium))
+            .font(MacOS9Typography.caption(11))
             .foregroundStyle(tint)
             .padding(.horizontal, 10)
             .padding(.vertical, 8)
@@ -1974,11 +1974,11 @@ struct TuyaSensorStatusCard: View {
     var body: some View {
         HStack(spacing: 10) {
             Image(systemName: "exclamationmark.circle.fill")
-                .font(.title3)
+                .font(MacOS9Typography.windowTitle(17))
                 .foregroundStyle(.orange)
 
             Text(message)
-                .font(.subheadline)
+                .font(MacOS9Typography.body(13))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(.leading)
 
@@ -1997,7 +1997,7 @@ struct LoadingCard: View {
                 .scaleEffect(1.2)
 
             Text("Carregando...")
-                .font(.subheadline)
+                .font(MacOS9Typography.body(13))
                 .foregroundStyle(.secondary)
         }
         .padding(32)
@@ -2256,7 +2256,7 @@ struct AircraftDetailView: View {
                                 image.resizable().aspectRatio(contentMode: .fit)
                             case .failure, .empty:
                                 Image(systemName: "airplane.circle.fill")
-                                    .font(.system(size: 40))
+                                    .font(MacOS9Typography.body(40))
                                     .foregroundStyle(.blue.opacity(0.3))
                             @unknown default:
                                 EmptyView()
@@ -2276,23 +2276,23 @@ struct AircraftDetailView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(ac.displayCallsign)
-                            .font(.system(size: 30, weight: .bold, design: .monospaced))
+                            .font(MacOS9Typography.bodyBold(30))
                             .lineLimit(1)
                         if let airline = classifiedAirlineName ?? ac.airline {
                             Text(airline)
-                                .font(.headline)
+                                .font(MacOS9Typography.bodyBold(15))
                                 .foregroundStyle(.blue)
                         }
 
                         if let faFlight {
                             HStack(spacing: 6) {
                                 Text(faFlight.origin?.bestCode ?? "-")
-                                    .font(.caption.weight(.semibold))
+                                    .font(MacOS9Typography.caption(11))
                                 Image(systemName: "arrow.right")
-                                    .font(.caption2)
+                                    .font(MacOS9Typography.finePrint(9))
                                     .foregroundStyle(.secondary)
                                 Text(faFlight.destination?.bestCode ?? "-")
-                                    .font(.caption.weight(.semibold))
+                                    .font(MacOS9Typography.caption(11))
                             }
                             .foregroundStyle(.secondary)
                         }
@@ -2332,10 +2332,10 @@ struct AircraftDetailView: View {
                             Label(
                                 "Classificar empresa aérea", systemImage: "building.2.crop.circle"
                             )
-                            .font(.subheadline.weight(.semibold))
+                            .font(MacOS9Typography.bodyBold(13))
                             Spacer()
                             Image(systemName: "chevron.right")
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.secondary)
                         }
                         .padding(.vertical, 4)
@@ -2347,7 +2347,7 @@ struct AircraftDetailView: View {
                             ProgressView()
                                 .scaleEffect(0.85)
                             Text("Carregando classificação...")
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.secondary)
                             Spacer()
                         }
@@ -2355,7 +2355,7 @@ struct AircraftDetailView: View {
 
                     if let message = classificationMessage {
                         Text(message)
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                     }
@@ -2406,7 +2406,7 @@ struct AircraftDetailView: View {
                             Image(systemName: "map.fill")
                             Text("Ver no Mapa")
                         }
-                        .font(.headline)
+                        .font(MacOS9Typography.bodyBold(15))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .foregroundStyle(.primary)
@@ -2425,7 +2425,7 @@ struct AircraftDetailView: View {
                 VStack(alignment: .leading, spacing: 12) {
                     HStack {
                         Label("FlightAware", systemImage: "clock.badge.checkmark")
-                            .font(.headline)
+                            .font(MacOS9Typography.bodyBold(15))
                         Spacer()
                         if faLoading {
                             ProgressView().scaleEffect(0.9)
@@ -2438,16 +2438,16 @@ struct AircraftDetailView: View {
 
                         HStack(spacing: 10) {
                             Text(orig)
-                                .font(.title3.bold())
+                                .font(MacOS9Typography.bodyBold(17))
                                 .monospaced()
                             Image(systemName: "arrow.right")
                                 .foregroundStyle(.secondary)
                             Text(dest)
-                                .font(.title3.bold())
+                                .font(MacOS9Typography.bodyBold(17))
                                 .monospaced()
                             Spacer()
                             Text(faFlight.bestIdent)
-                                .font(.subheadline.weight(.semibold))
+                                .font(MacOS9Typography.bodyBold(13))
                                 .foregroundStyle(.secondary)
                                 .monospaced()
                         }
@@ -2457,7 +2457,7 @@ struct AircraftDetailView: View {
                         HStack(spacing: 16) {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Saída")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                                 Text(
                                     FlightAwareTime.short(faFlight.actualOut)
@@ -2465,11 +2465,11 @@ struct AircraftDetailView: View {
                                         ?? FlightAwareTime.short(faFlight.scheduledOut)
                                         ?? "-"
                                 )
-                                .font(.headline.monospacedDigit())
+                                .font(MacOS9Typography.bodyBold(15))
                                 Text(
                                     "T\(faFlight.terminalOrigin ?? "-") • G\(faFlight.gateOrigin ?? "-")"
                                 )
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.secondary)
                             }
 
@@ -2477,7 +2477,7 @@ struct AircraftDetailView: View {
 
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Chegada")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                                 Text(
                                     FlightAwareTime.short(faFlight.actualIn)
@@ -2485,11 +2485,11 @@ struct AircraftDetailView: View {
                                         ?? FlightAwareTime.short(faFlight.scheduledIn)
                                         ?? "-"
                                 )
-                                .font(.headline.monospacedDigit())
+                                .font(MacOS9Typography.bodyBold(15))
                                 Text(
                                     "T\(faFlight.terminalDestination ?? "-") • G\(faFlight.gateDestination ?? "-")"
                                 )
-                                .font(.caption)
+                                .font(MacOS9Typography.caption(11))
                                 .foregroundStyle(.secondary)
                             }
                         }
@@ -2499,10 +2499,10 @@ struct AircraftDetailView: View {
                         HStack(spacing: 16) {
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Operadora")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                                 Text(faFlight.operator ?? faFlight.operatorIcao ?? "-")
-                                    .font(.subheadline.weight(.semibold))
+                                    .font(MacOS9Typography.bodyBold(13))
                                     .lineLimit(1)
                             }
 
@@ -2510,21 +2510,21 @@ struct AircraftDetailView: View {
 
                             VStack(alignment: .leading, spacing: 6) {
                                 Text("Status")
-                                    .font(.caption)
+                                    .font(MacOS9Typography.caption(11))
                                     .foregroundStyle(.secondary)
                                 Text(flightAwareStatus(faFlight))
-                                    .font(.subheadline.weight(.semibold))
+                                    .font(MacOS9Typography.bodyBold(13))
                                     .foregroundStyle(.primary)
                                     .lineLimit(1)
                             }
                         }
                     } else if let faError {
                         Text(faError)
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                     } else {
                         Text("Sem dados de horário/gate para este ident agora.")
-                            .font(.caption)
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(.secondary)
                     }
                 }
@@ -2701,7 +2701,7 @@ private struct AirlineClassificationSheet: View {
                             .frame(width: 30, height: 30)
                         }
                         Text(aircraft.displayCallsign)
-                            .font(.headline)
+                            .font(MacOS9Typography.bodyBold(15))
                         Spacer()
                     }
                 }
@@ -2744,7 +2744,7 @@ private struct AirlineClassificationSheet: View {
                     }
                 } label: {
                     Text("Salvar")
-                        .bold()
+                        .font(MacOS9Typography.bodyBold(15))
                         .frame(maxWidth: .infinity)
                         .padding()
                         .background(selected != nil ? Color.blue : Color.gray.opacity(0.3))
@@ -2781,7 +2781,7 @@ struct AircraftRouteView: View {
 
                 VStack(spacing: 8) {
                     Image(systemName: "airplane")
-                        .font(.title3)
+                        .font(MacOS9Typography.windowTitle(17))
                         .foregroundStyle(.blue)
 
                     HStack(spacing: 4) {
@@ -2812,7 +2812,7 @@ struct AircraftRouteView: View {
 
                 HStack(spacing: 6) {
                     Image(systemName: "airplane")
-                        .font(.subheadline)
+                        .font(MacOS9Typography.body(13))
                         .foregroundStyle(.blue)
                     ForEach(0..<8) { _ in
                         Circle()
@@ -2840,11 +2840,11 @@ struct AirportBlock_Legacy: View {
     var body: some View {
         VStack(alignment: alignment, spacing: 4) {
             Text(code)
-                .font(.system(size: 26, weight: .bold, design: .monospaced))
+                .font(MacOS9Typography.bodyBold(26))
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
             Text(city)
-                .font(.caption)
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(.secondary)
                 .multilineTextAlignment(alignment == .leading ? .leading : .trailing)
                 .lineLimit(2)
@@ -2886,7 +2886,7 @@ struct AircraftPhotoView: View {
                     VStack(alignment: .trailing, spacing: 2) {
                         if let photographer {
                             Text("© \(photographer)")
-                                .font(.system(size: 8))
+                                .font(MacOS9Typography.body(8))
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 2)
@@ -2896,7 +2896,7 @@ struct AircraftPhotoView: View {
 
                         if let sourceName {
                             Text(sourceName)
-                                .font(.system(size: 8, weight: .bold))
+                                .font(MacOS9Typography.bodyBold(8))
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 2)
@@ -2921,10 +2921,10 @@ struct AircraftPhotoView: View {
     private var fallbackView: some View {
         VStack(spacing: 8) {
             Image(systemName: "photo.badge.exclamationmark")
-                .font(.largeTitle)
+                .font(MacOS9Typography.windowTitle(26))
                 .foregroundStyle(.secondary)
             Text("Erro ao carregar imagem")
-                .font(.caption)
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -2933,10 +2933,10 @@ struct AircraftPhotoView: View {
     private var noPhotoView: some View {
         VStack(spacing: 8) {
             Image(systemName: "photo")
-                .font(.largeTitle)
+                .font(MacOS9Typography.windowTitle(26))
                 .foregroundStyle(.secondary)
             Text("Sem foto disponível")
-                .font(.caption)
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -3081,7 +3081,7 @@ struct DetailRow_Legacy: View {
                 .foregroundStyle(.secondary)
             Spacer()
             Text(value)
-                .bold()
+                .font(MacOS9Typography.bodyBold(13))
         }
     }
 }

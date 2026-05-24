@@ -252,7 +252,7 @@ private struct MacOS9RootTabItem: View {
     var body: some View {
         VStack(spacing: 3) {
             Image(systemName: iconName)
-                .font(.system(size: 20, weight: .semibold))
+                .font(MacOS9Typography.bodyBold(20))
                 .frame(height: 22)
             Text(tab.title)
                 .font(MacOS9Typography.caption(10))
@@ -282,7 +282,7 @@ private struct MoreMenuView: View {
                         } label: {
                             HStack(spacing: 14) {
                                 Image(systemName: tab.icon)
-                                    .font(.system(size: 20, weight: .semibold))
+                                    .font(MacOS9Typography.bodyBold(20))
                                     .frame(width: 28)
                                     .foregroundStyle(MacOS9Colors.selection)
                                 Text(tab.title)
@@ -290,7 +290,7 @@ private struct MoreMenuView: View {
                                     .foregroundStyle(MacOS9Colors.primaryText)
                                 Spacer()
                                 Image(systemName: "chevron.right")
-                                    .font(.system(size: 14, weight: .bold))
+                                    .font(MacOS9Typography.bodyBold(14))
                                     .foregroundStyle(MacOS9Colors.secondaryText)
                             }
                             .padding(.horizontal, 16)

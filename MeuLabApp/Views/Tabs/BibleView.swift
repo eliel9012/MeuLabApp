@@ -113,7 +113,7 @@ private struct BibleHeader: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: "book.closed")
-                .font(.system(size: 22, weight: .semibold))
+                .font(MacOS9Typography.bodyBold(22))
                 .frame(width: 40, height: 40)
                 .background(MacOS9Colors.contentPanel)
                 .overlay(Mac9BevelBorder(isRaised: true))
@@ -121,7 +121,7 @@ private struct BibleHeader: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("A Bíblia")
-                    .font(MacOS9Typography.editorialTitle(28))
+                    .font(MacOS9Typography.windowTitle(20))
                     .foregroundStyle(MacOS9Colors.primaryText)
                 Text(subtitle)
                     .font(MacOS9Typography.caption(12))

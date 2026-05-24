@@ -268,20 +268,13 @@ private struct WeatherToolbarTitle: View {
                     .frame(width: compact ? 24 : 28, height: compact ? 24 : 28)
 
                 Image(systemName: "cloud.sun.fill")
-                    .font(.system(size: compact ? 12 : 14, weight: .bold))
+                    .font(MacOS9Typography.bodyBold(compact ? 12 : 14))
                     .foregroundStyle(WeatherTheme.skyBlue)
             }
 
             Text("Clima")
-                .font(.system(size: compact ? 20 : 23, weight: .black, design: .rounded))
-                .tracking(0.4)
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [WeatherTheme.sunAmber, WeatherTheme.skyBlue],
-                        startPoint: .leading,
-                        endPoint: .trailing
-                    )
-                )
+                .font(MacOS9Typography.windowTitle(compact ? 16 : 18))
+                .foregroundStyle(MacOS9Colors.primaryText)
         }
         .frame(maxWidth: compact ? .infinity : nil, alignment: .leading)
         .accessibilityElement(children: .combine)
@@ -299,16 +292,16 @@ private struct WeatherMetricTile: View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.caption.weight(.bold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(tint)
 
                 Text(title)
-                    .font(.caption.weight(.semibold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(WeatherTheme.ink.opacity(0.56))
             }
 
             Text(value)
-                .font(.headline.weight(.bold))
+                .font(MacOS9Typography.bodyBold(15))
                 .foregroundStyle(WeatherTheme.ink)
                 .monospacedDigit()
                 .lineLimit(2)
@@ -329,14 +322,14 @@ private struct WeatherDayChip: View {
         VStack(alignment: .leading, spacing: 10) {
             HStack {
                 Text(day.title)
-                    .font(.caption.weight(.semibold))
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(
                         isSelected ? Color.white.opacity(0.88) : WeatherTheme.ink.opacity(0.62))
 
                 Spacer()
 
                 Image(systemName: day.icon)
-                    .font(.subheadline.weight(.bold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .foregroundStyle(
                         isSelected
                             ? .white
@@ -344,18 +337,18 @@ private struct WeatherDayChip: View {
             }
 
             Text(day.maxTempLabel)
-                .font(.title3.weight(.bold))
+                .font(MacOS9Typography.bodyBold(18))
                 .monospacedDigit()
                 .foregroundStyle(isSelected ? .white : WeatherTheme.ink)
 
             HStack(spacing: 8) {
                 Label("\(day.rainChance)%", systemImage: "drop.fill")
-                    .font(.caption2.weight(.semibold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(
                         isSelected ? Color.white.opacity(0.9) : WeatherTheme.ink.opacity(0.56))
 
                 Text(day.shortDate)
-                    .font(.caption2.weight(.semibold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(
                         isSelected ? Color.white.opacity(0.74) : WeatherTheme.ink.opacity(0.50))
             }
@@ -403,23 +396,23 @@ private struct WeatherInsightCard: View {
                         .frame(width: 34, height: 34)
 
                     Image(systemName: icon)
-                        .font(.body.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .foregroundStyle(tint)
                 }
 
                 VStack(alignment: .leading, spacing: 2) {
                     Text(title)
-                        .font(.headline)
+                        .font(MacOS9Typography.bodyBold(15))
                         .foregroundStyle(WeatherTheme.ink)
 
                     Text(highlightCaption)
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(WeatherTheme.ink.opacity(0.56))
                 }
             }
 
             Text(highlight)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .font(MacOS9Typography.bodyBold(30))
                 .foregroundStyle(tint)
                 .monospacedDigit()
 
@@ -427,13 +420,13 @@ private struct WeatherInsightCard: View {
                 ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
                     HStack(spacing: 12) {
                         Text(row.0)
-                            .font(.caption.weight(.semibold))
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(WeatherTheme.ink.opacity(0.54))
 
                         Spacer()
 
                         Text(row.1)
-                            .font(.caption.weight(.bold))
+                            .font(MacOS9Typography.caption(11))
                             .foregroundStyle(WeatherTheme.ink)
                             .multilineTextAlignment(.trailing)
                     }
@@ -453,26 +446,26 @@ private struct HourlyForecastCell: View {
     var body: some View {
         VStack(spacing: 10) {
             Text(hour.timeLabel)
-                .font(.caption.weight(.semibold))
+                .font(MacOS9Typography.caption(11))
                 .foregroundStyle(WeatherTheme.ink.opacity(0.54))
 
             Image(systemName: hour.weatherIcon)
-                .font(.title3.weight(.semibold))
+                .font(MacOS9Typography.bodyBold(17))
                 .foregroundStyle(hour.rainChance >= 45 ? WeatherTheme.rainBlue : tint)
 
             Text("\(hour.tempC)°")
-                .font(.headline.weight(.bold))
+                .font(MacOS9Typography.bodyBold(15))
                 .monospacedDigit()
                 .foregroundStyle(WeatherTheme.ink)
 
             VStack(spacing: 4) {
                 Text("\(hour.rainChance)%")
-                    .font(.caption2.weight(.bold))
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(WeatherTheme.rainBlue)
                     .monospacedDigit()
 
                 Text("\(hour.rainMm.formattedBR(decimals: 1)) mm")
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(WeatherTheme.ink.opacity(0.54))
                     .monospacedDigit()
             }
@@ -491,7 +484,7 @@ private struct WeatherForecastRow: View {
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: day.icon)
-                .font(.title3.weight(.semibold))
+                .font(MacOS9Typography.bodyBold(17))
                 .foregroundStyle(
                     day.rainChance >= 45 ? WeatherTheme.rainBlue : WeatherTheme.sunAmber
                 )
@@ -499,11 +492,11 @@ private struct WeatherForecastRow: View {
 
             VStack(alignment: .leading, spacing: 4) {
                 Text(day.rowTitle)
-                    .font(.subheadline.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .foregroundStyle(WeatherTheme.ink)
 
                 Text(day.description)
-                    .font(.caption)
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(WeatherTheme.ink.opacity(0.56))
                     .lineLimit(1)
             }
@@ -513,11 +506,11 @@ private struct WeatherForecastRow: View {
             VStack(alignment: .trailing, spacing: 4) {
                 HStack(spacing: 8) {
                     Label("\(day.rainChance)%", systemImage: "drop.fill")
-                        .font(.caption.weight(.semibold))
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(WeatherTheme.rainBlue)
 
                     Text("\(day.rainMm.formattedBR(decimals: 1)) mm")
-                        .font(.caption.weight(.semibold))
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(WeatherTheme.ink.opacity(0.54))
                         .monospacedDigit()
                 }
@@ -532,14 +525,14 @@ private struct WeatherForecastRow: View {
                     Text(day.maxTempLabel)
                         .foregroundStyle(Color.red.opacity(0.82))
                 }
-                .font(.caption.weight(.bold))
+                .font(MacOS9Typography.caption(11))
                 .monospacedDigit()
             }
 
             if isSelected {
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundStyle(WeatherTheme.mint)
-                    .font(.body.weight(.bold))
+                    .font(MacOS9Typography.bodyBold(13))
             }
         }
         .padding(.vertical, 10)
@@ -719,7 +712,7 @@ struct WeatherView: View {
                             Task { await appState.refreshWeather() }
                         } label: {
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 17, weight: .semibold))
+                                .font(MacOS9Typography.bodyBold(17))
                                 .foregroundStyle(WeatherTheme.skyBlue)
                                 .padding(8)
                                 .background(
@@ -767,19 +760,19 @@ struct WeatherView: View {
                     .controlSize(.regular)
 
                 Text("Carregando clima...")
-                    .font(.headline.weight(.medium))
+                    .font(MacOS9Typography.bodyBold(15))
                     .foregroundStyle(WeatherTheme.ink.opacity(0.72))
             } else {
                 Image(systemName: "cloud.sun")
-                    .font(.system(size: 24, weight: .semibold))
+                    .font(MacOS9Typography.bodyBold(24))
                     .foregroundStyle(WeatherTheme.skyBlue)
 
                 Text("Atualize a previsão")
-                    .font(.headline.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(15))
                     .foregroundStyle(WeatherTheme.ink)
 
                 Text("Se o clima não entrou sozinho, toque para buscar a leitura agora.")
-                    .font(.subheadline)
+                    .font(MacOS9Typography.body(13))
                     .foregroundStyle(WeatherTheme.ink.opacity(0.65))
                     .multilineTextAlignment(.center)
 
@@ -787,7 +780,7 @@ struct WeatherView: View {
                     Task { await appState.refreshWeather() }
                 } label: {
                     Label("Buscar agora", systemImage: "arrow.clockwise")
-                        .font(.subheadline.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(13))
                         .foregroundStyle(WeatherTheme.skyBlue)
                         .padding(.horizontal, 14)
                         .padding(.vertical, 10)
@@ -852,11 +845,11 @@ struct WeatherView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(spacing: 10) {
                         Label("Condição atual", systemImage: "cloud.sun.fill")
-                            .font(.subheadline.weight(.semibold))
+                            .font(MacOS9Typography.bodyBold(13))
                             .foregroundStyle(WeatherTheme.ink.opacity(0.82))
 
                         Text(styleBadgeTitle(for: style))
-                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .font(MacOS9Typography.bodyBold(10))
                             .tracking(1)
                             .foregroundStyle(style.accent)
                             .padding(.horizontal, 10)
@@ -869,7 +862,7 @@ struct WeatherView: View {
                             .foregroundStyle(WeatherTheme.skyBlue)
 
                         Text(weather.location)
-                            .font(.headline)
+                            .font(MacOS9Typography.bodyBold(15))
                             .foregroundStyle(WeatherTheme.ink)
                     }
                     .onTapGesture {
@@ -879,7 +872,7 @@ struct WeatherView: View {
                     }
 
                     Text(updatedWeatherText(weather.timestamp))
-                        .font(.caption)
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(WeatherTheme.ink.opacity(0.56))
                 }
 
@@ -889,7 +882,7 @@ struct WeatherView: View {
                     Button("Usar minha localização") {
                         LocationManager.shared.requestPermission()
                     }
-                    .font(.caption.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .foregroundStyle(WeatherTheme.skyBlue)
                     .padding(.horizontal, 14)
                     .padding(.vertical, 10)
@@ -902,20 +895,20 @@ struct WeatherView: View {
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .top, spacing: 6) {
                         Text("\(weather.current.tempC)")
-                            .font(.system(size: 78, weight: .thin, design: .rounded))
+                            .font(MacOS9Typography.body(72))
                             .foregroundStyle(WeatherTheme.ink)
 
                         Text("°C")
-                            .font(.title.weight(.medium))
+                            .font(MacOS9Typography.bodyBold(28))
                             .foregroundStyle(WeatherTheme.ink.opacity(0.56))
                     }
 
                     Text(weather.current.description)
-                        .font(.title3.weight(.semibold))
+                        .font(MacOS9Typography.bodyBold(22))
                         .foregroundStyle(WeatherTheme.ink)
 
                     Text(heroSummary(for: weather.current))
-                        .font(.subheadline)
+                        .font(MacOS9Typography.body(15))
                         .foregroundStyle(WeatherTheme.ink.opacity(0.62))
                 }
 
@@ -931,7 +924,7 @@ struct WeatherView: View {
                         .frame(width: 96, height: 96)
 
                     Image(systemName: currentWeatherIcon(for: weather.current))
-                        .font(.system(size: 36, weight: .semibold))
+                        .font(MacOS9Typography.bodyBold(36))
                         .foregroundStyle(style.accent)
                 }
             }
@@ -1051,15 +1044,15 @@ struct WeatherView: View {
             HStack(alignment: .top, spacing: 16) {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(day.rowTitle)
-                        .font(.caption.weight(.semibold))
+                        .font(MacOS9Typography.caption(11))
                         .foregroundStyle(WeatherTheme.ink.opacity(0.56))
 
                     Text(day.title)
-                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .font(MacOS9Typography.bodyBold(34))
                         .foregroundStyle(WeatherTheme.ink)
 
                     Text(day.description)
-                        .font(.subheadline)
+                        .font(MacOS9Typography.body(13))
                         .foregroundStyle(WeatherTheme.ink.opacity(0.62))
                 }
 
@@ -1071,7 +1064,7 @@ struct WeatherView: View {
                         .frame(width: 72, height: 72)
 
                     Image(systemName: day.icon)
-                        .font(.system(size: 28, weight: .semibold))
+                        .font(MacOS9Typography.bodyBold(28))
                         .foregroundStyle(tint)
                 }
             }
@@ -1217,7 +1210,7 @@ struct WeatherView: View {
                 Text(
                     "Esse dia ainda não tem previsão horária detalhada disponível. A leitura acima usa os dados diários consolidados."
                 )
-                .font(.subheadline)
+                .font(MacOS9Typography.body(13))
                 .foregroundStyle(WeatherTheme.ink.opacity(0.62))
                 .padding(18)
                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -1277,17 +1270,17 @@ struct WeatherView: View {
                     .frame(width: 38, height: 38)
 
                 Image(systemName: icon)
-                    .font(.body.weight(.semibold))
+                    .font(MacOS9Typography.bodyBold(13))
                     .foregroundStyle(WeatherTheme.skyBlue)
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)
-                    .font(.headline)
+                    .font(MacOS9Typography.bodyBold(15))
                     .foregroundStyle(WeatherTheme.ink)
 
                 Text(subtitle)
-                    .font(.caption)
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(WeatherTheme.ink.opacity(0.56))
             }
         }

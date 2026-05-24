@@ -51,7 +51,7 @@ struct BibleRandomView: View {
     private var inspireText: some View {
         VStack(spacing: 8) {
             Image(systemName: "book.closed")
-                .font(.system(size: 40))
+                .font(MacOS9Typography.body(40))
                 .foregroundStyle(MacOS9Colors.statusOrange)
 
             Text("Deixe a Palavra falar ao seu coração")
@@ -99,7 +99,7 @@ private struct RandomVerseCard: View {
             }
 
             Text(verse.text)
-                .font(MacOS9Typography.editorialHeading(23))
+                .font(MacOS9Typography.windowTitle(23))
                 .foregroundStyle(MacOS9Colors.primaryText)
                 .lineSpacing(6)
                 .multilineTextAlignment(.leading)

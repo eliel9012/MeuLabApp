@@ -11,6 +11,10 @@ struct MeuLabApp: App {
     @State private var startupTask: Task<Void, Never>?
     @State private var didConfigurePushNotifications = false
 
+    init() {
+        MacOS9Theme.applyAppearance()
+    }
+
     var body: some Scene {
         WindowGroup {
             ContentView()
