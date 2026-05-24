@@ -54,11 +54,10 @@ struct BibleChapterReaderView: View {
         HStack {
             VStack(alignment: .leading, spacing: 2) {
                 Text(viewModel.currentBook)
-                    .font(.headline)
-                    .fontWeight(.semibold)
+                    .font(MacOS9Typography.bodyBold(15))
 
                 Text("Capítulo \(viewModel.currentChapterNumber)")
-                    .font(.caption)
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(.secondary)
             }
 
@@ -66,12 +65,11 @@ struct BibleChapterReaderView: View {
 
             VStack(alignment: .trailing, spacing: 2) {
                 Text("Versículos")
-                    .font(.caption)
+                    .font(MacOS9Typography.caption(11))
                     .foregroundStyle(.secondary)
 
                 Text("\(viewModel.highlightedVerseIndex + 1)/\(viewModel.verses.count)")
-                    .font(.caption2)
-                    .fontWeight(.semibold)
+                    .font(MacOS9Typography.bodyBold(10))
             }
         }
     }
@@ -107,12 +105,11 @@ struct BibleChapterReaderView: View {
 
             VStack(alignment: .center, spacing: 4) {
                 Text(viewModel.isPlaying ? "Lendo..." : viewModel.isPaused ? "Pausado" : "Parado")
-                    .font(.caption2)
+                    .font(MacOS9Typography.finePrint(9))
                     .foregroundStyle(.secondary)
 
                 Text("\(viewModel.highlightedVerseIndex + 1)/\(viewModel.verses.count)")
-                    .font(.caption)
-                    .fontWeight(.semibold)
+                    .font(MacOS9Typography.bodyBold(11))
             }
         }
         .padding()
@@ -147,13 +144,12 @@ struct ReaderVerseRow: View {
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Text("\(verseNumber)")
-                .font(.caption)
-                .fontWeight(.semibold)
+                .font(MacOS9Typography.bodyBold(11))
                 .foregroundStyle(.blue)
                 .frame(width: 24, alignment: .center)
 
             Text(text)
-                .font(.body)
+                .font(MacOS9Typography.body(13))
                 .lineLimit(nil)
                 .foregroundStyle(.primary)
 

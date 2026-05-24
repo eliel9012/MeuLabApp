@@ -1,0 +1,11 @@
+#!/usr/bin/expect -f
+set timeout 60
+spawn ssh -o StrictHostKeyChecking=no pi@192.168.100.131
+expect "password:"
+send "pobgu9-jabdoP-ruczaq\r"
+expect -timeout 10 "\\\$"
+send "cat /home/pi/bot2/api/health_api.py && echo '===S1===' && grep -n 'adsb_lol' /home/pi/bot2/api/adsb_api.py /home/pi/bot2/api_server.py && echo '===S2===' && grep -rn 'export\\|passes_by_date\\|passes_by_satellite' /home/pi/bot2/api_server.py && echo '===S3===' && grep -n 'def \\|async def ' /home/pi/bot2/api/openwebrx_api.py && echo '===S4===' && grep -n 'audio.wav\\|audio_wav\\|audio/pcm\\|serve_audio' /home/pi/bot2/api/openwebrx_api.py /home/pi/bot2/api/openwebrx_service.py /home/pi/bot2/api_server.py && echo '===S5===' && sed -n '/def satdump_list_passes/,/^async def/p' /home/pi/bot2/api/satdump_api.py | head -50 && echo '===DONE==='\r"
+expect -timeout 30 "===DONE==="
+expect -timeout 5 "\\\$"
+send "exit\r"
+expect eof

@@ -159,13 +159,13 @@ class AppState: ObservableObject {
     private var acarsInFlight = false
 
     // Intervalos de cada módulo quando a tab está ativa
-    private let adsbTimerInterval: TimeInterval = 0.75
-    private let adsbSummaryInterval: TimeInterval = 0.75
-    private let adsbAircraftInterval: TimeInterval = 1.5
+    private let adsbTimerInterval: TimeInterval = 4.0
+    private let adsbSummaryInterval: TimeInterval = 8.0
+    private let adsbAircraftInterval: TimeInterval = 10.0
     private let systemInterval: TimeInterval = 5.0
     private let firestickInterval: TimeInterval = 10.0
-    private let radioInterval: TimeInterval = 1.0
-    private let radioBackgroundInterval: TimeInterval = 5.0
+    private let radioInterval: TimeInterval = 3.0
+    private let radioBackgroundInterval: TimeInterval = 60.0
     private let weatherInterval: TimeInterval = 60.0
     private let satelliteInterval: TimeInterval = 120.0
     private let acarsInterval: TimeInterval = 10.0
@@ -177,11 +177,11 @@ class AppState: ObservableObject {
     private let systemdInterval: TimeInterval = 30.0
     private let satDumpStatusInterval: TimeInterval = 60.0
     private let adsbHistoryInterval: TimeInterval = 300.0
-    private let adsbAlertsInterval: TimeInterval = 60.0
-    private let tuyaSensorInterval: TimeInterval = 30.0
+    private let adsbAlertsInterval: TimeInterval = 120.0
+    private let tuyaSensorInterval: TimeInterval = 120.0
     private let acarsHistoryInterval: TimeInterval = 300.0
     private let acarsAlertsInterval: TimeInterval = 60.0
-    private let metricsInterval: TimeInterval = 10.0
+    private let metricsInterval: TimeInterval = 60.0
 
     private var lastADSBSummaryRefresh: Date?
     private var lastADSBListRefresh: Date?
@@ -234,7 +234,7 @@ class AppState: ObservableObject {
             }
         }
         // Timer para os demais módulos — cada grupo roda independente via in-flight flags
-        moduleTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+        moduleTimer = Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
             Task { @MainActor [weak self] in
                 await self?.tickActiveModules()
             }
@@ -245,12 +245,6 @@ class AppState: ObservableObject {
         guard !hasBootstrapped else { return }
         hasBootstrapped = true
         startRefreshTimers()
-
-        Task { @MainActor [weak self] in
-            await self?.refreshActiveTabNow(force: true)
-            // Pré-carrega rádio em background para já ter album/artista ao abrir
-            await self?.refreshRadio()
-        }
     }
 
     func setRefreshEnabled(_ enabled: Bool) {
@@ -263,7 +257,7 @@ class AppState: ObservableObject {
             adsbTimer = nil
             moduleTimer?.invalidate()
             moduleTimer = nil
-            startRadioBackgroundTimer()
+            stopRadioBackgroundTimer()
         }
     }
 
@@ -314,9 +308,6 @@ class AppState: ObservableObject {
         let active = activeTabRawValue
         let now = Date()
 
-        // Rádio sempre atualiza em background (intervalo maior quando não é a tab ativa)
-        await tickRadio(now, background: active != "radio")
-
         switch active {
         case "adsb", "map":
             // ADSB live já roda no seu próprio timer rápido.
@@ -328,6 +319,9 @@ class AppState: ObservableObject {
 
         case "weather":
             await tickWeather(now)
+
+        case "radio":
+            await tickRadio(now, background: false)
 
         case "satellite":
             await tickSatellite(now)
@@ -346,6 +340,8 @@ class AppState: ObservableObject {
     // --- Grupos de refresh isolados ---
 
     private func tickADSBExtras(_ now: Date) async {
+        guard adsbSummary != nil || !aircraftList.isEmpty else { return }
+
         let doHistory = shouldRefresh(
             last: lastADSBHistoryRefresh, interval: adsbHistoryInterval, now: now)
         let doAlerts = shouldRefresh(
@@ -1270,7 +1266,7 @@ class AppState: ObservableObject {
                 }
             }
 
-            adsbAirlines = grouped.values
+            let nextAirlines = grouped.values
                 .map { Airline(name: $0.displayName, count: $0.count) }
                 .sorted {
                     if $0.count == $1.count {
@@ -1278,16 +1274,25 @@ class AppState: ObservableObject {
                     }
                     return $0.count > $1.count
                 }
+            if adsbAirlines != nextAirlines {
+                adsbAirlines = nextAirlines
+            }
         } else {
-            adsbAirlines = adsbSummary?.airlines ?? []
+            let nextAirlines = adsbSummary?.airlines ?? []
+            if adsbAirlines != nextAirlines {
+                adsbAirlines = nextAirlines
+            }
         }
 
-        adsbNearbyAircraftPreview =
+        let nextNearbyAircraftPreview =
             aircraftList
             .filter { $0.computedDistanceNm < 100000 }
             .sorted { $0.computedDistanceNm < $1.computedDistanceNm }
             .prefix(5)
             .map { $0 }
+        if adsbNearbyAircraftPreview != nextNearbyAircraftPreview {
+            adsbNearbyAircraftPreview = nextNearbyAircraftPreview
+        }
     }
 
     private func normalizedAirlineDisplayName(_ value: String?) -> String? {
@@ -1302,58 +1307,35 @@ class AppState: ObservableObject {
 
     func refreshACARS() async {
         guard !acarsLoading else {
-            print("[ACARS] ⏭️ Skipping refresh - already loading")
             return
         }
         acarsLoading = true
         defer { acarsLoading = false }
 
-        print("[ACARS] 🔄 Starting refresh...")
-
         do {
-            print("[ACARS] 📡 Fetching summary...")
             let summary = try await api.fetchACARSSummary()
-            print("[ACARS] ✅ Summary received: \(summary.today.messages) messages today")
 
-            print("[ACARS] 📡 Fetching messages...")
             let messageList = try await api.fetchACARSMessages(limit: 20)
-            print("[ACARS] ✅ Messages received: \(messageList.messages.count) messages")
 
             // Populate registration cache from ACARS
-            var newRegistrations = 0
             for msg in messageList.messages {
                 if let flight = msg.flight, !flight.isEmpty,
                     let tail = msg.tail, !tail.isEmpty
                 {
                     if registrationCache[flight] == nil {
                         registrationCache[flight] = tail
-                        newRegistrations += 1
                     }
                 }
             }
-            if newRegistrations > 0 {
-                print("[ACARS] 💾 Cached \(newRegistrations) new registrations from ACARS")
-            }
 
-            print("[ACARS] 📡 Fetching hourly stats...")
             let hourly = try await api.fetchACARSHourly()
-            print("[ACARS] ✅ Hourly stats received: \(hourly.hours.count) hours")
 
             if self.acarsSummary != summary {
-                print("[ACARS] 📝 Updating summary (changed)")
                 self.acarsSummary = summary
-            } else {
-                print("[ACARS] ⏭️ Summary unchanged, skipping update")
             }
 
             let newMessages = messageList.messages
             if self.acarsMessages != newMessages {
-                print("[ACARS] 📝 Updating messages: \(newMessages.count) messages")
-                if let first = newMessages.first {
-                    print(
-                        "[ACARS]   First message: \(first.flight ?? "N/A") - \(first.label ?? "N/A")"
-                    )
-                }
                 self.acarsMessages = newMessages
 
                 if let msg = newMessages.first {
@@ -1363,30 +1345,17 @@ class AppState: ObservableObject {
                         time: msg.time
                     )
                 }
-            } else {
-                print("[ACARS] ⏭️ Messages unchanged, skipping update")
             }
 
             let newHourly = hourly.hours
             if self.acarsHourly != newHourly {
-                print("[ACARS] 📝 Updating hourly stats: \(newHourly.count) hours")
                 self.acarsHourly = newHourly
-            } else {
-                print("[ACARS] ⏭️ Hourly stats unchanged, skipping update")
             }
 
             self.acarsError = nil
-            print("[ACARS] ✅ Refresh completed successfully")
         } catch {
-            print("[ACARS] ❌ Error during refresh: \(error.localizedDescription)")
-            if let apiError = error as? APIError {
-                print("[ACARS]   API Error details: \(apiError)")
-            }
             if acarsSummary == nil {
-                print("[ACARS] 📝 Setting error message (no previous data)")
                 self.acarsError = error.localizedDescription
-            } else {
-                print("[ACARS] ⏭️ Keeping previous data despite error")
             }
         }
     }

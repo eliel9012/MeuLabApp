@@ -8,22 +8,21 @@ struct RemoteRadioView: View {
     @State private var gainIsAuto = true
     @State private var manualGain: Double = 30
 
-    // Vintage color palette
-    private let woodDark = Color(red: 0.25, green: 0.15, blue: 0.08)
-    private let woodMid = Color(red: 0.35, green: 0.22, blue: 0.12)
-    private let woodLight = Color(red: 0.45, green: 0.30, blue: 0.18)
-    private let amber = Color(red: 1.0, green: 0.85, blue: 0.55)
-    private let amberDim = Color(red: 0.8, green: 0.65, blue: 0.35)
-    private let amberGlow = Color(red: 1.0, green: 0.9, blue: 0.6)
-    private let cream = Color(red: 0.96, green: 0.93, blue: 0.86)
-    private let brass = Color(red: 0.72, green: 0.60, blue: 0.35)
-    private let dialBg = Color(red: 0.12, green: 0.10, blue: 0.08)
+    private let woodDark = MacOS9Colors.border
+    private let woodMid = MacOS9Colors.panelBackground
+    private let woodLight = MacOS9Colors.windowBackground
+    private let amber = MacOS9Colors.labelBadge
+    private let amberDim = MacOS9Colors.secondaryText
+    private let amberGlow = MacOS9Colors.scrollbarThumb
+    private let cream = MacOS9Colors.contentPanel
+    private let brass = MacOS9Colors.statusOrange
+    private let dialBg = MacOS9Colors.contentPanel
 
     var body: some View {
         NavigationStack {
             ZStack {
-                // Wood cabinet background
-                woodBackground
+                // Mac OS 9 window background
+                MacOS9Colors.windowBackground.ignoresSafeArea()
 
                 ScrollView {
                     VStack(spacing: 0) {
@@ -40,7 +39,7 @@ struct RemoteRadioView: View {
                             backendBanner(
                                 title: "Aviso de Hardware",
                                 icon: "exclamationmark.triangle.fill",
-                                tint: .orange
+                                tint: MacOS9Colors.statusOrange
                             )
                             .padding(.horizontal, 16)
                             .padding(.top, 12)
@@ -89,9 +88,9 @@ struct RemoteRadioView: View {
                     HStack(spacing: 6) {
                         Image(systemName: "antenna.radiowaves.left.and.right")
                             .foregroundStyle(amber)
-                            .font(.subheadline)
+                            .font(MacOS9Typography.body(13))
                         Text("SDR Remote")
-                            .font(.headline)
+                            .font(MacOS9Typography.bodyBold(15))
                             .foregroundStyle(cream)
                     }
                 }
@@ -112,16 +111,16 @@ struct RemoteRadioView: View {
             HStack(spacing: 8) {
                 Image(systemName: icon)
                     .foregroundStyle(tint)
-                    .font(.system(size: 16))
+                    .font(MacOS9Typography.body(16))
                 Text(title)
-                    .font(.system(size: 14, weight: .bold, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(14))
                     .foregroundStyle(cream)
                 Spacer()
             }
 
             if let error = vm.errorMessage {
                 Text(error)
-                    .font(.system(size: 12, design: .monospaced))
+                    .font(MacOS9Typography.body(12))
                     .foregroundStyle(cream.opacity(0.7))
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
@@ -154,7 +153,7 @@ struct RemoteRadioView: View {
                     Image(systemName: "arrow.clockwise")
                     Text("Verificar Novamente")
                 }
-                .font(.system(size: 12, weight: .semibold, design: .monospaced))
+                .font(MacOS9Typography.bodyBold(12))
                 .foregroundStyle(.white)
                 .frame(maxWidth: .infinity)
                 .frame(height: 36)
@@ -179,9 +178,9 @@ struct RemoteRadioView: View {
     private func statusPill(label: String, ok: Bool, icon: String) -> some View {
         HStack(spacing: 4) {
             Image(systemName: icon)
-                .font(.system(size: 9))
+                .font(MacOS9Typography.body(9))
             Text(label)
-                .font(.system(size: 10, weight: .medium, design: .monospaced))
+                .font(MacOS9Typography.bodyBold(10))
             Circle()
                 .fill(ok ? Color.green : Color.red)
                 .frame(width: 6, height: 6)
@@ -199,12 +198,7 @@ struct RemoteRadioView: View {
 
     private var woodBackground: some View {
         ZStack {
-            LinearGradient(
-                colors: [woodDark, woodMid, woodDark],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            MacOS9Colors.windowBackground.ignoresSafeArea()
 
             // Subtle wood grain texture overlay
             GeometryReader { geo in
@@ -254,7 +248,7 @@ struct RemoteRadioView: View {
                 VStack(spacing: 2) {
                     // Band indicator
                     Text(vm.mode.displayName)
-                        .font(.system(size: 11, weight: .medium, design: .monospaced))
+                        .font(MacOS9Typography.bodyBold(11))
                         .foregroundStyle(amberDim.opacity(0.7))
                         .tracking(4)
 
@@ -274,7 +268,7 @@ struct RemoteRadioView: View {
 
                     // Unit label
                     Text(vm.freqUnitLabel)
-                        .font(.system(size: 13, weight: .medium, design: .monospaced))
+                        .font(MacOS9Typography.bodyBold(13))
                         .foregroundStyle(amberDim.opacity(0.5))
                         .tracking(3)
                 }
@@ -300,22 +294,19 @@ struct RemoteRadioView: View {
                     }
                 } label: {
                     Text(radioMode.displayName)
-                        .font(.system(size: 14, weight: .bold, design: .monospaced))
+                        .font(MacOS9Typography.bodyBold(14))
                         .foregroundStyle(vm.mode == radioMode ? woodDark : cream.opacity(0.7))
                         .frame(width: 60, height: 36)
-                        .background {
-                            if vm.mode == radioMode {
-                                Capsule()
-                                    .fill(amber)
-                                    .shadow(color: amberGlow.opacity(0.4), radius: 6)
-                            } else {
-                                Capsule()
-                                    .fill(woodLight.opacity(0.3))
-                                    .overlay(
-                                        Capsule().stroke(brass.opacity(0.4), lineWidth: 1)
-                                    )
-                            }
-                        }
+                        .background(
+                            Capsule()
+                                .fill(
+                                    vm.mode == radioMode
+                                        ? MacOS9Colors.contentPanel : MacOS9Colors.panelBackground
+                                )
+                                .overlay(
+                                    Capsule().stroke(MacOS9Colors.border, lineWidth: 1)
+                                )
+                        )
                 }
             }
         }
@@ -348,7 +339,7 @@ struct RemoteRadioView: View {
             Task { await vm.stepFrequency(by: delta) }
         } label: {
             Text(label)
-                .font(.system(size: 13, weight: .semibold, design: .monospaced))
+                .font(MacOS9Typography.bodyBold(13))
                 .foregroundStyle(cream)
                 .frame(maxWidth: .infinity)
                 .frame(height: 38)
@@ -371,7 +362,7 @@ struct RemoteRadioView: View {
             // Gain control
             VStack(spacing: 6) {
                 Text("GAIN")
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(10))
                     .foregroundStyle(amberDim)
                     .tracking(2)
 
@@ -384,7 +375,7 @@ struct RemoteRadioView: View {
                     }
                 } label: {
                     Text(gainIsAuto ? "AUTO" : String(format: "%.0f", manualGain))
-                        .font(.system(size: 13, weight: .bold, design: .monospaced))
+                        .font(MacOS9Typography.bodyBold(13))
                         .foregroundStyle(gainIsAuto ? amber : cream)
                         .frame(width: 64, height: 32)
                         .background(
@@ -410,12 +401,12 @@ struct RemoteRadioView: View {
             // Squelch control
             VStack(spacing: 6) {
                 Text("SQUELCH")
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(10))
                     .foregroundStyle(amberDim)
                     .tracking(2)
 
                 Text("\(vm.squelch)")
-                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(13))
                     .foregroundStyle(cream)
                     .frame(width: 64, height: 32)
                     .background(
@@ -450,7 +441,7 @@ struct RemoteRadioView: View {
         VStack(spacing: 8) {
             HStack {
                 Text("PRESETS")
-                    .font(.system(size: 10, weight: .bold, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(10))
                     .foregroundStyle(amberDim)
                     .tracking(3)
                 Spacer()
@@ -476,15 +467,15 @@ struct RemoteRadioView: View {
         } label: {
             VStack(spacing: 4) {
                 Image(systemName: preset.icon)
-                    .font(.system(size: 16))
+                    .font(MacOS9Typography.body(16))
                     .foregroundStyle(isPresetActive(preset) ? woodDark : amber)
 
                 Text(preset.name)
-                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(10))
                     .foregroundStyle(isPresetActive(preset) ? woodDark : cream.opacity(0.8))
 
                 Text(String(format: "%.1f", preset.freqMHz))
-                    .font(.system(size: 9, weight: .medium, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(9))
                     .foregroundStyle(
                         isPresetActive(preset) ? woodDark.opacity(0.7) : amberDim.opacity(0.6))
             }
@@ -522,7 +513,7 @@ struct RemoteRadioView: View {
                     ProgressView()
                         .tint(amber)
                     Text("Conectando ao SDR…")
-                        .font(.system(size: 12, design: .monospaced))
+                        .font(MacOS9Typography.body(12))
                         .foregroundStyle(amber)
                 }
                 .padding(.vertical, 4)
@@ -543,9 +534,9 @@ struct RemoteRadioView: View {
         Button(action: action) {
             HStack(spacing: 8) {
                 Image(systemName: icon)
-                    .font(.system(size: 14, weight: .bold))
+                    .font(MacOS9Typography.bodyBold(14))
                 Text(label)
-                    .font(.system(size: 13, weight: .bold, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(13))
             }
             .foregroundStyle(.white)
             .frame(maxWidth: .infinity)
@@ -572,7 +563,7 @@ struct RemoteRadioView: View {
                     .shadow(color: statusLEDColor.opacity(0.6), radius: 4)
 
                 Text(vm.connectionState.displayText)
-                    .font(.system(size: 11, weight: .medium, design: .monospaced))
+                    .font(MacOS9Typography.bodyBold(11))
                     .foregroundStyle(cream.opacity(0.8))
 
                 Spacer()
@@ -581,9 +572,9 @@ struct RemoteRadioView: View {
                 if vm.isAudioPlaying {
                     HStack(spacing: 4) {
                         Image(systemName: "speaker.wave.2.fill")
-                            .font(.system(size: 9))
+                            .font(MacOS9Typography.body(9))
                         Text("\(vm.audioFrameCount)f")
-                            .font(.system(size: 10, weight: .medium, design: .monospaced))
+                            .font(MacOS9Typography.bodyBold(10))
                     }
                     .foregroundStyle(amber.opacity(0.7))
                 }
@@ -604,9 +595,9 @@ struct RemoteRadioView: View {
                 HStack(spacing: 6) {
                     Image(systemName: "exclamationmark.triangle.fill")
                         .foregroundStyle(.red)
-                        .font(.system(size: 11))
+                        .font(MacOS9Typography.body(11))
                     Text(errorMsg)
-                        .font(.system(size: 11, design: .monospaced))
+                        .font(MacOS9Typography.body(11))
                         .foregroundStyle(.red.opacity(0.9))
                 }
                 .padding(.horizontal, 12)
@@ -622,12 +613,12 @@ struct RemoteRadioView: View {
             if !vm.backendType.isEmpty {
                 HStack(spacing: 8) {
                     Label(vm.backendType.uppercased(), systemImage: "cpu")
-                        .font(.system(size: 10, design: .monospaced))
+                        .font(MacOS9Typography.body(10))
                         .foregroundStyle(amberDim.opacity(0.5))
 
                     if !vm.rtlSerial.isEmpty {
                         Text("SN: \(vm.rtlSerial)")
-                            .font(.system(size: 10, design: .monospaced))
+                            .font(MacOS9Typography.body(10))
                             .foregroundStyle(amberDim.opacity(0.5))
                     }
                     Spacer()

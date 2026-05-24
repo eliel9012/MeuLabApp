@@ -22,7 +22,6 @@ enum LocalNowPlayingFetcher {
         if ProcessInfo.processInfo.environment["XCODE_RUNNING_FOR_PREVIEWS"] == "1" {
             throw FetchError.unavailable
         }
-        #endif
 
         let center = MPNowPlayingInfoCenter.default()
         guard let info = center.nowPlayingInfo, !info.isEmpty else {
@@ -56,6 +55,7 @@ enum LocalNowPlayingFetcher {
             // This will likely be replaced by the real initializer path in your project.
             throw FetchError.unavailable
         }
+        #endif
         #else
         throw FetchError.unavailable
         #endif

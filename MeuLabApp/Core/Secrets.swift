@@ -98,7 +98,6 @@ enum Secrets {
             print("🔐 Secrets Configuration Status:")
             print("   API Base URL: \(apiBaseURL)")
             print("   API Token configured: \(isConfigured)")
-            print("   Token (first 10 chars): \(String(apiToken.prefix(10)))...")
         #endif
     }
 }

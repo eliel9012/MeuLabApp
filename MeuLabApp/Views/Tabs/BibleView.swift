@@ -7,14 +7,14 @@ struct BibleView: View {
     @State private var selectedChapter: BibleChapter? = nil
 
     enum BibleTab: String, CaseIterable {
-        case navegar  = "Navegar"
-        case buscar   = "Buscar"
+        case navegar = "Navegar"
+        case buscar = "Buscar"
         case aleatorio = "Aleatório"
 
         var icon: String {
             switch self {
-            case .navegar:   return "books.vertical"
-            case .buscar:    return "magnifyingglass"
+            case .navegar: return "books.vertical"
+            case .buscar: return "magnifyingglass"
             case .aleatorio: return "dice"
             }
         }
@@ -23,29 +23,23 @@ struct BibleView: View {
     var body: some View {
         NavigationStack {
             ZStack {
-                // Background gradient — parchment/mahogany feel matching the HTML design
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.24, green: 0.15, blue: 0.13).opacity(0.18),
-                        Color(red: 0.96, green: 0.90, blue: 0.83).opacity(0.06),
-                        Color(.systemBackground),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                MacOS9Colors.windowBackground
+                    .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    // Custom tab picker
-                    bibleTabPicker
-                        .padding(.horizontal)
+                    BibleHeader(selectedTab: selectedTab)
+                        .padding(.horizontal, 12)
                         .padding(.top, 8)
-                        .padding(.bottom, 4)
+                        .padding(.bottom, 6)
 
-                    Divider()
-                        .opacity(0.3)
+                    bibleTabPicker
+                        .padding(.horizontal, 12)
+                        .padding(.bottom, 8)
 
-                    // Tab content
+                    Rectangle()
+                        .fill(MacOS9Colors.border)
+                        .frame(height: 1)
+
                     switch selectedTab {
                     case .navegar:
                         BibleNavigateView(
@@ -59,17 +53,18 @@ struct BibleView: View {
                     }
                 }
             }
-            .navigationTitle("📖 A Bíblia")
-            .navigationBarTitleDisplayMode(.large)
+            .navigationTitle("A Bíblia")
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Text("ACF")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(.ultraThinMaterial, in: Capsule())
+                        .font(MacOS9Typography.menuLabel(12))
+                        .foregroundStyle(MacOS9Colors.primaryText)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(MacOS9Colors.labelBadge)
+                        .overlay(Mac9BevelBorder(isRaised: true))
+                        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
             }
         }
@@ -78,44 +73,76 @@ struct BibleView: View {
     // MARK: - Tab Picker
 
     private var bibleTabPicker: some View {
-        HStack(spacing: 6) {
+        HStack(spacing: 0) {
             ForEach(BibleTab.allCases, id: \.self) { tab in
                 Button {
-                    withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
-                        selectedTab = tab
-                    }
+                    selectedTab = tab
                 } label: {
                     Label(tab.rawValue, systemImage: tab.icon)
-                        .font(.subheadline)
-                        .fontWeight(selectedTab == tab ? .semibold : .regular)
-                        .foregroundStyle(selectedTab == tab ? .primary : .secondary)
+                        .font(MacOS9Typography.menuLabel(12))
+                        .foregroundStyle(
+                            selectedTab == tab
+                                ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background {
-                            if selectedTab == tab {
-                                RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                    .fill(Color.amber.opacity(0.18))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                            .strokeBorder(Color.amber.opacity(0.4), lineWidth: 1)
-                                    )
-                            }
-                        }
+                        .frame(height: 38)
+                        .background(selectedTab == tab ? MacOS9Colors.selection : MacOS9Colors.panelBackground)
+                        .overlay(Mac9BevelBorder(isRaised: selectedTab != tab))
+                        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
                 }
                 .buttonStyle(.plain)
             }
         }
         .padding(4)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .background(MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+    }
+}
+
+private struct BibleHeader: View {
+    let selectedTab: BibleView.BibleTab
+
+    private var subtitle: String {
+        switch selectedTab {
+        case .navegar: return "Livros e capítulos"
+        case .buscar: return "Busca textual"
+        case .aleatorio: return "Versículo aleatório"
+        }
+    }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "book.closed")
+                .font(MacOS9Typography.bodyBold(18))
+                .frame(width: 34, height: 34)
+                .background(MacOS9Colors.contentPanel)
+                .overlay(Mac9BevelBorder(isRaised: true))
+                .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("A Bíblia")
+                    .font(MacOS9Typography.windowTitle(17))
+                    .foregroundStyle(MacOS9Colors.primaryText)
+                Text(subtitle)
+                    .font(MacOS9Typography.caption(11))
+                    .foregroundStyle(MacOS9Colors.secondaryText)
+            }
+
+            Spacer()
+        }
+        .padding(9)
+        .background(MacOS9Colors.panelBackground)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 
 // MARK: - Amber Color Extension
 
 extension Color {
-    static let amber = Color(red: 0.83, green: 0.69, blue: 0.22)
-    static let mogno = Color(red: 0.24, green: 0.15, blue: 0.13)
-    static let parchment = Color(red: 0.96, green: 0.90, blue: 0.83)
+    static let amber = MacOS9Colors.statusOrange
+    static let mogno = MacOS9Colors.border
+    static let parchment = MacOS9Colors.contentPanel
 }
 
 #Preview {

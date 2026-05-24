@@ -13,9 +13,10 @@ struct BibleSearchView: View {
             // Search bar
             HStack(spacing: 10) {
                 Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(MacOS9Colors.secondaryText)
 
-                TextField("Buscar versículos… (min. 3 letras)", text: $query)
+                TextField("Buscar versículos... (min. 3 letras)", text: $query)
+                    .font(MacOS9Typography.body(14))
                     .autocorrectionDisabled()
                     .onChange(of: query) { _, newValue in
                         performSearch(query: newValue)
@@ -32,14 +33,10 @@ struct BibleSearchView: View {
                 }
             }
             .padding(12)
-            .background(
-                .ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 12, style: .continuous)
-                    .strokeBorder(Color.amber.opacity(0.3), lineWidth: 1)
-            )
-            .padding(.horizontal)
+            .background(MacOS9Colors.contentPanel)
+            .overlay(Mac9BevelBorder(isRaised: false))
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
+            .padding(.horizontal, 16)
             .padding(.top, 12)
             .padding(.bottom, 8)
 
@@ -62,25 +59,26 @@ struct BibleSearchView: View {
     private var searchPrompt: some View {
         VStack(spacing: 12) {
             Image(systemName: "text.magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundStyle(Color.amber.opacity(0.6))
+                .font(MacOS9Typography.body(36))
+                .foregroundStyle(MacOS9Colors.statusOrange)
             Text("Digite pelo menos 3 caracteres para buscar versículos.")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                .font(MacOS9Typography.body(14))
+                .foregroundStyle(MacOS9Colors.secondaryText)
                 .multilineTextAlignment(.center)
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(MacOS9Colors.windowBackground)
     }
 
     private var noResultsView: some View {
         VStack(spacing: 12) {
             Image(systemName: "doc.text.magnifyingglass")
-                .font(.system(size: 48))
-                .foregroundStyle(.secondary)
+                .font(MacOS9Typography.body(36))
+                .foregroundStyle(MacOS9Colors.secondaryText)
             Text("Nenhum versículo encontrado para \"\(query)\".")
-                .font(.callout)
-                .foregroundStyle(.secondary)
+                .font(MacOS9Typography.body(14))
+                .foregroundStyle(MacOS9Colors.secondaryText)
                 .multilineTextAlignment(.center)
         }
         .padding(32)
@@ -103,6 +101,7 @@ struct BibleSearchView: View {
         }
         .listStyle(.plain)
         .scrollContentBackground(.hidden)
+        .background(MacOS9Colors.windowBackground)
     }
 
     // MARK: - Search
@@ -146,18 +145,18 @@ private struct SearchResultRow: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text("\(bookName) \(verse.chapter):\(verse.number)")
-                .font(.caption)
-                .fontWeight(.semibold)
-                .foregroundStyle(Color.amber)
+                .font(MacOS9Typography.menuLabel(12))
+                .foregroundStyle(MacOS9Colors.statusOrange)
 
             Text(verse.text)
-                .font(.callout)
-                .foregroundStyle(.primary)
+                .font(MacOS9Typography.body(14))
+                .foregroundStyle(MacOS9Colors.primaryText)
                 .lineLimit(3)
         }
-        .padding(.vertical, 8)
-        .padding(.horizontal, 10)
-        .background(Color.amber.opacity(0.07), in: RoundedRectangle(cornerRadius: 10))
+        .padding(10)
+        .background(MacOS9Colors.contentPanel)
+        .overlay(Mac9BevelBorder(isRaised: true))
+        .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
     }
 }
 

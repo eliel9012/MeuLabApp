@@ -8,11 +8,11 @@ final class NotificationFeedManager: ObservableObject {
     private let api = APIService.shared
     private let defaults = UserDefaults.standard
     private let latestIdKey = "notification_feed_latest_id"
-    private let basePollInterval: TimeInterval = 20
+    private let basePollInterval: TimeInterval = 60
     private let maxPollInterval: TimeInterval = 300
 
     private struct State {
-        var currentPollInterval: TimeInterval = 20
+        var currentPollInterval: TimeInterval = 60
         var pollTask: Task<Void, Never>?
         var isFetching = false
     }
@@ -49,7 +49,7 @@ final class NotificationFeedManager: ObservableObject {
     }
 
     private func runLoop() async {
-        // Run immediately, then back off based on success/failure.
+        try? await Task.sleep(nanoseconds: 10_000_000_000)
         while !Task.isCancelled {
             await poll()
             let interval = stateLock.withLock { s in

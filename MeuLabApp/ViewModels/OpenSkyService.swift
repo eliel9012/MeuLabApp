@@ -69,8 +69,6 @@ actor OpenSkyService {
     private func refreshToken() async throws -> String? {
         guard !clientSecret.isEmpty else { return nil }
 
-        print("[OpenSky] 🔑 Requesting new access token...")
-
         guard let url = URL(string: authURL) else { throw OpenSkyError.invalidURL }
 
         var request = URLRequest(url: url)
@@ -96,7 +94,6 @@ actor OpenSkyService {
         }
 
         guard (200...299).contains(httpResponse.statusCode) else {
-            print("[OpenSky] ❌ Auth failed: \(httpResponse.statusCode)")
             return nil
         }
 
@@ -104,7 +101,6 @@ actor OpenSkyService {
         self.accessToken = tokenResponse.access_token
         self.tokenExpiration = Date().addingTimeInterval(Double(tokenResponse.expires_in))
 
-        print("[OpenSky] ✅ Token received, expires in \(tokenResponse.expires_in)s")
         return tokenResponse.access_token
     }
 
@@ -146,9 +142,6 @@ actor OpenSkyService {
         // Add Bearer Token if we have one
         if let token = token {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            print("[OpenSky] 🔐 Using Bearer Token auth")
-        } else {
-            print("[OpenSky] 👤 Using anonymous request")
         }
 
         let (data, response) = try await session.data(for: request)
@@ -159,19 +152,16 @@ actor OpenSkyService {
 
         // Handle token expiration
         if httpResponse.statusCode == 401 && token != nil {
-            print("[OpenSky] ❌ Token expired or invalid (401). Retrying with new token...")
             self.accessToken = nil
             let newToken = try await refreshToken()
             return try await performFetch(boundingBox: boundingBox, token: newToken)
         }
 
         if httpResponse.statusCode == 429 {
-            print("[OpenSky] ⚠️ Rate limit exceeded (429)")
             throw OpenSkyError.rateLimited
         }
 
         guard (200...299).contains(httpResponse.statusCode) else {
-            print("[OpenSky] ⚠️ Server error: \(httpResponse.statusCode)")
             throw OpenSkyError.serverError(httpResponse.statusCode)
         }
 

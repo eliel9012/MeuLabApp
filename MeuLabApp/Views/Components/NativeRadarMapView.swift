@@ -150,12 +150,14 @@ struct NativeRadarMapView: View {
         .onChange(of: selectedAircraftID) { _, newID in
             // If the user just dismissed this aircraft, reject Map re-selection
             if let newID, newID == dismissedAircraftID {
+                selectedAircraft = nil
+                isFollowing = false
                 selectedAircraftID = nil
                 return
             }
-            dismissedAircraftID = nil
             withAnimation(.easeInOut(duration: 0.2)) {
                 if let id = newID {
+                    dismissedAircraftID = nil
                     selectedAircraft = aircraftWithPosition.first { $0.id == id }
                 } else {
                     selectedAircraft = nil
@@ -242,6 +244,7 @@ struct NativeRadarMapView: View {
                     ) {
                         RadarAircraftPin(
                             aircraft: ac,
+                            rotationDegrees: aircraftRotationDegrees(for: ac),
                             isSelected: selectedAircraftID == ac.id,
                             isFavorite: favoritesManager.isFavorite(aircraft: ac)
                         )
@@ -532,22 +535,17 @@ struct NativeRadarMapView: View {
                         }
 
                         Button {
-                            let dismissed = selectedAircraftID
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                dismissedAircraftID = dismissed
-                                selectedAircraftID = nil
-                                selectedAircraft = nil
-                                isFollowing = false
-                            }
-                            // Allow re-selection of the same aircraft after a short delay
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                dismissedAircraftID = nil
-                            }
+                            dismissSelectedAircraft()
                         } label: {
                             Image(systemName: "xmark.circle.fill")
                                 .font(.system(size: 18))
                                 .foregroundStyle(.secondary)
+                                .frame(width: 34, height: 34)
+                                .background(Color(.systemGray5).opacity(0.85))
+                                .clipShape(Circle())
+                                .contentShape(Circle())
                         }
+                        .buttonStyle(.plain)
                     }
                 }
 
@@ -830,8 +828,54 @@ struct NativeRadarMapView: View {
         return altitudeColor(ac.altitudeFt).opacity(0.6)
     }
 
+    private func aircraftRotationDegrees(for aircraft: Aircraft) -> Double {
+        // SF Symbol "airplane" is drawn with the nose already tilted ~45 degrees.
+        let symbolBaseCourse = 45.0
+        let course = recentCourse(for: aircraft) ?? aircraft.track ?? 0
+        return normalizedDegrees(course - symbolBaseCourse)
+    }
+
+    private func recentCourse(for aircraft: Aircraft) -> Double? {
+        guard let history = trailHistory[aircraft.id], history.count >= 2 else { return nil }
+        return bearing(from: history[history.count - 2], to: history[history.count - 1])
+    }
+
+    private func bearing(from start: CLLocationCoordinate2D, to end: CLLocationCoordinate2D) -> Double {
+        let startLat = start.latitude * .pi / 180
+        let endLat = end.latitude * .pi / 180
+        let deltaLon = (end.longitude - start.longitude) * .pi / 180
+
+        let y = sin(deltaLon) * cos(endLat)
+        let x =
+            cos(startLat) * sin(endLat)
+            - sin(startLat) * cos(endLat) * cos(deltaLon)
+
+        return normalizedDegrees(atan2(y, x) * 180 / .pi)
+    }
+
+    private func normalizedDegrees(_ value: Double) -> Double {
+        let normalized = value.truncatingRemainder(dividingBy: 360)
+        return normalized >= 0 ? normalized : normalized + 360
+    }
+
+    private func dismissSelectedAircraft() {
+        let dismissed = selectedAircraftID ?? selectedAircraft?.id
+        withAnimation(.easeInOut(duration: 0.2)) {
+            dismissedAircraftID = dismissed
+            selectedAircraftID = nil
+            selectedAircraft = nil
+            isFollowing = false
+        }
+
+        // Keep the dismissed id briefly so MapKit cannot immediately restore the selection.
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+            if selectedAircraftID == nil {
+                dismissedAircraftID = nil
+            }
+        }
+    }
+
     private func updateTrails() {
-        guard showTrails else { return }
         for ac in aircraftWithPosition {
             guard let lat = ac.lat, let lon = ac.lon else { continue }
             let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
@@ -905,6 +949,7 @@ private struct AirportPin: View {
 
 struct RadarAircraftPin: View {
     let aircraft: Aircraft
+    let rotationDegrees: Double
     let isSelected: Bool
     var isFavorite: Bool = false
     @State private var emergencyPulse = false
@@ -944,7 +989,7 @@ struct RadarAircraftPin: View {
                 Image(systemName: aircraft.isMilitary ? "shield.fill" : "airplane")
                     .font(.system(size: isSelected ? 24 : 18, weight: .semibold))
                     .foregroundStyle(markerColor)
-                    .rotationEffect(.degrees(aircraft.isMilitary ? 0 : (aircraft.track ?? 0)))
+                    .rotationEffect(.degrees(aircraft.isMilitary ? 0 : rotationDegrees))
                     .shadow(color: markerColor.opacity(0.5), radius: isSelected ? 6 : 3)
 
                 // Favorite star

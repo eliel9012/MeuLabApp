@@ -479,9 +479,7 @@ actor LabEntityIndexer {
             try await index.indexAppEntities(passes)
             lastIndexedAt = Date()
         } catch {
-            #if DEBUG
-                print("[LabEntityIndexer] index error:", error.localizedDescription)
-            #endif
+            return
         }
     }
 }

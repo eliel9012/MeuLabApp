@@ -47,12 +47,12 @@ struct EnhancedContentView: View {
             VStack(spacing: 8) {
                 HStack {
                     Image(systemName: "cpu")
-                        .font(.title2)
-                        .foregroundStyle(.blue)
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(MacOS9Colors.primaryText)
 
                     Text("MeuLab")
-                        .font(.title2)
-                        .fontWeight(.bold)
+                        .font(MacOS9Typography.editorialTitle(24))
+                        .foregroundStyle(MacOS9Colors.primaryText)
 
                     Spacer()
                 }
@@ -63,27 +63,28 @@ struct EnhancedContentView: View {
                         EnhancedQuickMetric(
                             title: "CPU",
                             value: "\(Int(status.cpu?.usagePercent ?? 0))%",
-                            color: .blue
+                            color: MacOS9Colors.statusBlue
                         )
 
                         EnhancedQuickMetric(
                             title: "RAM",
                             value: "\(Int(status.memory?.usedPercent ?? 0))%",
-                            color: .purple
+                            color: MacOS9Colors.selection
                         )
 
                         EnhancedQuickMetric(
                             title: "Disco",
                             value: "\(Int(status.disk?.usedPercent ?? 0))%",
-                            color: .orange
+                            color: MacOS9Colors.statusOrange
                         )
                     }
                 }
             }
             .padding()
-            .background(Color(.secondarySystemBackground))
+            .background(MacOS9Colors.panelBackground)
+            .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
 
-            Divider()
+            MacOS9GroovedDivider()
 
             // Navigation List
             List {
@@ -97,7 +98,10 @@ struct EnhancedContentView: View {
                 }
             }
             .listStyle(.sidebar)
+            .scrollContentBackground(.hidden)
+            .background(MacOS9Colors.contentPanel)
         }
+        .background(MacOS9Colors.windowBackground)
         .navigationSplitViewColumnWidth(300)
     }
 
@@ -141,6 +145,8 @@ struct EnhancedContentView: View {
                     IntelligenceView()
                 case .bible:
                     BibleView()
+                case .more:
+                    EmptyView()
                 }
             }
         }
@@ -162,14 +168,8 @@ struct EnhancedContentView: View {
                     VStack(spacing: 6) {
                         ZStack {
                             if selectedTab == tab {
-                                Circle()
-                                    .fill(
-                                        LinearGradient(
-                                            colors: [.blue.opacity(0.25), .blue.opacity(0.05)],
-                                            startPoint: .top,
-                                            endPoint: .bottom
-                                        )
-                                    )
+                                Rectangle()
+                                    .fill(MacOS9Colors.selection)
                                     .frame(width: 40, height: 40)
                                     .transition(.scale.combined(with: .opacity))
                             }
@@ -177,12 +177,16 @@ struct EnhancedContentView: View {
                             Image(systemName: selectedTab == tab ? tab.filledIcon : tab.icon)
                                 .font(.system(size: 20, weight: .semibold))
                                 .symbolEffect(.bounce, value: selectedTab == tab)
-                                .foregroundStyle(selectedTab == tab ? .blue : .primary.opacity(0.6))
+                                .foregroundStyle(
+                                    selectedTab == tab
+                                        ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                         }
 
                         Text(tab.title)
-                            .font(.system(size: 10, weight: selectedTab == tab ? .bold : .semibold))
-                            .foregroundStyle(selectedTab == tab ? .blue : .primary.opacity(0.5))
+                            .font(MacOS9Typography.caption(10))
+                            .foregroundStyle(
+                                selectedTab == tab
+                                    ? MacOS9Colors.selection : MacOS9Colors.secondaryText)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
@@ -192,7 +196,7 @@ struct EnhancedContentView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .glassCard(cornerRadius: 32)
+        .glassCard(cornerRadius: 0)
         .padding(.horizontal, 14)
     }
 }
@@ -206,13 +210,13 @@ struct EnhancedSidebarRow: View {
     var body: some View {
         HStack(spacing: 12) {
             Image(systemName: tab.icon)
-                .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundStyle(isSelected ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
                 .frame(width: 20)
 
             Text(tab.title)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
+                .font(MacOS9Typography.body())
+                .foregroundStyle(isSelected ? MacOS9Colors.selectedText : MacOS9Colors.primaryText)
 
             Spacer()
 
@@ -220,14 +224,14 @@ struct EnhancedSidebarRow: View {
             if hasActiveAlerts(for: tab) {
                 Image(systemName: "bell.badge.fill")
                     .font(.system(size: 10))
-                    .foregroundStyle(.red)
+                    .foregroundStyle(MacOS9Colors.statusRed)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isSelected ? .blue : Color.clear)
+            Rectangle()
+                .fill(isSelected ? MacOS9Colors.selection : Color.clear)
         )
         .contentShape(Rectangle())
     }
@@ -250,13 +254,13 @@ struct EnhancedQuickMetric: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 14, weight: .bold))
+                .font(MacOS9Typography.windowTitle(14))
                 .monospacedDigit()
                 .foregroundStyle(color)
 
             Text(title)
-                .font(.system(size: 10))
-                .foregroundStyle(.secondary)
+                .font(MacOS9Typography.caption(10))
+                .foregroundStyle(MacOS9Colors.secondaryText)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)

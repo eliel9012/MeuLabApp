@@ -1,0 +1,19 @@
+#!/usr/bin/expect -f
+set timeout 120
+
+# SCP test script first
+spawn scp -o StrictHostKeyChecking=no "/Users/eliel/Library/Mobile Documents/com~apple~CloudDocs/apps criados/botapp/MeuLabApp/server_updates/test_analytics.sh" pi@192.168.100.131:/tmp/test_analytics.sh
+expect "password:"
+send "pobgu9-jabdoP-ruczaq\r"
+expect eof
+
+# Now SSH and run it
+spawn ssh -o StrictHostKeyChecking=no pi@192.168.100.131
+expect "password:"
+send "pobgu9-jabdoP-ruczaq\r"
+expect "\\$"
+send "bash /tmp/test_analytics.sh\r"
+expect "=== DONE ==="
+expect "\\$"
+send "exit\r"
+expect eof

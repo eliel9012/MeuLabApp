@@ -100,16 +100,19 @@ struct SatelliteImage: Codable, Identifiable, Equatable {
 
 // MARK: - Last Images Response
 
+/// Response from /api/satdump/last/images (new schema: pass object + root images array).
 struct LastImages: Codable, Equatable {
     let timestamp: String
-    let passName: String
+    let pass: SatDumpRecordedPass?
+    let count: Int?
     let images: [SatelliteImage]
 
     enum CodingKeys: String, CodingKey {
-        case timestamp
-        case passName = "pass_name"
-        case images
+        case timestamp, pass, count, images
     }
+
+    /// Derived pass name for display / AI summary (backwards-compat with old `pass_name` field).
+    var passName: String { pass?.name ?? pass?.id ?? "" }
 
     var iconName: String {
         let n = passName.lowercased()
@@ -143,6 +146,17 @@ struct PassesListPaginated: Codable {
         case totalCount = "total_count"
         case totalPages = "total_pages"
     }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        timestamp = try c.decode(String.self, forKey: .timestamp)
+        count = try c.decode(Int.self, forKey: .count)
+        totalCount = try c.decodeIfPresent(Int.self, forKey: .totalCount) ?? count
+        page = try c.decodeIfPresent(Int.self, forKey: .page) ?? 1
+        limit = try c.decodeIfPresent(Int.self, forKey: .limit) ?? 50
+        totalPages = try c.decodeIfPresent(Int.self, forKey: .totalPages) ?? 1
+        passes = try c.decodeIfPresent([SatellitePassExtended].self, forKey: .passes) ?? []
+    }
 }
 
 struct SatellitePassExtended: Codable, Identifiable, Equatable {
@@ -151,6 +165,9 @@ struct SatellitePassExtended: Codable, Identifiable, Equatable {
     let imageCount: Int
     let sizeMb: Double
     let qualityStars: Int
+    let satellite: String?
+    let passTimestamp: String?
+    let products: [String]?
 
     var id: String { name }
 
@@ -159,11 +176,24 @@ struct SatellitePassExtended: Codable, Identifiable, Equatable {
     }
 
     enum CodingKeys: String, CodingKey {
-        case name
+        case name, satellite, products
         case imageFolder = "image_folder"
         case imageCount = "image_count"
         case sizeMb = "size_mb"
         case qualityStars = "quality_stars"
+        case passTimestamp = "timestamp"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        name = try c.decode(String.self, forKey: .name)
+        imageFolder = try c.decodeIfPresent(String.self, forKey: .imageFolder) ?? ""
+        imageCount = try c.decodeIfPresent(Int.self, forKey: .imageCount) ?? 0
+        sizeMb = try c.decodeIfPresent(Double.self, forKey: .sizeMb) ?? 0.0
+        qualityStars = try c.decodeIfPresent(Int.self, forKey: .qualityStars) ?? 0
+        satellite = try c.decodeIfPresent(String.self, forKey: .satellite)
+        passTimestamp = try c.decodeIfPresent(String.self, forKey: .passTimestamp)
+        products = try c.decodeIfPresent([String].self, forKey: .products)
     }
 
     var iconName: String {
@@ -248,36 +278,81 @@ struct CleanupPassInfo: Codable, Identifiable {
     }
 }
 
-// MARK: - SatDump Status
+// MARK: - SatDump Recorded Pass (new API format)
 
-struct SatDumpStatusResponse: Codable, Equatable {
-    let timestamp: String
-    let status: SatDumpStatus
-
-    // Custom decoder to handle status that can be object or error
-    init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: CodingKeys.self)
-        timestamp = try container.decode(String.self, forKey: .timestamp)
-
-        // Try to decode status as SatDumpStatus
-        if let statusObj = try? container.decode(SatDumpStatus.self, forKey: .status) {
-            status = statusObj
-        } else {
-            // If it fails, create a placeholder status (could be error response)
-            status = SatDumpStatus(
-                passName: "Unknown",
-                sizeBytes: 0,
-                sizeMb: 0,
-                imageCount: 0,
-                lastModified: "",
-                ageMinutes: 0,
-                isRecent: false
-            )
-        }
-    }
+/// A recorded SatDump pass as returned by /api/satdump/status (last_pass),
+/// /api/satdump/passes and /api/satdump/last/images.
+struct SatDumpRecordedPass: Codable, Equatable, Identifiable {
+    let id: String
+    let name: String?
+    let satellite: String?
+    let timestamp: String?
+    let products: [String]?
+    let imageCount: Int?
+    let images: [AnyCodable]?
 
     enum CodingKeys: String, CodingKey {
-        case timestamp, status
+        case id, name, satellite, timestamp, products, images
+        case imageCount = "image_count"
+    }
+}
+
+// MARK: - SatDump Status
+
+/// Response from /api/satdump/status (new schema, 2026-04).
+/// Bridges into legacy `SatDumpStatus` for view compatibility.
+struct SatDumpStatusResponse: Codable, Equatable {
+    let timestamp: String
+    let ok: Bool?
+    let meteorBaseExists: Bool?
+    let orbcommBaseExists: Bool?
+    let meteorPassCount: Int?
+    let orbcommRunCount: Int?
+    let lastPass: SatDumpRecordedPass?
+    let stale: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case timestamp, ok, stale
+        case meteorBaseExists = "meteor_base_exists"
+        case orbcommBaseExists = "orbcomm_base_exists"
+        case meteorPassCount = "meteor_pass_count"
+        case orbcommRunCount = "orbcomm_run_count"
+        case lastPass = "last_pass"
+    }
+
+    /// Bridge into the legacy `SatDumpStatus` type consumed by views.
+    var status: SatDumpStatus {
+        let passName = lastPass?.name ?? lastPass?.id ?? "Desconhecido"
+        let imageCount = lastPass?.imageCount ?? 0
+        let lastModified = lastPass?.timestamp ?? timestamp
+
+        // Calculate age from lastPass.timestamp (ISO 8601) to now
+        let ageMinutes: Double
+        if let ts = lastPass?.timestamp,
+            let date = ISO8601DateFormatter().date(from: ts)
+                ?? {
+                    let f = DateFormatter()
+                    f.locale = Locale(identifier: "en_US_POSIX")
+                    f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+                    return f.date(from: ts)
+                }()
+        {
+            ageMinutes = Date().timeIntervalSince(date) / 60.0
+        } else {
+            ageMinutes = 0
+        }
+
+        let isRecent = !(stale ?? true) || ageMinutes < 30
+
+        return SatDumpStatus(
+            passName: passName,
+            sizeBytes: 0,
+            sizeMb: 0.0,
+            imageCount: imageCount,
+            lastModified: lastModified,
+            ageMinutes: ageMinutes,
+            isRecent: isRecent
+        )
     }
 }
 
@@ -400,6 +475,8 @@ struct OrbcommRun: Codable, Identifiable, Equatable {
 
 // MARK: - Orbcomm Decoded
 
+/// Response from /api/satdump/orbcomm/decoded (new schema: data nested object).
+/// View-bridge properties keep the same interface as the old flat format.
 struct OrbcommDecodedResponse: Codable {
     let timestamp: String
     let run: String
@@ -408,6 +485,52 @@ struct OrbcommDecodedResponse: Codable {
     let count: Int
     let events: [AnyCodable]
     let groupedBySat: [String: AnyCodable]?
+
+    // MARK: Custom decoder — new API wraps data under "data" key
+
+    private enum RootKeys: String, CodingKey { case timestamp, data }
+    private enum DataKeys: String, CodingKey {
+        case run, limit, files, winner
+    }
+    private enum FilesKeys: String, CodingKey { case jsonl, log }
+    private enum WinnerKeys: String, CodingKey {
+        case totalEvents = "total_events"
+        case validSatEvents = "valid_sat_events"
+    }
+
+    init(from decoder: Decoder) throws {
+        let root = try decoder.container(keyedBy: RootKeys.self)
+        timestamp = try root.decode(String.self, forKey: .timestamp)
+
+        if let dataContainer = try? root.nestedContainer(keyedBy: DataKeys.self, forKey: .data) {
+            run = (try? dataContainer.decodeIfPresent(String.self, forKey: .run)) ?? ""
+            if let filesContainer = try? dataContainer.nestedContainer(
+                keyedBy: FilesKeys.self, forKey: .files)
+            {
+                log = try? filesContainer.decodeIfPresent(String.self, forKey: .log) ?? nil
+                jsonl = try? filesContainer.decodeIfPresent(String.self, forKey: .jsonl) ?? nil
+            } else {
+                log = nil
+                jsonl = nil
+            }
+            if let winnerContainer = try? dataContainer.nestedContainer(
+                keyedBy: WinnerKeys.self, forKey: .winner)
+            {
+                count = (try? winnerContainer.decodeIfPresent(Int.self, forKey: .totalEvents)) ?? 0
+            } else {
+                count = 0
+            }
+        } else {
+            // Fallback: try flat old format
+            let flat = try decoder.container(keyedBy: CodingKeys.self)
+            run = (try? flat.decodeIfPresent(String.self, forKey: .run)) ?? ""
+            log = try? flat.decodeIfPresent(String.self, forKey: .log) ?? nil
+            jsonl = try? flat.decodeIfPresent(String.self, forKey: .jsonl) ?? nil
+            count = (try? flat.decodeIfPresent(Int.self, forKey: .count)) ?? 0
+        }
+        events = []
+        groupedBySat = nil
+    }
 
     enum CodingKeys: String, CodingKey {
         case timestamp, run, log, jsonl, count, events
@@ -441,6 +564,13 @@ struct SatellitePositionsResponse: Codable {
     let timestamp: String
     let station: StationLocation
     let satellites: [SatellitePosition]
+    let degraded: Bool?
+    let degradedReason: String?
+
+    enum CodingKeys: String, CodingKey {
+        case timestamp, station, satellites, degraded
+        case degradedReason = "degraded_reason"
+    }
 }
 
 struct StationLocation: Codable, Equatable {
@@ -514,161 +644,176 @@ struct SatelliteStatusResponse: Codable, Equatable {
 }
 
 // MARK: - GPS Globe
+// Decodes the new gps.meulab.fun/api/state payload (satellite tracking API).
+// Bridge computed properties expose the legacy interface used by views.
 
 struct GPSGlobeState: Codable, Equatable {
     let generatedAt: String
-    let tzOffsetMinutes: Int?
-    let tzName: String?
-    let receiver: GPSGlobeReceiver
-    let gpsd: GPSGlobeGPSD
-    let sky: GPSGlobeSky
-    let tle: GPSGlobeTLE?
-    let satellitesVisible: [GPSGlobeSatellite]
+    let observer: GPSGlobeObserver
+    let satellites: [GPSGlobeSatellite]
 
     enum CodingKeys: String, CodingKey {
         case generatedAt = "generated_at"
-        case tzOffsetMinutes = "tz_offset_minutes"
-        case tzName = "tz_name"
-        case receiver, gpsd, sky, tle
-        case satellitesVisible = "satellites_visible"
+        case observer
+        case satellites
     }
 
     var generatedDate: Date? {
         Formatters.isoDate.date(from: generatedAt)
             ?? Formatters.isoDateNoFrac.date(from: generatedAt)
     }
+
+    // MARK: View bridge properties
+
+    var satellitesVisible: [GPSGlobeSatellite] { satellites }
+
+    var receiver: GPSGlobeReceiver {
+        GPSGlobeReceiver(lat: observer.lat, lon: observer.lon, altitudeM: observer.altM)
+    }
+
+    var gpsd: GPSGlobeGPSD { GPSGlobeGPSD() }
+
+    var sky: GPSGlobeSky {
+        let capturable = satellites.filter { $0.capturableNow == true }.count
+        return GPSGlobeSky(
+            gpsVisible: satellites.isEmpty ? nil : satellites.count,
+            gpsUsed: capturable > 0 ? capturable : nil
+        )
+    }
 }
 
-struct GPSGlobeReceiver: Codable, Equatable {
+struct GPSGlobeObserver: Codable, Equatable {
+    let lat: Double
+    let lon: Double
+    let altM: Double?
+    let qth: String?
+
+    enum CodingKeys: String, CodingKey {
+        case lat, lon, qth
+        case altM = "alt_m"
+    }
+}
+
+/// Bridge struct — constructed from GPSGlobeObserver; not Codable.
+struct GPSGlobeReceiver: Equatable {
     let lat: Double
     let lon: Double
     let altitudeM: Double?
-    let mode: Int?
-    let speedMS: Double?
-    let trackDeg: Double?
-    let horizontalErrorM: Double?
-    let verticalErrorM: Double?
-    let timestamp: String?
-    let ageSeconds: Double?
-    let lastMessageAgeSeconds: Double?
+    var mode: Int? = nil
+    var horizontalErrorM: Double? = nil
+}
+
+/// Bridge struct — not present in new API; provides nil error to views.
+struct GPSGlobeGPSD: Equatable {
+    var error: String? = nil
+}
+
+/// Bridge struct — derived from satellite array counts; not Codable.
+struct GPSGlobeSky: Equatable {
+    var hdop: Double? = nil
+    var pdop: Double? = nil
+    var vdop: Double? = nil
+    var nSatellites: Int? = nil
+    var usedSatellites: Int? = nil
+    var gpsVisible: Int? = nil
+    var gpsUsed: Int? = nil
+}
+
+/// Represents the next pass info object in gps.meulab.fun/api/state satellites[].next_pass
+struct GPSGlobeNextPass: Codable, Equatable {
+    let satellite: String?
+    let aosUtc: String?
+    let losUtc: String?
+    let durationSec: Double?
+    let maxElevationDeg: Double?
+    let centerFrequencyHz: Int?
+    let recommendedGain: Int?
+    let recommendedDurationSec: Int?
 
     enum CodingKeys: String, CodingKey {
-        case lat, lon, mode, timestamp
-        case altitudeM = "altitude_m"
-        case speedMS = "speed_ms"
-        case trackDeg = "track_deg"
-        case horizontalErrorM = "horizontal_error_m"
-        case verticalErrorM = "vertical_error_m"
-        case ageSeconds = "age_seconds"
-        case lastMessageAgeSeconds = "last_message_age_seconds"
+        case satellite
+        case aosUtc = "aos_utc"
+        case losUtc = "los_utc"
+        case durationSec = "duration_sec"
+        case maxElevationDeg = "max_elevation_deg"
+        case centerFrequencyHz = "center_frequency_hz"
+        case recommendedGain = "recommended_gain"
+        case recommendedDurationSec = "recommended_duration_sec"
     }
 }
 
-struct GPSGlobeGPSD: Codable, Equatable {
-    let device: GPSGlobeDevice?
-    let lastMessageAt: Double?
-    let error: String?
-
-    enum CodingKeys: String, CodingKey {
-        case device, error
-        case lastMessageAt = "last_message_at"
-    }
-}
-
-struct GPSGlobeDevice: Codable, Equatable {
-    let path: String?
-    let driver: String?
-    let subtype: String?
-    let subtype1: String?
-    let cycle: Double?
-}
-
-struct GPSGlobeSky: Codable, Equatable {
-    let hdop: Double?
-    let pdop: Double?
-    let vdop: Double?
-    let nSatellites: Int?
-    let usedSatellites: Int?
-    let gpsVisible: Int?
-    let gpsUsed: Int?
-
-    enum CodingKeys: String, CodingKey {
-        case hdop, pdop, vdop
-        case nSatellites = "n_satellites"
-        case usedSatellites = "used_satellites"
-        case gpsVisible = "gps_visible"
-        case gpsUsed = "gps_used"
-    }
-}
-
-struct GPSGlobeTLE: Codable, Equatable {
-    let count: Int?
-    let lastFetchAt: Double?
-    let lastFetchISO: String?
-    let lastError: String?
-
-    enum CodingKeys: String, CodingKey {
-        case count
-        case lastFetchAt = "last_fetch_at"
-        case lastFetchISO = "last_fetch_iso"
-        case lastError = "last_error"
-    }
-}
-
+/// Satellite entry from the new API payload.
 struct GPSGlobeSatellite: Codable, Equatable, Identifiable {
-    let prn: Int
-    let azimuthDeg: Double?
+    // Stored (decoded) properties — id is now a String (e.g. "orbcomm-fm112")
+    let id: String
+    let satellite: String?
+    let family: String?
+    let latitudeDeg: Double?
+    let longitudeDeg: Double?
+    let altitudeKm: Double?
+    let speedKmS: Double?
+    let speedKmH: Double?
     let elevationDeg: Double?
-    let signalDBHz: Double?
-    let used: Bool
-    let health: Int?
-    let name: String?
-    let noradID: Int?
-    let intlDesignator: String?
     let imageURL: String?
-    let block: String?
-    let launch: GPSGlobeLaunch?
-    let orbit: GPSGlobeOrbit?
-    let subpoint: GPSGlobeSubpoint?
+    let capturableNow: Bool?
+    let nextPass: GPSGlobeNextPass?
+    let nextAosInSec: Double?
+    let observerQth: String?
 
     enum CodingKeys: String, CodingKey {
-        case prn, used, health, name, block, launch, orbit, subpoint
-        case azimuthDeg = "azimuth_deg"
+        case id, satellite, family
+        case latitudeDeg = "latitude_deg"
+        case longitudeDeg = "longitude_deg"
+        case altitudeKm = "altitude_km"
+        case speedKmS = "speed_km_s"
+        case speedKmH = "speed_km_h"
         case elevationDeg = "elevation_deg"
-        case signalDBHz = "signal_dbhz"
-        case noradID = "norad_id"
-        case intlDesignator = "intl_designator"
         case imageURL = "image_url"
+        case capturableNow = "capturable_now"
+        case nextPass = "next_pass"
+        case nextAosInSec = "next_aos_in_sec"
+        case observerQth = "observer_qth"
     }
 
-    var id: Int { prn }
+    // MARK: View bridge computed properties
 
-    var displayName: String {
-        name ?? "PRN \(prn)"
+    /// Stable Int derived from the String id for SceneKit node keying (session-local only)
+    var prn: Int { abs(id.hashValue) }
+    var used: Bool { capturableNow ?? false }
+    var name: String? { satellite }
+    var displayName: String { satellite ?? "SAT \(id)" }
+    var azimuthDeg: Double? { nil }
+    var signalDBHz: Double? { nil }
+    var noradID: Int? { nil }
+    var intlDesignator: String? { nil }
+    var block: String? { nil }
+    var health: Int? { nil }
+    var launch: GPSGlobeLaunch? { nil }
+
+    var orbit: GPSGlobeOrbit? {
+        guard let speed = speedKmH else { return nil }
+        return GPSGlobeOrbit(speedKMH: speed, periodMinutes: nil)
+    }
+
+    var subpoint: GPSGlobeSubpoint? {
+        guard let lat = latitudeDeg, let lon = longitudeDeg else { return nil }
+        return GPSGlobeSubpoint(
+            lat: lat, lon: lon, altitudeKM: altitudeKm, displayAltitude: altitudeKm)
     }
 }
 
-struct GPSGlobeLaunch: Codable, Equatable {
+/// Bridge struct — represents known launch metadata; always nil for new API.
+struct GPSGlobeLaunch: Equatable {
     let dateLocalized: String?
     let timeUTC: String?
     let site: String?
     let vehicle: String?
-
-    enum CodingKeys: String, CodingKey {
-        case site, vehicle
-        case dateLocalized = "date_localized"
-        case timeUTC = "time_utc"
-    }
 }
 
-struct GPSGlobeOrbit: Codable, Equatable {
+/// Bridge struct — orbital parameters; speedKMH sourced from new API.
+struct GPSGlobeOrbit: Equatable {
     let speedKMH: Double?
     let periodMinutes: Double?
-
-    enum CodingKeys: String, CodingKey {
-        case speedKMH = "speed_kmh"
-        case periodMinutes = "period_minutes"
-    }
 }
 
 struct GPSGlobeSubpoint: Codable, Equatable {
