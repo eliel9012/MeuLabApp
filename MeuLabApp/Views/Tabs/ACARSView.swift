@@ -179,127 +179,125 @@ struct ACARSView: View {
     private var contentMaxWidth: CGFloat { isWide ? 980 : 760 }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 16) {
-                    // Summary Section
-                    if let summary = appState.acarsSummary {
-                        summarySection(summary)
-                        hourlyChartSection
-                        topAircraftSection(summary.topAircraft)
-                        topLabelsSection(summary.topLabels)
-                    } else if let error = appState.acarsError {
-                        ErrorCard(message: error)
-                    } else {
-                        LoadingCard()
-                    }
-
-                    // Recent Messages Preview
-                    if !appState.acarsMessages.isEmpty {
-                        recentMessagesSection
-                    }
-
-                    if let history = appState.acarsHistory {
-                        acarsHistorySection(history)
-                    }
-
-                    // Removed: "Alertas Recentes" card (kept alerts in the dedicated Alertas tab).
+        ScrollView {
+            LazyVStack(spacing: 16) {
+                // Summary Section
+                if let summary = appState.acarsSummary {
+                    summarySection(summary)
+                    hourlyChartSection
+                    topAircraftSection(summary.topAircraft)
+                    topLabelsSection(summary.topLabels)
+                } else if let error = appState.acarsError {
+                    ErrorCard(message: error)
+                } else {
+                    LoadingCard()
                 }
-                .frame(maxWidth: contentMaxWidth)
-                .frame(maxWidth: .infinity)
-                .padding()
-                .padding(.bottom, 44)
-            }
-            .background {
-                ZStack {
-                    LinearGradient(
-                        colors: [ACARSTheme.canvasMid, ACARSTheme.canvasEnd],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
 
-                    Circle()
-                        .fill(ACARSTheme.violet.opacity(0.10))
-                        .frame(width: isWide ? 520 : 320)
-                        .blur(radius: 40)
-                        .offset(x: isWide ? -260 : -120, y: -260)
+                // Recent Messages Preview
+                if !appState.acarsMessages.isEmpty {
+                    recentMessagesSection
+                }
 
-                    Circle()
-                        .fill(ACARSTheme.blue.opacity(0.08))
-                        .frame(width: isWide ? 420 : 260)
-                        .blur(radius: 34)
-                        .offset(x: isWide ? 260 : 120, y: -120)
+                if let history = appState.acarsHistory {
+                    acarsHistorySection(history)
+                }
 
-                    Circle()
-                        .fill(ACARSTheme.green.opacity(0.08))
-                        .frame(width: isWide ? 420 : 260)
-                        .blur(radius: 40)
-                        .offset(x: isWide ? 220 : 120, y: 280)
-                }
-                .ignoresSafeArea()
+                // Removed: "Alertas Recentes" card (kept alerts in the dedicated Alertas tab).
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .principal) {
-                    ACARSToolbarTitle()
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button {
-                        print("[ACARSView] 🔄 Manual refresh triggered")
-                        Task {
-                            await appState.refreshACARS()
-                            await appState.refreshACARSHistory()
-                            await appState.refreshACARSAlerts()
-                        }
-                    } label: {
-                        Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 18, weight: .semibold))
-                            .foregroundStyle(ACARSTheme.violet)
-                            .padding(8)
-                            .background(
-                                Circle()
-                                    .fill(ACARSTheme.toolbarBubble)
-                            )
-                    }
-                }
-            }
-            .task {
-                if appState.acarsSummary == nil && appState.acarsError == nil {
-                    await appState.refreshACARS()
-                    await appState.refreshACARSHistory()
-                    await appState.refreshACARSAlerts()
-                }
-            }
-            .searchable(text: $searchText, prompt: "Buscar voo ou matrícula")
-            .onSubmit(of: .search) {
-                Task { await searchFlight() }
-            }
-            .sheet(isPresented: $showMessagesList) {
-                ACARSMessagesSheet(messages: appState.acarsMessages)
-            }
-            .sheet(isPresented: $showSearchResults) {
-                ACARSMessagesSheet(messages: searchResults)
-            }
-            .sheet(item: $selectedAircraft) { aircraft in
-                AircraftMessagesSheet(
-                    aircraft: aircraft,
-                    messages: aircraftMessages,
-                    isLoading: isLoadingAircraftMessages
+            .frame(maxWidth: contentMaxWidth)
+            .frame(maxWidth: .infinity)
+            .padding()
+            .padding(.bottom, 44)
+        }
+        .background {
+            ZStack {
+                LinearGradient(
+                    colors: [ACARSTheme.canvasMid, ACARSTheme.canvasEnd],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
                 )
-            }
-            .onChange(of: appState.intelligenceContext) { _, context in
-                guard
-                    let context,
-                    context["tab"] == ContentView.Tab.acars.rawValue,
-                    context["kind"] == "acars",
-                    let identifier = context["identifier"],
-                    !identifier.isEmpty
-                else { return }
 
-                searchText = identifier
-                appState.intelligenceContext = nil
-                Task { await searchFlight() }
+                Circle()
+                    .fill(ACARSTheme.violet.opacity(0.10))
+                    .frame(width: isWide ? 520 : 320)
+                    .blur(radius: 40)
+                    .offset(x: isWide ? -260 : -120, y: -260)
+
+                Circle()
+                    .fill(ACARSTheme.blue.opacity(0.08))
+                    .frame(width: isWide ? 420 : 260)
+                    .blur(radius: 34)
+                    .offset(x: isWide ? 260 : 120, y: -120)
+
+                Circle()
+                    .fill(ACARSTheme.green.opacity(0.08))
+                    .frame(width: isWide ? 420 : 260)
+                    .blur(radius: 40)
+                    .offset(x: isWide ? 220 : 120, y: 280)
             }
+            .ignoresSafeArea()
+        }
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                ACARSToolbarTitle()
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    print("[ACARSView] 🔄 Manual refresh triggered")
+                    Task {
+                        await appState.refreshACARS()
+                        await appState.refreshACARSHistory()
+                        await appState.refreshACARSAlerts()
+                    }
+                } label: {
+                    Image(systemName: "arrow.clockwise")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(ACARSTheme.violet)
+                        .padding(8)
+                        .background(
+                            Circle()
+                                .fill(ACARSTheme.toolbarBubble)
+                        )
+                }
+            }
+        }
+        .task {
+            if appState.acarsSummary == nil && appState.acarsError == nil {
+                await appState.refreshACARS()
+                await appState.refreshACARSHistory()
+                await appState.refreshACARSAlerts()
+            }
+        }
+        .searchable(text: $searchText, prompt: "Buscar voo ou matrícula")
+        .onSubmit(of: .search) {
+            Task { await searchFlight() }
+        }
+        .sheet(isPresented: $showMessagesList) {
+            ACARSMessagesSheet(messages: appState.acarsMessages)
+        }
+        .sheet(isPresented: $showSearchResults) {
+            ACARSMessagesSheet(messages: searchResults)
+        }
+        .sheet(item: $selectedAircraft) { aircraft in
+            AircraftMessagesSheet(
+                aircraft: aircraft,
+                messages: aircraftMessages,
+                isLoading: isLoadingAircraftMessages
+            )
+        }
+        .onChange(of: appState.intelligenceContext) { _, context in
+            guard
+                let context,
+                context["tab"] == ContentView.Tab.acars.rawValue,
+                context["kind"] == "acars",
+                let identifier = context["identifier"],
+                !identifier.isEmpty
+            else { return }
+
+            searchText = identifier
+            appState.intelligenceContext = nil
+            Task { await searchFlight() }
         }
     }
 

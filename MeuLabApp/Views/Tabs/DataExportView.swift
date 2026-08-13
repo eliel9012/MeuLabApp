@@ -14,79 +14,81 @@ struct DataExportView: View {
     @State private var errorMessage: String?
     
     var body: some View {
-        NavigationStack {
-            Form {
-                Section(header: Text("Tipo de Dados")) {
-                    Picker("Dados", selection: $selectedDataType) {
-                        ForEach(ExportDataType.allCases, id: \.self) { type in
-                            Text(type.displayName).tag(type)
+        Form {
+            Section(header: Text("Tipo de Dados")) {
+                Picker("Dados", selection: $selectedDataType) {
+                    ForEach(ExportDataType.allCases, id: \.self) { type in
+                        Text(type.displayName).tag(type)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+            
+            Section(header: Text("Formato")) {
+                Picker("Formato", selection: $selectedFormat) {
+                    ForEach(ExportFormat.allCases, id: \.self) { format in
+                        Text(format.displayName).tag(format)
+                    }
+                }
+                .pickerStyle(.segmented)
+            }
+            
+            Section(header: Text("Período")) {
+                Toggle("Filtrar por período", isOn: $hasDateFilter)
+                
+                if hasDateFilter {
+                    DatePicker("De", selection: $dateFrom, displayedComponents: [.date])
+                    DatePicker("Até", selection: $dateTo, displayedComponents: [.date])
+                }
+            }
+            
+            Section(header: Text("Descrição")) {
+                Text(selectedDataType.description)
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            
+            Section {
+                Button(action: exportData) {
+                    HStack {
+                        Spacer()
+                        if isExporting {
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        } else {
+                            Image(systemName: "square.and.arrow.up")
                         }
-                    }
-                    .pickerStyle(.menu)
-                }
-                
-                Section(header: Text("Formato")) {
-                    Picker("Formato", selection: $selectedFormat) {
-                        ForEach(ExportFormat.allCases, id: \.self) { format in
-                            Text(format.displayName).tag(format)
-                        }
-                    }
-                    .pickerStyle(.segmented)
-                }
-                
-                Section(header: Text("Período")) {
-                    Toggle("Filtrar por período", isOn: $hasDateFilter)
-                    
-                    if hasDateFilter {
-                        DatePicker("De", selection: $dateFrom, displayedComponents: [.date])
-                        DatePicker("Até", selection: $dateTo, displayedComponents: [.date])
+                        Text("Exportar Dados")
+                        Spacer()
                     }
                 }
-                
-                Section(header: Text("Descrição")) {
-                    Text(selectedDataType.description)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                
+                .disabled(isExporting)
+            }
+            
+            if let error = errorMessage {
                 Section {
-                    Button(action: exportData) {
-                        HStack {
-                            Spacer()
-                            if isExporting {
-                                ProgressView()
-                                    .scaleEffect(0.8)
-                            } else {
-                                Image(systemName: "square.and.arrow.up")
-                            }
-                            Text("Exportar Dados")
-                            Spacer()
-                        }
-                    }
-                    .disabled(isExporting)
-                }
-                
-                if let error = errorMessage {
-                    Section {
-                        Text(error)
-                            .foregroundStyle(.red)
-                            .font(.caption)
-                    }
+                    Text(error)
+                        .foregroundStyle(.red)
+                        .font(.caption)
                 }
             }
-            .navigationTitle("Exportar Dados")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button("Ajuda") {
-                        showHelp()
-                    }
+        }
+        .navigationTitle("Exportar Dados")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Exportar Dados")
+                    .font(.headline)
+            }
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Ajuda") {
+                    showHelp()
                 }
             }
-            .sheet(isPresented: $showingShareSheet) {
-                if let data = exportedData {
-                    ShareSheet(activityItems: [data, fileName])
-                }
+        }
+        .sheet(isPresented: $showingShareSheet) {
+            if let data = exportedData {
+                ShareSheet(activityItems: [data, fileName])
             }
         }
     }

@@ -11,42 +11,44 @@ struct RemoteControlView: View {
     @State private var targetService: String = ""
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 20) {
-                    // Quick Actions
-                    quickActionsSection
+        ScrollView {
+            LazyVStack(spacing: 20) {
+                // Quick Actions
+                quickActionsSection
 
-                    // Recent Commands
-                    recentCommandsSection
+                // Recent Commands
+                recentCommandsSection
 
-                    if isLoading {
-                        ProgressView("Carregando comandos...")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-
-                    if let error = error {
-                        ErrorCard(message: error)
-                            .onTapGesture {
-                                loadCommands()
-                            }
-                    }
+                if isLoading {
+                    ProgressView("Carregando comandos...")
+                        .frame(maxWidth: .infinity)
+                        .padding()
                 }
-                .padding()
-            }
-            .navigationTitle("Controle Remoto")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Histórico") {
-                        // Show command history
-                    }
+
+                if let error = error {
+                    ErrorCard(message: error)
+                        .onTapGesture {
+                            loadCommands()
+                        }
                 }
             }
-            .refreshable {
-                loadCommands()
+            .padding()
+        }
+        .navigationTitle("Controle Remoto")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Controle Remoto")
+                    .font(.headline)
             }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button("Histórico") {
+                    // Show command history
+                }
+            }
+        }
+        .refreshable {
+            loadCommands()
         }
         .onAppear {
             hydrateCommandsFromCache()

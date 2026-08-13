@@ -10,6 +10,7 @@ final class NotificationFeedManager: ObservableObject {
     private let latestIdKey = "notification_feed_latest_id"
     private let basePollInterval: TimeInterval = 20
     private let maxPollInterval: TimeInterval = 300
+    private let backlogSummaryThreshold = 3
 
     private struct State {
         var currentPollInterval: TimeInterval = 20
@@ -85,8 +86,14 @@ final class NotificationFeedManager: ObservableObject {
             let ids = feed.events.map(\.id)
 
             if granted {
-                for event in feed.events {
-                    scheduleLocalNotification(event)
+                // Backlog acumulado (app ficou fechado) vira 1 notificação-resumo em vez de
+                // disparar tudo de uma vez — evita a rajada de alertas atrasados na abertura.
+                if feed.events.count > backlogSummaryThreshold {
+                    scheduleBacklogSummaryNotification(events: feed.events)
+                } else {
+                    for event in feed.events {
+                        scheduleLocalNotification(event)
+                    }
                 }
             }
 
@@ -150,6 +157,31 @@ final class NotificationFeedManager: ObservableObject {
         UNUserNotificationCenter.current().add(request) { error in
             if let error {
                 print("[NotificationFeed] Failed to schedule local notification \(event.id): \(error)")
+            }
+        }
+    }
+
+    private func scheduleBacklogSummaryNotification(events: [NotificationEvent]) {
+        let content = UNMutableNotificationContent()
+        content.title = "MeuLab"
+        content.body = "\(events.count) novos alertas enquanto o app estava fechado."
+        content.sound = .default
+        content.categoryIdentifier = "general"
+        content.userInfo = [
+            "category": "general",
+            "event_count": events.count,
+            "event_ids": events.map(\.id),
+        ]
+
+        let request = UNNotificationRequest(
+            identifier: "feed_backlog_\(events.first?.id ?? 0)_\(events.last?.id ?? 0)",
+            content: content,
+            trigger: nil
+        )
+
+        UNUserNotificationCenter.current().add(request) { error in
+            if let error {
+                print("[NotificationFeed] Failed to schedule backlog summary: \(error)")
             }
         }
     }

@@ -16,13 +16,13 @@ struct ContentView: View {
         case radio
         case weather
         case analytics
-        case alerts
         case flightSearch
         case export
         case remote
-        case remoteRadio
         case intelligence
         case bible
+        case tesouroReserva
+        case viagem
 
         var title: String {
             switch self {
@@ -35,13 +35,13 @@ struct ContentView: View {
             case .radio: return "Rádio"
             case .weather: return "Clima"
             case .analytics: return "Analytics"
-            case .alerts: return "Alertas"
             case .flightSearch: return "Buscar"
             case .export: return "Exportar"
             case .remote: return "Controle"
-            case .remoteRadio: return "SDR"
             case .intelligence: return "IA"
             case .bible: return "Bíblia"
+            case .tesouroReserva: return "Tesouro Reserva"
+            case .viagem: return "Viagem"
             }
         }
 
@@ -56,13 +56,13 @@ struct ContentView: View {
             case .radio: return "radio"
             case .weather: return "cloud.sun"
             case .analytics: return "chart.line.uptrend.xyaxis"
-            case .alerts: return "bell"
             case .flightSearch: return "magnifyingglass"
             case .export: return "square.and.arrow.up"
             case .remote: return "terminal"
-            case .remoteRadio: return "antenna.radiowaves.left.and.right.circle"
             case .intelligence: return "brain.head.profile"
             case .bible: return "book.closed"
+            case .tesouroReserva: return "banknote"
+            case .viagem: return "airplane.circle"
             }
         }
 
@@ -77,13 +77,13 @@ struct ContentView: View {
             case .radio: return "radio.fill"
             case .weather: return "cloud.sun.fill"
             case .analytics: return "chart.line.uptrend.xyaxis"
-            case .alerts: return "bell.fill"
             case .flightSearch: return "magnifyingglass"
             case .export: return "square.and.arrow.up"
             case .remote: return "terminal.fill"
-            case .remoteRadio: return "antenna.radiowaves.left.and.right.circle.fill"
             case .intelligence: return "brain.head.profile"
             case .bible: return "book.closed.fill"
+            case .tesouroReserva: return "banknote.fill"
+            case .viagem: return "airplane.circle.fill"
             }
         }
 
@@ -95,8 +95,8 @@ struct ContentView: View {
         /// Tabs secundárias acessíveis via menu "Mais"
         static var secondaryTabs: [Tab] {
             [
-                .map, .acars, .infra, .weather, .alerts, .flightSearch, .export,
-                .remote, .remoteRadio, .intelligence, .bible,
+                .map, .acars, .infra, .weather, .flightSearch, .export,
+                .remote, .intelligence, .bible, .tesouroReserva, .viagem,
             ]
         }
 
@@ -159,12 +159,6 @@ struct ContentView: View {
                     } label: {
                         Label(Tab.weather.title, systemImage: Tab.weather.icon)
                     }
-
-                    SwiftUI.Tab(value: Tab.alerts) {
-                        tabView(for: .alerts)
-                    } label: {
-                        Label(Tab.alerts.title, systemImage: Tab.alerts.icon)
-                    }
                 }
 
                 Group {
@@ -186,12 +180,6 @@ struct ContentView: View {
                         Label(Tab.remote.title, systemImage: Tab.remote.icon)
                     }
 
-                    SwiftUI.Tab(value: Tab.remoteRadio) {
-                        tabView(for: .remoteRadio)
-                    } label: {
-                        Label(Tab.remoteRadio.title, systemImage: Tab.remoteRadio.icon)
-                    }
-
                     SwiftUI.Tab(value: Tab.intelligence) {
                         tabView(for: .intelligence)
                     } label: {
@@ -202,6 +190,18 @@ struct ContentView: View {
                         tabView(for: .bible)
                     } label: {
                         Label(Tab.bible.title, systemImage: Tab.bible.icon)
+                    }
+
+                    SwiftUI.Tab(value: Tab.tesouroReserva) {
+                        tabView(for: .tesouroReserva)
+                    } label: {
+                        Label(Tab.tesouroReserva.title, systemImage: Tab.tesouroReserva.icon)
+                    }
+
+                    SwiftUI.Tab(value: Tab.viagem) {
+                        tabView(for: .viagem)
+                    } label: {
+                        Label(Tab.viagem.title, systemImage: Tab.viagem.icon)
                     }
                 }
             }
@@ -281,13 +281,13 @@ struct ContentView: View {
         case .radio: RadioView()
         case .weather: WeatherView()
         case .analytics: SystemView()
-        case .alerts: AlertsView()
         case .flightSearch: FlightSearchView()
         case .export: DataExportView()
         case .remote: RemoteControlView()
-        case .remoteRadio: RemoteRadioView()
         case .intelligence: IntelligenceView()
         case .bible: BibleView()
+        case .tesouroReserva: TesouroReservaView()
+        case .viagem: ViagemView()
         }
     }
 

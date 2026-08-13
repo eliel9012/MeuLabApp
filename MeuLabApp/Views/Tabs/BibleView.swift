@@ -21,56 +21,58 @@ struct BibleView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                // Background gradient — parchment/mahogany feel matching the HTML design
-                LinearGradient(
-                    colors: [
-                        Color(red: 0.24, green: 0.15, blue: 0.13).opacity(0.18),
-                        Color(red: 0.96, green: 0.90, blue: 0.83).opacity(0.06),
-                        Color(.systemBackground),
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+        ZStack {
+            // Background gradient — parchment/mahogany feel matching the HTML design
+            LinearGradient(
+                colors: [
+                    Color(red: 0.24, green: 0.15, blue: 0.13).opacity(0.18),
+                    Color(red: 0.96, green: 0.90, blue: 0.83).opacity(0.06),
+                    Color(.systemBackground),
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    // Custom tab picker
-                    bibleTabPicker
-                        .padding(.horizontal)
-                        .padding(.top, 8)
-                        .padding(.bottom, 4)
+            VStack(spacing: 0) {
+                // Custom tab picker
+                bibleTabPicker
+                    .padding(.horizontal)
+                    .padding(.top, 8)
+                    .padding(.bottom, 4)
 
-                    Divider()
-                        .opacity(0.3)
+                Divider()
+                    .opacity(0.3)
 
-                    // Tab content
-                    switch selectedTab {
-                    case .navegar:
-                        BibleNavigateView(
-                            selectedBook: $selectedBook,
-                            selectedChapter: $selectedChapter
-                        )
-                    case .buscar:
-                        BibleSearchView()
-                    case .aleatorio:
-                        BibleRandomView()
-                    }
+                // Tab content
+                switch selectedTab {
+                case .navegar:
+                    BibleNavigateView(
+                        selectedBook: $selectedBook,
+                        selectedChapter: $selectedChapter
+                    )
+                case .buscar:
+                    BibleSearchView()
+                case .aleatorio:
+                    BibleRandomView()
                 }
             }
-            .navigationTitle("📖 A Bíblia")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Text("ACF")
-                        .font(.caption)
-                        .fontWeight(.semibold)
-                        .foregroundStyle(.secondary)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 3)
-                        .background(.ultraThinMaterial, in: Capsule())
-                }
+        }
+        .navigationTitle("📖 A Bíblia")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("📖 A Bíblia")
+                    .font(.headline)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Text("ACF")
+                    .font(.caption)
+                    .fontWeight(.semibold)
+                    .foregroundStyle(.secondary)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 3)
+                    .background(.ultraThinMaterial, in: Capsule())
             }
         }
     }

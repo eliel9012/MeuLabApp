@@ -11,13 +11,6 @@ struct ContentView: View {
                     Label("Resumo", systemImage: "rectangle.3.group.bubble.left.fill")
                 }
 
-                // Alertas
-                NavigationLink {
-                    AlertsView()
-                } label: {
-                    Label("Alertas", systemImage: "bell.badge.fill")
-                }
-
                 Section("Categorias") {
                     NavigationLink {
                         WatchADSBView()
