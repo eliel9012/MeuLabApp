@@ -3172,7 +3172,7 @@ struct AircraftPhotoView: View {
                 registration.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
                 ?? registration
             let url = URL(string: "https://api.planespotters.net/pub/photos/reg/\(encoded)")!
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await URLSession.shared.data(for: Self.planeSpottersRequest(url))
             let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
             let photos = json?["photos"] as? [[String: Any]]
 
@@ -3197,11 +3197,21 @@ struct AircraftPhotoView: View {
         return false
     }
 
+    /// A API do PlaneSpotters rejeita User-Agents genéricos (ex.: o padrão do URLSession) com
+    /// um erro 4xx explícito — precisa de um User-Agent descritivo com contato.
+    private static func planeSpottersRequest(_ url: URL) -> URLRequest {
+        var request = URLRequest(url: url)
+        request.setValue(
+            "MeuLabApp/1.0 (+https://meulab.fun/contact)", forHTTPHeaderField: "User-Agent"
+        )
+        return request
+    }
+
     private func tryPlaneSpottersByHex(hex: String) async -> Bool {
         do {
             let encoded = hex.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? hex
             let url = URL(string: "https://api.planespotters.net/pub/photos/hex/\(encoded)")!
-            let (data, _) = try await URLSession.shared.data(from: url)
+            let (data, _) = try await URLSession.shared.data(for: Self.planeSpottersRequest(url))
             let json = try JSONSerialization.jsonObject(with: data) as? [String: Any]
             let photos = json?["photos"] as? [[String: Any]]
 
