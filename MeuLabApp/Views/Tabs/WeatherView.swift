@@ -771,61 +771,59 @@ struct WeatherView: View {
     }
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                LazyVStack(spacing: 20) {
-                    if let weather = appState.weather {
-                        weatherContent(weather)
-                    } else if let error = appState.weatherError {
-                        ErrorCard(message: error)
-                    } else {
-                        weatherLoadingState
-                    }
-                }
-                .padding(.horizontal)
-                .padding(.bottom, 24)
-            }
-            .background {
-                WeatherAtmosphereBackground(
-                    style: appState.weather.map { WeatherAtmosphere(current: $0.current) } ?? .clearDay
-                )
-            }
-            .navigationTitle("Clima")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                if isCompactLayout {
-                    ToolbarItem(placement: .topBarLeading) {
-                        WeatherToolbarTitle(compact: true)
-                    }
+        ScrollView {
+            LazyVStack(spacing: 20) {
+                if let weather = appState.weather {
+                    weatherContent(weather)
+                } else if let error = appState.weatherError {
+                    ErrorCard(message: error)
                 } else {
-                    ToolbarItem(placement: .principal) {
-                        WeatherToolbarTitle()
-                    }
+                    weatherLoadingState
                 }
-                ToolbarItem(placement: .topBarTrailing) {
-                    if appState.weatherLoading {
-                        ProgressView()
-                            .controlSize(.small)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 24)
+        }
+        .background {
+            WeatherAtmosphereBackground(
+                style: appState.weather.map { WeatherAtmosphere(current: $0.current) } ?? .clearDay
+            )
+        }
+        .navigationTitle("Clima")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            if isCompactLayout {
+                ToolbarItem(placement: .topBarLeading) {
+                    WeatherToolbarTitle(compact: true)
+                }
+            } else {
+                ToolbarItem(placement: .principal) {
+                    WeatherToolbarTitle()
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
+                if appState.weatherLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                        .padding(8)
+                        .background(
+                            Circle()
+                                .fill(WeatherTheme.toolbarBubble)
+                        )
+                } else {
+                    Button {
+                        Task { await appState.refreshWeather() }
+                    } label: {
+                        Image(systemName: "arrow.clockwise")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundStyle(WeatherTheme.skyBlue)
                             .padding(8)
                             .background(
                                 Circle()
                                     .fill(WeatherTheme.toolbarBubble)
                             )
-                    } else {
-                        Button {
-                            Task { await appState.refreshWeather() }
-                        } label: {
-                            Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(WeatherTheme.skyBlue)
-                                .padding(8)
-                                .background(
-                                    Circle()
-                                        .fill(WeatherTheme.toolbarBubble)
-                                )
-                        }
-                        .buttonStyle(.plain)
                     }
+                    .buttonStyle(.plain)
                 }
             }
         }

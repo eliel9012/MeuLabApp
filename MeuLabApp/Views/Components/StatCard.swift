@@ -41,3 +41,29 @@ struct StatCard: View {
     }
     .padding()
 }
+
+struct EmptyStateCard: View {
+    let title: String
+    let description: String
+    let systemImage: String
+
+    var body: some View {
+        VStack(spacing: 12) {
+            Image(systemName: systemImage)
+                .font(.system(size: 48))
+                .foregroundStyle(.secondary)
+
+            Text(title)
+                .font(.headline)
+                .foregroundStyle(.primary)
+
+            Text(description)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding()
+        .frame(maxWidth: .infinity)
+        .glassCard(cornerRadius: 12)
+    }
+}

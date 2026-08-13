@@ -7,6 +7,7 @@ enum APIError: Error, LocalizedError {
     case decodingError(Error)
     case unauthorized
     case serverError(Int)
+    case notAvailable
     case unknown
 
     var errorDescription: String? {
@@ -21,6 +22,8 @@ enum APIError: Error, LocalizedError {
             return "Não autorizado"
         case .serverError(let code):
             return "Erro do servidor: \(code)"
+        case .notAvailable:
+            return "Recurso indisponível no momento"
         case .unknown:
             return "Erro desconhecido"
         }
@@ -31,6 +34,7 @@ actor APIService {
     static let shared = APIService()
 
     private var baseURL = Secrets.apiBaseURL
+    private let radarBaseURL = "https://radar.meulab.fun"
     private let gpsGlobeBaseURL = "https://gps.meulab.fun"
     private let apiToken = Secrets.apiToken.isEmpty ? Secrets.apiTokenAlternative : Secrets.apiToken
 
@@ -169,6 +173,24 @@ actor APIService {
         }
     }
 
+    // MARK: - Radar Request Helpers (radar.meulab.fun — public, no auth)
+
+    private func fetchFromRadar<T: Decodable>(_ path: String) async throws -> T {
+        guard let url = URL(string: "\(radarBaseURL)\(path)") else {
+            throw APIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        request.cachePolicy = .reloadIgnoringLocalCacheData
+        let (data, _) = try await performRequest(request)
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            throw APIError.decodingError(error)
+        }
+    }
+
     // MARK: - API2 Request Helpers
 
     private func makeAPI2Request(path: String) throws -> URLRequest {
@@ -247,6 +269,50 @@ actor APIService {
 
     func fetchADSBAlerts() async throws -> ADSBAlertsResponse {
         try await fetch("/api/adsb/alerts")
+    }
+
+    // MARK: - radar.meulab.fun Direct Endpoints (sem autenticação)
+
+    /// Aeronaves ao vivo do receptor local (~0.3 s de latência)
+    func fetchRawAircraftList() async throws -> RadarAircraftResponse {
+        try await fetchFromRadar("/data/aircraft.json")
+    }
+
+    /// Informações do receptor (posição, versão, capacidades)
+    func fetchReceiverInfo() async throws -> Data {
+        try await fetchFromRadar("/data/receiver.json")
+    }
+
+    /// Estatísticas de desempenho por janela de tempo
+    func fetchRadarStats() async throws -> Data {
+        try await fetchFromRadar("/data/stats.json")
+    }
+
+    /// Status do sistema e feeders ativos
+    func fetchRadarStatus() async throws -> Data {
+        try await fetchFromRadar("/data/status.json")
+    }
+
+    /// Trajetória recente de uma aeronave (últimas horas, gravada a cada 15 s)
+    func fetchAircraftTrace(hex: String) async throws -> Data {
+        let prefix = String(hex.suffix(2))
+        guard
+            let url = URL(string: "\(radarBaseURL)/data/traces/\(prefix)/trace_recent_\(hex).json")
+        else {
+            throw APIError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
+        let (data, response) = try await session.data(for: request)
+        guard let http = response as? HTTPURLResponse, http.statusCode == 200 else {
+            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
+        }
+        return data
+    }
+
+    /// URL da silhueta de um tipo de aeronave
+    func aircraftSilhouetteURL(type: String) -> URL? {
+        URL(string: "\(radarBaseURL)/aircraft_sil/\(type).png")
     }
 
     func fetchTuyaTemperatureHumidity(historyLimit: Int = 12) async throws
@@ -529,13 +595,21 @@ actor APIService {
 
     func fetchSatDumpFFT() async throws -> Data {
         if let cached = BinaryCache.shared.cachedData(forPath: "/api/satdump/fft") { return cached }
-        let data = try await fetchData("/api/satdump/fft")
-        BinaryCache.shared.store(data, forPath: "/api/satdump/fft")
-        return data
+        do {
+            let data = try await fetchData("/api/satdump/fft")
+            BinaryCache.shared.store(data, forPath: "/api/satdump/fft")
+            return data
+        } catch APIError.serverError(501) {
+            throw APIError.notAvailable
+        }
     }
 
     func fetchSatDumpLive() async throws -> SatDumpLiveResponse {
-        try await fetch("/api/satdump/live")
+        do {
+            return try await fetch("/api/satdump/live")
+        } catch APIError.serverError(501) {
+            throw APIError.notAvailable
+        }
     }
 
     func fetchGPSGlobeState() async throws -> GPSGlobeState {

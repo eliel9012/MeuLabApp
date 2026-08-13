@@ -1,0 +1,20 @@
+#!/usr/bin/expect -f
+set timeout 30
+spawn ssh -o StrictHostKeyChecking=no pi@192.168.100.131
+expect "password:"
+send "pobgu9-jabdoP-ruczaq\r"
+expect "$ "
+send "grep -n 'app.router.add\\|router.add' /home/pi/bot2/api_server.py | head -120\r"
+expect "$ "
+send "echo '---SEPARATOR---'\r"
+expect "$ "
+send "ls /home/pi/bot2/api/\r"
+expect "$ "
+send "echo '---SEPARATOR---'\r"
+expect "$ "
+send "TOKEN='p19Yl1wARrFHjn-4Pg0feQQDeihnRQrMwTUyncjGtgs'\r"
+expect "$ "
+send "for ep in /api/system/status /api/adsb/summary /api/radio/now-playing /api/weather/current /api/acars/summary /api/satdump/status /api/docker/status /api/systemd/status /api/firestick/devices /api/notifications/feed /api/alerts/rules /api/remote/commands /api/user/theme /api/flights/search /api/analytics/system /api/satdump/passes /api/satdump/schedule /api/remote-radio/status /api/adsb/aircraft /api/adsb/history /api/adsb/alerts /api/adsb/adsb_lol /api/radio/history /api/acars/messages /api/acars/hourly /api/acars/history /api/acars/alerts /api/satdump/last/images /api/satdump/fft /api/satdump/live /api/satdump/meteor/passes /api/satdump/orbcomm/passes /api/satdump/orbcomm/next_passes /api/satdump/orbcomm/runs /api/docker/version /api/system/processes /api/system/partitions /api/system/network /api/metrics /api/health/check /api/adsb/airline_classification /api/flightaware/airport/board; do CODE=\\$(curl -s -o /dev/null -w '%{http_code}' --max-time 5 http://localhost:8090\\$ep -H \"Authorization: Bearer \\$TOKEN\"); echo \\$CODE \\$ep; done\r"
+expect -timeout 120 "$ "
+send "exit\r"
+expect eof

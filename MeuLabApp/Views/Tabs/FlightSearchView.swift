@@ -49,85 +49,87 @@ struct FlightSearchView: View {
     @State private var boardError: String?
     
     var body: some View {
-        NavigationStack {
-            VStack(spacing: 0) {
-                Picker("", selection: $mode) {
-                    ForEach(Mode.allCases, id: \.self) { m in
-                        Text(m.rawValue).tag(m)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding()
-
-                switch mode {
-                case .flights:
-                    searchBar
-                    quickFilters
-
-                    if let results = searchResults {
-                        resultsList(results)
-                    } else if !isLoading && error == nil {
-                        emptyState
-                    }
-
-                    if isLoading {
-                        ProgressView("Buscando voos...")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    }
-
-                    if let error = error {
-                        ErrorCard(message: error)
-                            .onTapGesture { performSearch() }
-                    }
-
-                case .airports:
-                    airportBoardControls
-
-                    if boardLoading {
-                        ProgressView("Carregando...")
-                            .frame(maxWidth: .infinity)
-                            .padding()
-                    } else if let boardResponse {
-                        airportBoardList(boardResponse)
-                    } else if let boardError {
-                        ErrorCard(message: boardError)
-                            .onTapGesture { loadBoard() }
-                            .padding(.horizontal)
-                    } else {
-                        ContentUnavailableView("Sem dados", systemImage: "airplane.departure")
-                            .padding(.top, 40)
-                    }
+        VStack(spacing: 0) {
+            Picker("", selection: $mode) {
+                ForEach(Mode.allCases, id: \.self) { m in
+                    Text(m.rawValue).tag(m)
                 }
             }
-            .navigationTitle("Buscar Voos")
-            .navigationBarTitleDisplayMode(.large)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    if mode == .flights {
-                        Button {
-                            showingFilters = true
-                        } label: {
-                            Image(systemName: "slider.horizontal.3")
-                        }
-                    }
+            .pickerStyle(.segmented)
+            .padding()
+
+            switch mode {
+            case .flights:
+                searchBar
+                quickFilters
+
+                if let results = searchResults {
+                    resultsList(results)
+                } else if !isLoading && error == nil {
+                    emptyState
                 }
-            }
-            .sheet(isPresented: $showingFilters) {
-                FlightFiltersView(
-                    searchRequest: $searchRequest,
-                    onSearch: {
-                        performSearch()
-                    }
-                )
-            }
-            .refreshable {
-                currentPage = 1
-                if mode == .flights {
-                    performSearch()
+
+                if isLoading {
+                    ProgressView("Buscando voos...")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                }
+
+                if let error = error {
+                    ErrorCard(message: error)
+                        .onTapGesture { performSearch() }
+                }
+
+            case .airports:
+                airportBoardControls
+
+                if boardLoading {
+                    ProgressView("Carregando...")
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                } else if let boardResponse {
+                    airportBoardList(boardResponse)
+                } else if let boardError {
+                    ErrorCard(message: boardError)
+                        .onTapGesture { loadBoard() }
+                        .padding(.horizontal)
                 } else {
-                    loadBoard()
+                    ContentUnavailableView("Sem dados", systemImage: "airplane.departure")
+                        .padding(.top, 40)
                 }
+            }
+        }
+        .navigationTitle("Buscar Voos")
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Buscar Voos")
+                    .font(.headline)
+            }
+            ToolbarItem(placement: .navigationBarTrailing) {
+                if mode == .flights {
+                    Button {
+                        showingFilters = true
+                    } label: {
+                        Image(systemName: "slider.horizontal.3")
+                    }
+                }
+            }
+        }
+        .sheet(isPresented: $showingFilters) {
+            FlightFiltersView(
+                searchRequest: $searchRequest,
+                onSearch: {
+                    performSearch()
+                }
+            )
+        }
+        .refreshable {
+            currentPage = 1
+            if mode == .flights {
+                performSearch()
+            } else {
+                loadBoard()
             }
         }
         .onSubmit {

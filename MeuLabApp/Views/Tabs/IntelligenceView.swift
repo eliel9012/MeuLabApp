@@ -363,109 +363,107 @@ struct IntelligenceViewModern: View {
     #endif
 
     var body: some View {
-        NavigationStack {
-            ZStack {
-                LinearGradient(
-                    colors: [
-                        Color.blue.opacity(0.10),
-                        Color.mint.opacity(0.08),
-                        Color.orange.opacity(0.07),
-                        Color.clear,
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+        ZStack {
+            LinearGradient(
+                colors: [
+                    Color.blue.opacity(0.10),
+                    Color.mint.opacity(0.08),
+                    Color.orange.opacity(0.07),
+                    Color.clear,
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
 
-                VStack(spacing: 0) {
-                    ScrollViewReader { proxy in
-                        ScrollView {
-                            VStack(spacing: 18) {
-                                heroSection
-                                workflowSection
-                                if incidentMode {
-                                    incidentBanner
-                                }
-                                if !currentMessages.isEmpty {
-                                    chatSection
-                                }
-                                copilotOverviewSection
+            VStack(spacing: 0) {
+                ScrollViewReader { proxy in
+                    ScrollView {
+                        VStack(spacing: 18) {
+                            heroSection
+                            workflowSection
+                            if incidentMode {
+                                incidentBanner
                             }
-                            .padding(.horizontal, isWide ? 26 : 16)
-                            .padding(.top, isWide ? 18 : 12)
-                            .padding(.bottom, 12)
+                            if !currentMessages.isEmpty {
+                                chatSection
+                            }
+                            copilotOverviewSection
                         }
-                        .onAppear { scrollProxy = proxy }
+                        .padding(.horizontal, isWide ? 26 : 16)
+                        .padding(.top, isWide ? 18 : 12)
+                        .padding(.bottom, 12)
                     }
-
-                    Divider()
-                    inputBar
+                    .onAppear { scrollProxy = proxy }
                 }
+
+                Divider()
+                inputBar
             }
-            .navigationTitle(sessionTitle)
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    HStack(spacing: 12) {
-                        Button {
-                            showHistory = true
-                        } label: {
-                            Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
-                        }
-                        .accessibilityLabel("Histórico de conversas")
-
-                        Menu {
-                            Button {
-                                incidentMode.toggle()
-                            } label: {
-                                Label(incidentMode ? "Sair Modo Incidente" : "Modo Incidente", systemImage: "exclamationmark.shield")
-                            }
-
-                            Button(role: .destructive) {
-                                clearChat()
-                            } label: {
-                                Label("Limpar conversa", systemImage: "trash")
-                            }
-                        } label: {
-                            Image(systemName: "ellipsis.circle")
-                        }
-                    }
-                }
-
-                ToolbarItem(placement: .principal) {
-                    #if canImport(FoundationModels)
-                        IntelligenceToolbarTitle(
-                            statusLabel: modelService.availabilityLabel,
-                            symbol: modelService.availabilitySymbol,
-                            tint: modelService.availabilityTint
-                        )
-                    #else
-                        IntelligenceToolbarTitle(
-                            statusLabel: "Fallback local",
-                            symbol: "brain",
-                            tint: IntelligenceTheme.accent
-                        )
-                    #endif
-                }
-
-                ToolbarItem(placement: .navigationBarTrailing) {
+        }
+        .navigationTitle(sessionTitle)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .navigationBarLeading) {
+                HStack(spacing: 12) {
                     Button {
-                        startNewChat()
+                        showHistory = true
                     } label: {
-                        Image(systemName: "square.and.pencil")
+                        Image(systemName: "clock.arrow.trianglehead.counterclockwise.rotate.90")
                     }
-                    .accessibilityLabel("Nova conversa")
+                    .accessibilityLabel("Histórico de conversas")
+
+                    Menu {
+                        Button {
+                            incidentMode.toggle()
+                        } label: {
+                            Label(incidentMode ? "Sair Modo Incidente" : "Modo Incidente", systemImage: "exclamationmark.shield")
+                        }
+
+                        Button(role: .destructive) {
+                            clearChat()
+                        } label: {
+                            Label("Limpar conversa", systemImage: "trash")
+                        }
+                    } label: {
+                        Image(systemName: "ellipsis.circle")
+                    }
                 }
             }
-            .sheet(isPresented: $showHistory) {
-                chatHistorySheet
+
+            ToolbarItem(placement: .principal) {
+                #if canImport(FoundationModels)
+                    IntelligenceToolbarTitle(
+                        statusLabel: modelService.availabilityLabel,
+                        symbol: modelService.availabilitySymbol,
+                        tint: modelService.availabilityTint
+                    )
+                #else
+                    IntelligenceToolbarTitle(
+                        statusLabel: "Fallback local",
+                        symbol: "brain",
+                        tint: IntelligenceTheme.accent
+                    )
+                #endif
             }
-            .onAppear {
-                bootstrapIfNeeded()
+
+            ToolbarItem(placement: .navigationBarTrailing) {
+                Button {
+                    startNewChat()
+                } label: {
+                    Image(systemName: "square.and.pencil")
+                }
+                .accessibilityLabel("Nova conversa")
             }
-            .onChange(of: incidentMode) { _, _ in
-                setupModel(history: currentMessages)
-            }
+        }
+        .sheet(isPresented: $showHistory) {
+            chatHistorySheet
+        }
+        .onAppear {
+            bootstrapIfNeeded()
+        }
+        .onChange(of: incidentMode) { _, _ in
+            setupModel(history: currentMessages)
         }
     }
 
@@ -1177,8 +1175,6 @@ struct IntelligenceViewModern: View {
                 "acars"
             case ContentView.Tab.weather.rawValue:
                 "weather_day"
-            case ContentView.Tab.alerts.rawValue:
-                "alert"
             case ContentView.Tab.system.rawValue:
                 "system"
             default:
@@ -1411,11 +1407,11 @@ struct IntelligenceViewLegacy: View {
                     }
                     .adaptiveGlassProminentButton()
 
-                    Button("Abrir Alertas") {
+                    Button("Abrir ADS-B") {
                         NotificationCenter.default.post(
                             name: Notification.Name("meulab.navigateToTab"),
                             object: nil,
-                            userInfo: ["tab": ContentView.Tab.alerts.rawValue]
+                            userInfo: ["tab": ContentView.Tab.adsb.rawValue]
                         )
                     }
                     .adaptiveGlassButton()
