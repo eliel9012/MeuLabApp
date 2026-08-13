@@ -16,13 +16,13 @@ struct ContentView: View {
         case radio
         case weather
         case analytics
-        case alerts
         case flightSearch
         case export
         case remote
-        case remoteRadio
         case intelligence
         case bible
+        case tesouroReserva
+        case viagem
         case more
 
         var title: String {
@@ -36,13 +36,13 @@ struct ContentView: View {
             case .radio: return "Rádio"
             case .weather: return "Clima"
             case .analytics: return "Analytics"
-            case .alerts: return "Alertas"
             case .flightSearch: return "Buscar"
             case .export: return "Exportar"
             case .remote: return "Controle"
-            case .remoteRadio: return "SDR"
             case .intelligence: return "IA"
             case .bible: return "Bíblia"
+            case .tesouroReserva: return "Tesouro Reserva"
+            case .viagem: return "Viagem"
             case .more: return "Mais"
             }
         }
@@ -58,13 +58,13 @@ struct ContentView: View {
             case .radio: return "radio"
             case .weather: return "cloud.sun"
             case .analytics: return "chart.line.uptrend.xyaxis"
-            case .alerts: return "bell"
             case .flightSearch: return "magnifyingglass"
             case .export: return "square.and.arrow.up"
             case .remote: return "terminal"
-            case .remoteRadio: return "antenna.radiowaves.left.and.right.circle"
             case .intelligence: return "brain.head.profile"
             case .bible: return "book.closed"
+            case .tesouroReserva: return "banknote"
+            case .viagem: return "airplane.circle"
             case .more: return "ellipsis"
             }
         }
@@ -80,13 +80,13 @@ struct ContentView: View {
             case .radio: return "radio.fill"
             case .weather: return "cloud.sun.fill"
             case .analytics: return "chart.line.uptrend.xyaxis"
-            case .alerts: return "bell.fill"
             case .flightSearch: return "magnifyingglass"
             case .export: return "square.and.arrow.up"
             case .remote: return "terminal.fill"
-            case .remoteRadio: return "antenna.radiowaves.left.and.right.circle.fill"
             case .intelligence: return "brain.head.profile"
             case .bible: return "book.closed.fill"
+            case .tesouroReserva: return "banknote.fill"
+            case .viagem: return "airplane.circle.fill"
             case .more: return "ellipsis"
             }
         }
@@ -99,8 +99,8 @@ struct ContentView: View {
         /// Tabs secundárias acessíveis via menu "Mais"
         static var secondaryTabs: [Tab] {
             [
-                .map, .acars, .infra, .weather, .alerts, .flightSearch, .export,
-                .remote, .remoteRadio, .intelligence, .bible,
+                .map, .acars, .infra, .weather, .flightSearch, .export,
+                .remote, .intelligence, .bible, .tesouroReserva, .viagem,
             ]
         }
 
@@ -202,13 +202,13 @@ struct ContentView: View {
         case .radio: RadioView()
         case .weather: WeatherView()
         case .analytics: SystemView()
-        case .alerts: AlertsView()
         case .flightSearch: FlightSearchView()
         case .export: DataExportView()
         case .remote: RemoteControlView()
-        case .remoteRadio: RemoteRadioView()
         case .intelligence: IntelligenceView()
         case .bible: BibleView()
+        case .tesouroReserva: TesouroReservaView()
+        case .viagem: ViagemView()
         case .more: MoreMenuView(tabs: Tab.secondaryTabs) { selectedTab = $0 }
         }
     }

@@ -394,11 +394,6 @@ struct EnhancedWatchContentView: View {
                             WatchInfraView()
                         }
                         WatchGridButton(
-                            title: "Alertas", icon: "bell.badge.fill", tint: WatchLabTheme.red
-                        ) {
-                            AlertsView()
-                        }
-                        WatchGridButton(
                             title: "Analytics", icon: "chart.bar.fill", tint: WatchLabTheme.cyan
                         ) {
                             WatchAnalyticsView()

@@ -1198,8 +1198,6 @@ struct IntelligenceViewModern: View {
                     "acars"
                 case ContentView.Tab.weather.rawValue:
                     "weather_day"
-                case ContentView.Tab.alerts.rawValue:
-                    "alert"
                 case ContentView.Tab.system.rawValue:
                     "system"
                 default:
@@ -1435,11 +1433,11 @@ struct IntelligenceViewLegacy: View {
                     }
                     .adaptiveGlassProminentButton()
 
-                    Button("Abrir Alertas") {
+                    Button("Abrir ADS-B") {
                         NotificationCenter.default.post(
                             name: Notification.Name("meulab.navigateToTab"),
                             object: nil,
-                            userInfo: ["tab": ContentView.Tab.alerts.rawValue]
+                            userInfo: ["tab": ContentView.Tab.adsb.rawValue]
                         )
                     }
                     .adaptiveGlassButton()

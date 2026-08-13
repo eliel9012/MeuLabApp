@@ -37,7 +37,7 @@ struct iPadSidebarRow: View {
     
     private func hasActiveAlerts(for tab: ContentView.Tab) -> Bool {
         switch tab {
-        case .alerts, .system, .remote:
+        case .system, .remote:
             return true // In real app, check actual alerts
         default:
             return false

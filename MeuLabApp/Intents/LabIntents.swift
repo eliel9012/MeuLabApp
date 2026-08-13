@@ -411,13 +411,13 @@ struct OpenAlertInMeuLabIntent: OpenIntent {
         NotificationCenter.default.post(
             name: .meulabNavigateToTab,
             object: nil,
-            userInfo: ["tab": ContentView.Tab.alerts.rawValue]
+            userInfo: ["tab": ContentView.Tab.adsb.rawValue]
         )
         NotificationCenter.default.post(
             name: .meulabOpenContext,
             object: nil,
             userInfo: [
-                "tab": ContentView.Tab.alerts.rawValue,
+                "tab": ContentView.Tab.adsb.rawValue,
                 "kind": "alert",
                 "identifier": target.id,
             ]

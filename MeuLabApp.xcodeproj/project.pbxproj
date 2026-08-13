@@ -46,7 +46,6 @@
 		040 /* EnhancedContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141 /* EnhancedContentView.swift */; };
 		041 /* ThemeManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142 /* ThemeManagerView.swift */; };
 		043 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144 /* AnalyticsView.swift */; };
-		044 /* AlertsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 145 /* AlertsView.swift */; };
 		045 /* FlightSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 146 /* FlightSearchView.swift */; };
 		047 /* DataExportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 148 /* DataExportView.swift */; };
 		048 /* RemoteControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 149 /* RemoteControlView.swift */; };
@@ -93,15 +92,9 @@
 		FMDS02 /* FoundationModelService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FMDS01 /* FoundationModelService.swift */; };
 		INTV02 /* IntelligenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = INTV01 /* IntelligenceView.swift */; };
 		LGM02 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = LGM01 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift */; };
-		RR200 /* RemoteRadioModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR100 /* RemoteRadioModels.swift */; };
-		RR201 /* RemoteRadioAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR101 /* RemoteRadioAPIClient.swift */; };
-		RR202 /* RemoteRadioWebRTCClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR102 /* RemoteRadioWebRTCClient.swift */; };
-		RR203 /* RemoteRadioViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR103 /* RemoteRadioViewModel.swift */; };
-		RR204 /* RemoteRadioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = RR104 /* RemoteRadioView.swift */; };
 		W001 /* MeuLabWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = W101 /* MeuLabWatchApp.swift */; };
 		W002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W102 /* ContentView.swift */; };
 		W003 /* HomeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W103 /* HomeView.swift */; };
-		W004 /* AlertsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W104 /* AlertsView.swift */; };
 		W005 /* WatchADSBView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W105 /* WatchADSBView.swift */; };
 		W006 /* WatchACARSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W106 /* WatchACARSView.swift */; };
 		W007 /* WatchSystemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W107 /* WatchSystemView.swift */; };
@@ -133,6 +126,8 @@
 		DS01202 /* MacOS9Divider.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01201 /* MacOS9Divider.swift */; };
 		DS01302 /* MacOS9Screen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01301 /* MacOS9Screen.swift */; };
 		DS01402 /* MacOS9Theme.swift in Sources */ = {isa = PBXBuildFile; fileRef = DS01401 /* MacOS9Theme.swift */; };
+		TR002 /* TesouroReservaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TR001 /* TesouroReservaView.swift */; };
+		VG002 /* ViagemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = VG001 /* ViagemView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -228,7 +223,6 @@
 		141 /* EnhancedContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedContentView.swift; sourceTree = "<group>"; };
 		142 /* ThemeManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManagerView.swift; sourceTree = "<group>"; };
 		144 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
-		145 /* AlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsView.swift; sourceTree = "<group>"; };
 		146 /* FlightSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightSearchView.swift; sourceTree = "<group>"; };
 		148 /* DataExportView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DataExportView.swift; sourceTree = "<group>"; };
 		149 /* RemoteControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteControlView.swift; sourceTree = "<group>"; };
@@ -267,16 +261,10 @@
 		FMDS01 /* FoundationModelService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FoundationModelService.swift; sourceTree = "<group>"; };
 		INTV01 /* IntelligenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceView.swift; sourceTree = "<group>"; };
 		LGM01 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/Extensions/LiquidGlass+Modifiers.swift"; sourceTree = SOURCE_ROOT; };
-		RR100 /* RemoteRadioModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioModels.swift; sourceTree = "<group>"; };
-		RR101 /* RemoteRadioAPIClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioAPIClient.swift; sourceTree = "<group>"; };
-		RR102 /* RemoteRadioWebRTCClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioWebRTCClient.swift; sourceTree = "<group>"; };
-		RR103 /* RemoteRadioViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioViewModel.swift; sourceTree = "<group>"; };
-		RR104 /* RemoteRadioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RemoteRadioView.swift; sourceTree = "<group>"; };
 		W100 /* MeuLabWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeuLabWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		W101 /* MeuLabWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWatchApp.swift; sourceTree = "<group>"; };
 		W102 /* ContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		W103 /* HomeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HomeView.swift; sourceTree = "<group>"; };
-		W104 /* AlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AlertsView.swift; sourceTree = "<group>"; };
 		W105 /* WatchADSBView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchADSBView.swift; sourceTree = "<group>"; };
 		W106 /* WatchACARSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchACARSView.swift; sourceTree = "<group>"; };
 		W107 /* WatchSystemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchSystemView.swift; sourceTree = "<group>"; };
@@ -308,6 +296,8 @@
 		DS01201 /* MacOS9Divider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Divider.swift"; sourceTree = SOURCE_ROOT; };
 		DS01301 /* MacOS9Screen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Screen.swift"; sourceTree = SOURCE_ROOT; };
 		DS01401 /* MacOS9Theme.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/DesignSystem/MacOS9/MacOS9Theme.swift"; sourceTree = SOURCE_ROOT; };
+		TR001 /* TesouroReservaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TesouroReservaView.swift; sourceTree = "<group>"; };
+		VG001 /* ViagemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViagemView.swift; sourceTree = "<group>"; };
 		AA000000000000000000C7FF /* AppleGaramond.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = AppleGaramond.ttf; path = AppleGaramond.ttf; sourceTree = "<group>"; };
 		AA000000000000000000C9FF /* AppleGaramond-Light.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "AppleGaramond-Light.ttf"; path = "AppleGaramond-Light.ttf"; sourceTree = "<group>"; };
 		AA000000000000000000CBFF /* AppleGaramond-LightItalic.ttf */ = {isa = PBXFileReference; lastKnownFileType = file; name = "AppleGaramond-LightItalic.ttf"; path = "AppleGaramond-LightItalic.ttf"; sourceTree = "<group>"; };
@@ -431,7 +421,6 @@
 				134 /* OpenMeteoModels.swift */,
 				137 /* AviationStackModels.swift */,
 				139 /* AnalyticsModels.swift */,
-				RR100 /* RemoteRadioModels.swift */,
 				BIBM01 /* BibleModels.swift */,
 			);
 			path = Models;
@@ -447,8 +436,6 @@
 				132 /* NotificationFeedManager.swift */,
 				133 /* Formatters.swift */,
 				138 /* WidgetDataManager.swift */,
-				RR101 /* RemoteRadioAPIClient.swift */,
-				RR102 /* RemoteRadioWebRTCClient.swift */,
 				FMDS01 /* FoundationModelService.swift */,
 				BIBSP01 /* BibleSpeechService.swift */,
 				BIBL01 /* BibleLoader.swift */,
@@ -463,7 +450,6 @@
 				F7E628EA2F1448E000763B43 /* LocalNowPlayingFetcher.swift */,
 				F762D6282F44164400D6BA3B /* OpenSkyService.swift */,
 				BIBVM01 /* BibleReaderViewModel.swift */,
-				RR103 /* RemoteRadioViewModel.swift */,
 			);
 			path = ViewModels;
 			sourceTree = "<group>";
@@ -513,7 +499,6 @@
 				114 /* WeatherView.swift */,
 				115 /* SatelliteView.swift */,
 				144 /* AnalyticsView.swift */,
-				145 /* AlertsView.swift */,
 				146 /* FlightSearchView.swift */,
 				148 /* DataExportView.swift */,
 				149 /* RemoteControlView.swift */,
@@ -521,12 +506,13 @@
 				151 /* HealthCheckView.swift */,
 				F7CE39012F14BDBA00EF7A25 /* SatellitePassPredictor.swift */,
 				F76A68C12F19CBB80081D8D9 /* BinaryCache.swift */,
-				RR104 /* RemoteRadioView.swift */,
 				INTV01 /* IntelligenceView.swift */,
 				BIBV01 /* BibleView.swift */,
 				BIBN01 /* BibleNavigateView.swift */,
 				BIBS01 /* BibleSearchView.swift */,
 				BIBR01 /* BibleRandomView.swift */,
+				TR001 /* TesouroReservaView.swift */,
+				VG001 /* ViagemView.swift */,
 			);
 			path = Tabs;
 			sourceTree = "<group>";
@@ -619,7 +605,6 @@
 			isa = PBXGroup;
 			children = (
 				W103 /* HomeView.swift */,
-				W104 /* AlertsView.swift */,
 				W105 /* WatchADSBView.swift */,
 				W106 /* WatchACARSView.swift */,
 				W107 /* WatchSystemView.swift */,
@@ -918,7 +903,6 @@
 				040 /* EnhancedContentView.swift in Sources */,
 				041 /* ThemeManagerView.swift in Sources */,
 				043 /* AnalyticsView.swift in Sources */,
-				044 /* AlertsView.swift in Sources */,
 				045 /* FlightSearchView.swift in Sources */,
 				047 /* DataExportView.swift in Sources */,
 				048 /* RemoteControlView.swift in Sources */,
@@ -930,11 +914,6 @@
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* MeuLabApp/Core/NetworkEnvironment.swift in Sources */,
 				AC100 /* MeuLabApp/Core/Utils/AircraftClassification.swift in Sources */,
 				FM100 /* MeuLabApp/Core/Services/FavoritesManager.swift in Sources */,
-				RR200 /* RemoteRadioModels.swift in Sources */,
-				RR201 /* RemoteRadioAPIClient.swift in Sources */,
-				RR202 /* RemoteRadioWebRTCClient.swift in Sources */,
-				RR203 /* RemoteRadioViewModel.swift in Sources */,
-				RR204 /* RemoteRadioView.swift in Sources */,
 				LGM02 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift in Sources */,
 				DS00102 /* MacOS9Colors.swift in Sources */,
 				DS00202 /* MacOS9Typography.swift in Sources */,
@@ -950,6 +929,8 @@
 				DS01202 /* MacOS9Divider.swift in Sources */,
 				DS01302 /* MacOS9Screen.swift in Sources */,
 				DS01402 /* MacOS9Theme.swift in Sources */,
+				TR002 /* TesouroReservaView.swift in Sources */,
+				VG002 /* ViagemView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -976,7 +957,6 @@
 				W002 /* ContentView.swift in Sources */,
 				W003 /* HomeView.swift in Sources */,
 				F7CE38A92F14AF0B00EF7A25 /* EnhancedWatchContentView.swift in Sources */,
-				W004 /* AlertsView.swift in Sources */,
 				W005 /* WatchADSBView.swift in Sources */,
 				W006 /* WatchACARSView.swift in Sources */,
 				W007 /* WatchSystemView.swift in Sources */,

@@ -131,20 +131,20 @@ struct EnhancedContentView: View {
                     WeatherView()
                 case .analytics:
                     SystemView()
-                case .alerts:
-                    AlertsView()
                 case .flightSearch:
                     FlightSearchView()
                 case .export:
                     DataExportView()
                 case .remote:
                     RemoteControlView()
-                case .remoteRadio:
-                    RemoteRadioView()
                 case .intelligence:
                     IntelligenceView()
                 case .bible:
                     BibleView()
+                case .tesouroReserva:
+                    TesouroReservaView()
+                case .viagem:
+                    ViagemView()
                 case .more:
                     EmptyView()
                 }
@@ -238,7 +238,7 @@ struct EnhancedSidebarRow: View {
 
     private func hasActiveAlerts(for tab: ContentView.Tab) -> Bool {
         switch tab {
-        case .alerts, .system, .remote:
+        case .system, .remote:
             return true  // In real app, check actual alerts
         default:
             return false

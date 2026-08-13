@@ -24,13 +24,6 @@ struct WatchHomeView: View {
                     } label: {
                         Label("Ações Rápidas", systemImage: "bolt.circle")
                     }
-
-                    NavigationLink {
-                        WatchAlertsView()
-                    } label: {
-                        Label("Alertas", systemImage: "bell.badge")
-                            .badge(pendingNotifications > 0 ? pendingNotifications : nil)
-                    }
                 }
 
                 // Enhanced Categories
@@ -671,12 +664,6 @@ struct EnhancedWatchWeatherView: View {
 struct EnhancedWatchSatDumpView: View {
     var body: some View {
         WatchSatDumpView()
-    }
-}
-
-struct WatchAlertsView: View {
-    var body: some View {
-        AlertsView()
     }
 }
 
