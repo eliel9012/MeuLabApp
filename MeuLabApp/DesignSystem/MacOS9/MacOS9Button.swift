@@ -27,20 +27,22 @@ struct MacOS9Button: View {
             .padding(.vertical, MacOS9Metrics.buttonPaddingV)
             .frame(minHeight: MacOS9Metrics.buttonMinHeight)
             .background(
-                isPressed
+                // Shadow on the background fill only — applying it after the
+                // label/overlay chain ghosts the button text (double-struck glyphs).
+                (isPressed
                     ? MacOS9Colors.buttonPressed
-                    : (isDefault ? MacOS9Colors.titleBar : MacOS9Colors.windowBackground)
+                    : (isDefault ? MacOS9Colors.titleBar : MacOS9Colors.windowBackground))
+                    .shadow(
+                        color: isPressed ? .clear : MacOS9Colors.dropShadow,
+                        radius: 0,
+                        x: isPressed ? 0 : 1,
+                        y: isPressed ? 0 : 1
+                    )
             )
             .overlay(Mac9BevelBorder(isRaised: !isPressed, width: MacOS9Metrics.bevelWidth))
             .overlay(
                 Rectangle()
                     .strokeBorder(MacOS9Colors.border, lineWidth: MacOS9Metrics.borderWidth)
-            )
-            .shadow(
-                color: isPressed ? .clear : MacOS9Colors.dropShadow,
-                radius: 0,
-                x: isPressed ? 0 : 1,
-                y: isPressed ? 0 : 1
             )
             .offset(x: isPressed ? 1 : 0, y: isPressed ? 1 : 0)
         }

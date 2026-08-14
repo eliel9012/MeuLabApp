@@ -169,10 +169,14 @@ struct MacOS9StatCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 10)
         .padding(.horizontal, 8)
-        .background(MacOS9Colors.panelBackground)
+        .background(
+            // Shadow on the background shape only, not the text content above it
+            // (see MacOS9Typography.bodyBold / VDaySection for the same fix).
+            MacOS9Colors.panelBackground
+                .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 1, y: 1)
+        )
         .overlay(Mac9BevelBorder(isRaised: true, width: 1))
         .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: 1))
-        .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 1, y: 1)
     }
 }
 

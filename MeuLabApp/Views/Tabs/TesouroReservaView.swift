@@ -1152,7 +1152,6 @@ struct TesouroReservaView: View {
         .padding(MacOS9Metrics.windowPadding * 2)
         .frame(maxWidth: .infinity, alignment: .leading)
         .mac9ContentPanel()
-        .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
     }
 
     // MARK: Comparativo

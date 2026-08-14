@@ -94,9 +94,13 @@ public enum MacOS9Typography {
         font([charcoal], fallback: charcoalFallback, size: size)
     }
 
-    /// Bold body text using Charcoal where available.
+    /// Emphasized body text using Charcoal. Charcoal.ttf ships with only a
+    /// Regular face — applying `.weight(.bold)` to it triggers CoreText's
+    /// synthetic-bold fallback, which double-strokes the glyph outline and
+    /// renders as ghosted/doubled text on this font. Emphasis comes from
+    /// size/color instead of a fake bold weight.
     public static func bodyBold(_ size: CGFloat = 13) -> Font {
-        font([charcoal], fallback: charcoalFallback, size: size).weight(.bold)
+        font([charcoal], fallback: charcoalFallback, size: size)
     }
 
     /// Charcoal caption text.

@@ -758,10 +758,15 @@ private struct VDaySection: View {
                 .background(MacOS9Colors.contentPanel)
             }
         }
-        .background(MacOS9Colors.panelBackground)
+        .background(
+            // Shadow on the background shape only — applying it to the whole
+            // container (which includes the text content) makes SwiftUI render
+            // a hard-edged duplicate silhouette of every glyph, i.e. ghosted text.
+            MacOS9Colors.panelBackground
+                .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
+        )
         .overlay(Mac9BevelBorder(isRaised: true, width: MacOS9Metrics.bevelWidth))
         .overlay(Rectangle().strokeBorder(MacOS9Colors.border, lineWidth: MacOS9Metrics.borderWidth))
-        .shadow(color: MacOS9Colors.dropShadow, radius: 0, x: 2, y: 2)
     }
 
     private var headerButton: some View {
