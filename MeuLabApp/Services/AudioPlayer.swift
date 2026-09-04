@@ -79,20 +79,25 @@ class AudioPlayer: NSObject, ObservableObject {
         }
     }
 
-    private func activateSession() {
-        do {
-            try AVAudioSession.sharedInstance().setActive(true)
-        } catch {
-            print("Audio session activation error: \(error)")
-        }
-    }
-
-    private func deactivateSession() {
-        do {
-            try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
-        } catch {
-            print("Audio session deactivation error: \(error)")
-        }
+    /// `setActive` is a blocking call that AVAudioSession warns about when made from
+    /// the main thread. iOS has no asynchronous counterpart — `activateWithOptions:
+    /// completionHandler:` is watchOS-only — so it has to be moved off the main
+    /// thread by hand. Awaiting the detached task keeps the ordering that matters:
+    /// the session is active before playback starts.
+    private nonisolated static func setSessionActive(_ active: Bool) async {
+        await Task.detached(priority: .userInitiated) {
+            do {
+                if active {
+                    try AVAudioSession.sharedInstance().setActive(true)
+                } else {
+                    try AVAudioSession.sharedInstance().setActive(
+                        false, options: [.notifyOthersOnDeactivation]
+                    )
+                }
+            } catch {
+                print("Audio session \(active ? "activation" : "deactivation") error: \(error)")
+            }
+        }.value
     }
 
     // MARK: - Interruption / route / failure handling
@@ -165,8 +170,11 @@ class AudioPlayer: NSObject, ObservableObject {
             guard userWantsPlayback else { return }
             let options = AVAudioSession.InterruptionOptions(rawValue: optionsRaw ?? 0)
             if options.contains(.shouldResume) {
-                activateSession()
-                player?.play()
+                Task { @MainActor in
+                    await Self.setSessionActive(true)
+                    guard userWantsPlayback else { return }
+                    player?.play()
+                }
             } else {
                 // System says don't resume automatically; stop lying in the UI.
                 userWantsPlayback = false
@@ -226,8 +234,14 @@ class AudioPlayer: NSObject, ObservableObject {
         userWantsPlayback = true
         reconnectAttempts = 0
         error = nil
-        activateSession()
-        startStream()
+        isLoading = true
+
+        Task { @MainActor in
+            await Self.setSessionActive(true)
+            // The user may have hit pause during the activation hop.
+            guard userWantsPlayback else { return }
+            startStream()
+        }
     }
 
     /// Builds a fresh `AVPlayerItem` and wires observation. Used by both the initial
@@ -328,7 +342,7 @@ class AudioPlayer: NSObject, ObservableObject {
         isPlaying = false
         isLoading = false
         updateNowPlayingPlaybackState()
-        deactivateSession()
+        Task { await Self.setSessionActive(false) }
     }
 
     func togglePlayPause() {
