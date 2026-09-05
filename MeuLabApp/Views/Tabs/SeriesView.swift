@@ -71,36 +71,39 @@ final class EpisodeLibrary: ObservableObject {
     func reload() {
         let fm = FileManager.default
         let root = Self.documentsURL
-        let entries = (try? fm.contentsOfDirectory(
-            at: root, includingPropertiesForKeys: [.isDirectoryKey], options: [.skipsHiddenFiles]
-        )) ?? []
 
-        var out: [Series] = []
-
-        // A subfolder is a series. Loose files at the root still show up, under a
-        // catch-all, so a video dropped in without a folder is never invisible.
-        for entry in entries {
-            let isDir = (try? entry.resourceValues(forKeys: [.isDirectoryKey]).isDirectory) ?? false
-            guard isDir else { continue }
-            if let s = makeSeries(name: entry.lastPathComponent, folder: entry) { out.append(s) }
+        // Walk the whole tree rather than the root plus one level. Dragging a
+        // folder in through Finder often brings its wrapper along, which buried
+        // the videos two levels down and made the library look empty.
+        var byFolder: [URL: [URL]] = [:]
+        if let walker = fm.enumerator(
+            at: root,
+            includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey],
+            options: [.skipsHiddenFiles]
+        ) {
+            for case let url as URL in walker {
+                guard Self.playable.contains(url.pathExtension.lowercased()) else { continue }
+                byFolder[url.deletingLastPathComponent(), default: []].append(url)
+            }
         }
-        if let loose = makeSeries(name: "Outros vídeos", folder: root, recurse: false),
-            !loose.seasons.isEmpty
-        {
-            out.append(loose)
+
+        // A series is named after the folder its episodes sit in; files dropped
+        // straight into Documents have no such folder.
+        let out = byFolder.map { folder, files -> Series in
+            makeSeries(
+                name: folder == root ? "Outros vídeos" : folder.lastPathComponent,
+                folder: folder,
+                files: files
+            )
         }
 
         series = out.sorted { $0.name < $1.name }
     }
 
-    private func makeSeries(name: String, folder: URL, recurse: Bool = true) -> Series? {
+    private func makeSeries(name: String, folder: URL, files: [URL]) -> Series {
         let fm = FileManager.default
-        let files = (try? fm.contentsOfDirectory(
-            at: folder, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]
-        )) ?? []
 
         let episodes = files
-            .filter { Self.playable.contains($0.pathExtension.lowercased()) }
             .map { url -> Episode in
                 let base = url.deletingPathExtension()
                 let (season, number, title) = Self.parse(base.lastPathComponent)
@@ -115,8 +118,6 @@ final class EpisodeLibrary: ObservableObject {
                         .trimmingCharacters(in: .whitespacesAndNewlines)
                 )
             }
-
-        guard !episodes.isEmpty else { return nil }
 
         let grouped = Dictionary(grouping: episodes) { $0.season ?? 0 }
         let seasons = grouped.keys.sorted().map { number in
