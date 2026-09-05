@@ -1,3 +1,4 @@
+import CoreLocation
 import SwiftUI
 
 // ============================================================
@@ -84,6 +85,14 @@ private struct VEvent: Identifiable {
     let desc: String
     let address: String?
     let mapsQuery: String?
+    /// Geocoded once at build time via MKLocalSearch. Text queries are ambiguous —
+    /// "Restaurants Moustiers-Sainte-Marie" resolved to Canada, "Stansted Express
+    /// Liverpool Street" to Boston — so the pin is placed by coordinate instead.
+    let lat: Double?
+    let lon: Double?
+    /// IANA identifier for the local time zone at this event's location. Events with
+    /// no location of their own inherit the previous event's zone.
+    let tz: String?
     let ref: String?
     let lounge: String?
 
@@ -94,6 +103,9 @@ private struct VEvent: Identifiable {
         desc: String,
         address: String? = nil,
         maps: String? = nil,
+        lat: Double? = nil,
+        lon: Double? = nil,
+        tz: String? = nil,
         ref: String? = nil,
         lounge: String? = nil
     ) {
@@ -103,8 +115,21 @@ private struct VEvent: Identifiable {
         self.desc = desc
         self.address = address
         self.mapsQuery = maps
+        self.lat = lat
+        self.lon = lon
+        self.tz = tz
         self.ref = ref
         self.lounge = lounge
+    }
+
+    var coordinate: CLLocationCoordinate2D? {
+        guard let lat, let lon else { return nil }
+        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+    }
+
+    var timeZone: TimeZone? {
+        guard let tz else { return nil }
+        return TimeZone(identifier: tz)
     }
 }
 
@@ -131,6 +156,8 @@ private enum VData {
                     desc: "Eliel viaja sozinho neste trecho. Voo com 1 conexão, chegada em Londrina às 10:15. Bagagem despachada incluída. Reencontro com a Ana em Londrina.",
                     address: "Aeroporto Leite Lopes (RAO), Av. Thomaz Alberto Whately, Ribeirão Preto – SP",
                     maps: "Aeroporto+Leite+Lopes+Ribeirao+Preto",
+                    lat: -21.1392477, lon: -47.7765262,
+                    tz: "America/Sao_Paulo",
                     ref: "LATAM · voo 4211"
                 ),
                 VEvent(
@@ -138,7 +165,9 @@ private enum VData {
                     title: "Chegada em Londrina — reencontro com a Ana",
                     desc: "Pernoite em Londrina. Amanhã (07/09) vocês seguem juntos para Guarulhos.",
                     address: "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
-                    maps: "Aeroporto+de+Londrina+Jose+Richa"
+                    maps: "Aeroporto+de+Londrina+Jose+Richa",
+                    lat: -23.328542, lon: -51.1377836,
+                    tz: "America/Sao_Paulo"
                 ),
             ]
         ),
@@ -151,7 +180,9 @@ private enum VData {
                     title: "Sair para o aeroporto de Londrina",
                     desc: "Voo às 05:45 — estar no LDB por volta das 04:45. Londrina é aeroporto pequeno, o check-in é rápido.",
                     address: "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
-                    maps: "Aeroporto+de+Londrina+Jose+Richa"
+                    maps: "Aeroporto+de+Londrina+Jose+Richa",
+                    lat: -23.328542, lon: -51.1377836,
+                    tz: "America/Sao_Paulo"
                 ),
                 VEvent(
                     time: "05:45", icon: "✈️",
@@ -159,6 +190,8 @@ private enum VData {
                     desc: "Voo direto, Eliel + Ana Paula. Chegada em Guarulhos às 07:05.",
                     address: "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
                     maps: "Aeroporto+de+Londrina+Jose+Richa",
+                    lat: -23.328542, lon: -51.1377836,
+                    tz: "America/Sao_Paulo",
                     ref: "LATAM · LA3691"
                 ),
                 VEvent(
@@ -166,7 +199,9 @@ private enum VData {
                     title: "Conexão em Guarulhos (~7h) — bem folgada",
                     desc: "⚠️ Reservas separadas (LATAM + Iberia): retirem a bagagem na esteira do desembarque doméstico e RE-DESPACHEM no balcão da Iberia, no Terminal 3. A LATAM não transfere direto. Só que o balcão da Iberia abre ~3h antes, por volta das 11:10 — ou seja, sobram ~4h de espera na área pública antes do check-in.",
                     address: "Aeroporto de Guarulhos (GRU), Terminal 3, Guarulhos – SP",
-                    maps: "Aeroporto+de+Guarulhos+Terminal+3"
+                    maps: "Aeroporto+de+Guarulhos+Terminal+3",
+                    lat: -23.4244366, lon: -46.4761362,
+                    tz: "America/Sao_Paulo"
                 ),
             ]
         ),
@@ -179,7 +214,9 @@ private enum VData {
                     title: "Check-in Iberia — Terminal 3",
                     desc: "Balcão abre ~3h antes do voo. Depois: segurança, imigração e enfim o lounge.",
                     address: "Aeroporto Internacional de Guarulhos, Terminal 3, Guarulhos – SP",
-                    maps: "Aeroporto+de+Guarulhos+Terminal+3"
+                    maps: "Aeroporto+de+Guarulhos+Terminal+3",
+                    lat: -23.4244366, lon: -46.4761362,
+                    tz: "America/Sao_Paulo"
                 ),
                 VEvent(
                     time: "14:10 BRT", icon: "✈️",
@@ -187,6 +224,8 @@ private enum VData {
                     desc: "Voo noturno. Chegada dia 08/09 às 05:35 (hora de Madri).",
                     address: "Aeroporto Internacional de Guarulhos, Rod. Hélio Smidt s/n, Cumbica, Guarulhos – SP",
                     maps: "Aeroporto+Internacional+de+Guarulhos",
+                    lat: -23.4262732, lon: -46.4816737,
+                    tz: "America/Sao_Paulo",
                     ref: "Iberia · 9WAXMR",
                     lounge: "Terminal 3, mezanino (após imigração): LATAM VIP Lounge (24h, um dos melhores do país) ou W Premium 'The Pier' — ambos aceitam Priority Pass/DragonPass. O GRU Executive Lounge aceita Priority Pass fora do horário 16h–22h (vocês embarcam antes, ok!)."
                 ),
@@ -202,6 +241,8 @@ private enum VData {
                     desc: "Chegada às 12:00 (hora da França).",
                     address: "Aeroporto Adolfo Suárez Madrid-Barajas, Av. de la Hispanidad s/n, 28042 Madrid",
                     maps: "Aeropuerto+Adolfo+Suarez+Madrid+Barajas",
+                    lat: 40.4936983, lon: -3.5674678,
+                    tz: "Europe/Madrid",
                     ref: "Iberia · 9WAXMR",
                     lounge: "Conexão no T4 (voo Schengen): Iberia Dalí Premium Lounge, após a segurança (5h30–23h) — acesso via classe executiva ou status oneworld Sapphire/Emerald. Com Priority Pass, a alternativa no T4 é a Sala Plaza Mayor."
                 ),
@@ -210,7 +251,9 @@ private enum VData {
                     title: "Navette 91 — Aeroporto de Marseille → Gare St-Charles",
                     desc: "Após desembarque e retirada de bagagem. A navette (linha 91) sai do ponto entre os terminais T1 e T2, a cada ~10 min, ~25 min de viagem, €10/pessoa. Deixa vocês direto na estação de trem St-Charles (plataformas 13/14).",
                     address: "Navette 91, Aéroport Marseille Provence → Gare Saint-Charles",
-                    maps: "Navette+91+Marseille+Aeroport+Saint+Charles"
+                    maps: "Navette+91+Marseille+Aeroport+Saint+Charles",
+                    lat: 43.2919482, lon: 5.4367409,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "13:25", icon: "🚆",
@@ -218,6 +261,8 @@ private enum VData {
                     desc: "Chegada às 15:00. Margem de ~55 min entre a chegada do voo (12:00) e o trem, contando a navette — justo mas viável se a bagagem sair rápido. Se atrasar, há trens ~a cada 30-60 min.",
                     address: "Gare de Marseille St-Charles, Square Narvik, 13001 Marseille",
                     maps: "Gare+de+Marseille+Saint-Charles",
+                    lat: 43.3030462, lon: 5.3804125,
+                    tz: "Europe/Paris",
                     ref: "Trainline · F3F5WA"
                 ),
                 VEvent(
@@ -226,6 +271,8 @@ private enum VData {
                     desc: "2 noites (08 → 10/09). Check-in a partir das 14:00, check-out até 11:00.",
                     address: "Rue des Frères Lumière, ZA Blaise Pascal, 34000 Montpellier",
                     maps: "Ibis+Budget+Montpellier+Centre+Millenaire",
+                    lat: 43.5891812, lon: 3.8917946,
+                    tz: "Europe/Paris",
                     ref: "Booking · 6850519282"
                 ),
             ]
@@ -239,21 +286,27 @@ private enum VData {
                     title: "Visita à Mme Maleville",
                     desc: "Antecipada para a manhã. Place Jean Bène fica no centro, acessível de tram.",
                     address: "33 Place Jean Bène, 34000 Montpellier",
-                    maps: "33+Place+Jean+Bene+Montpellier"
+                    maps: "33+Place+Jean+Bene+Montpellier",
+                    lat: 43.6041278, lon: 3.8956694,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~11:00", icon: "🏫",
                     title: "Visita à Accent Français",
                     desc: "A 2 min da Place de la Comédie e pertinho da Gare Saint-Roch — dá para emendar direto no trem.",
                     address: "Accent Français, 2 Rue de Verdun, 34000 Montpellier",
-                    maps: "Accent+Francais+Montpellier"
+                    maps: "Accent+Francais+Montpellier",
+                    lat: 43.6077617, lon: 3.8804644,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~12:30", icon: "🥖",
                     title: "Almoço rápido perto da Gare Saint-Roch",
                     desc: "Comer leve antes de embarcar. O Empanadas Club tem formule a €10.",
                     address: "Gare de Montpellier Saint-Roch, Pl. Auguste Gibert, 34000 Montpellier",
-                    maps: "Gare+Montpellier+Saint+Roch"
+                    maps: "Gare+Montpellier+Saint+Roch",
+                    lat: 43.6057616, lon: 3.8801889,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "13:50", icon: "🚆",
@@ -261,6 +314,8 @@ private enum VData {
                     desc: "⚡ O trem mais rápido do dia: 1h14. TGV até Nîmes (14:15), baldeação de 9 min, TER 14:24 → Aigues-Mortes 15:04. ⚠️ Conexão curta: se o TGV atrasar, o das 14:12 chega às 16:09 com 35 min de folga.",
                     address: "Gare de Montpellier Saint-Roch, Pl. Auguste Gibert, 34000 Montpellier",
                     maps: "Gare+Montpellier+Saint+Roch",
+                    lat: 43.6057616, lon: 3.8801889,
+                    tz: "Europe/Paris",
                     ref: "SNCF · comprar no dia (~€6–17/pax)"
                 ),
                 VEvent(
@@ -268,14 +323,18 @@ private enum VData {
                     title: "Aigues-Mortes — cidade murada e as salinas rosas",
                     desc: "Muralhas medievais do séc. XIII, Tour de Constance, e o trenzinho turístico pelas Salins du Midi. O rosa vem da alga Dunaliella salina — setembro é o auge da cor, depois de um verão inteiro de evaporação.",
                     address: "Aigues-Mortes, 30220, Gard",
-                    maps: "Aigues-Mortes+Salins+du+Midi"
+                    maps: "Aigues-Mortes+Salins+du+Midi",
+                    lat: 43.5576922, lon: 4.1833878,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~18:30", icon: "🌅",
                     title: "Golden hour nas salinas",
                     desc: "Fim de tarde é quando o rosa fica mais intenso e a luz favorece as fotos. Bom momento para a Pocket 3.",
                     address: "Salins d'Aigues-Mortes, 30220",
-                    maps: "Salins+Aigues-Mortes"
+                    maps: "Salins+Aigues-Mortes",
+                    lat: 43.5576922, lon: 4.1833878,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "18:49", icon: "🚆",
@@ -283,6 +342,8 @@ private enum VData {
                     desc: "Chegada 20:25 em Saint-Roch. Alternativas: 17:20 (chega 19:00) se quiserem jantar em Montpellier, ou o último às 20:07 (chega 22:03).",
                     address: "Gare d'Aigues-Mortes, 30220",
                     maps: "Gare+Aigues-Mortes",
+                    lat: 43.5712252, lon: 4.1913436,
+                    tz: "Europe/Paris",
                     ref: "SNCF · comprar no dia"
                 ),
                 VEvent(
@@ -291,6 +352,8 @@ private enum VData {
                     desc: "Jantar no centro ou perto do hotel. Amanhã: check-out às 11h e carro às 11h30.",
                     address: "Rue des Frères Lumière, ZA Blaise Pascal, 34000 Montpellier",
                     maps: "Ibis+Budget+Montpellier+Centre+Millenaire",
+                    lat: 43.5891812, lon: 3.8917946,
+                    tz: "Europe/Paris",
                     ref: "Booking · 6850519282"
                 ),
             ]
@@ -305,24 +368,30 @@ private enum VData {
                     desc: "3 dias, one-way até Marseille. Levar voucher (no app), CNH, passaporte e cartão de crédito do titular.",
                     address: "Alamo — Gare de Montpellier Saint-Roch, Pl. Auguste Gibert, 34000 Montpellier",
                     maps: "Alamo+Gare+Montpellier+Saint+Roch",
+                    lat: 43.6036714, lon: 3.8796437,
+                    tz: "Europe/Paris",
                     ref: "Alamo · voucher no app"
                 ),
                 VEvent(
                     time: "~10:45", icon: "🛣️",
                     title: "Estrada: Montpellier → Aix-en-Provence",
-                    desc: "~170 km pela A9 + A7/A8, ~1h50. Chegada em Aix por volta das 12:40."
+                    desc: "~170 km pela A9 + A7/A8, ~1h50. Chegada em Aix por volta das 12:40.",
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~12:45", icon: "🥐",
                     title: "Almoço em Aix-en-Provence",
                     desc: "Estacionar no Parking Mignet ou Rotonde e almoçar no Cours Mirabeau, a avenida mais charmosa da Provence — fontes, platanas e cafés históricos como Les Deux Garçons, frequentado por Cézanne.",
                     address: "Cours Mirabeau, 13100 Aix-en-Provence",
-                    maps: "Cours+Mirabeau+Aix-en-Provence"
+                    maps: "Cours+Mirabeau+Aix-en-Provence",
+                    lat: 43.52665876340277, lon: 5.448134243819376,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~14:15", icon: "🛣️",
                     title: "Estrada: Aix → Montmeyan",
-                    desc: "~75 km, ~1h por estradas provençais (D560/D13). Paisagem linda de vinhedos e oliveiras."
+                    desc: "~75 km, ~1h por estradas provençais (D560/D13). Paisagem linda de vinhedos e oliveiras.",
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~15:30", icon: "🏡",
@@ -330,6 +399,8 @@ private enum VData {
                     desc: "3 noites (10 → 13/09). Check-in a partir das 15:00. Gîte tranquilo com vista para o Parque do Verdon.",
                     address: "56 Route de Riez, 83670 Montmeyan, França",
                     maps: "56+Route+de+Riez+83670+Montmeyan",
+                    lat: 43.648746, lon: 6.063175,
+                    tz: "Europe/Paris",
                     ref: "Airbnb · hôte Yael"
                 ),
             ]
@@ -343,42 +414,54 @@ private enum VData {
                     title: "Moustiers-Sainte-Marie — feira de sexta + capital da faiança",
                     desc: "A 'cidadezinha das porcelanas'! Mercado semanal toda sexta de manhã na Place Montelupo, em frente ao Museu da Faiança. O vilarejo é mundialmente famoso desde o séc. XVII pela faiança pintada à mão — ateliês como Bondil e L'atelier des Cigales abertos para visita. ~40 min de carro de Montmeyan.",
                     address: "Place Montelupo, 04360 Moustiers-Sainte-Marie",
-                    maps: "Place+Montelupo+Moustiers-Sainte-Marie"
+                    maps: "Place+Montelupo+Moustiers-Sainte-Marie",
+                    lat: 43.8458, lon: 6.2215,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~11:00", icon: "⭐",
                     title: "Capela Notre-Dame de Beauvoir & a estrela suspensa",
                     desc: "Trilha curta (~20 min de subida) até a capela com vista panorâmica do vilarejo e da estrela dourada suspensa entre as falésias — a lenda do cavaleiro de Blacas.",
                     address: "Chapelle Notre-Dame de Beauvoir, Moustiers-Sainte-Marie",
-                    maps: "Chapelle+Notre-Dame+de+Beauvoir+Moustiers"
+                    maps: "Chapelle+Notre-Dame+de+Beauvoir+Moustiers",
+                    lat: 43.8482313, lon: 6.2240714,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~12:30", icon: "🍽️",
                     title: "Almoço em Moustiers",
                     desc: "Terraços com vista nas ruelas de pedra. Provar a truta local e os vinhos de Provence.",
                     address: "Centro de Moustiers-Sainte-Marie, 04360",
-                    maps: "Restaurants+Moustiers-Sainte-Marie"
+                    maps: "Restaurants+Moustiers-Sainte-Marie",
+                    lat: 43.8458, lon: 6.2215,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~14:30", icon: "🛶",
                     title: "Lac de Sainte-Croix — pedalinho na entrada do cânion",
                     desc: "Alugar pedalinho ou caiaque na Pont du Galetas (~€20-30/h) e remar para DENTRO das Gorges du Verdon — águas turquesa entre falésias de 700m. Imperdível!",
                     address: "Pont du Galetas, Lac de Sainte-Croix, 83630 Aiguines",
-                    maps: "Pont+du+Galetas+Lac+Sainte-Croix"
+                    maps: "Pont+du+Galetas+Lac+Sainte-Croix",
+                    lat: 43.8017, lon: 6.2494,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~17:00", icon: "🌄",
                     title: "Mirantes de Aiguines ou Route des Crêtes",
                     desc: "Fim de tarde com vista: o vilarejo de Aiguines (famoso pelos torneiros de madeira) ou, se sobrar fôlego, a Route des Crêtes em La Palud — 14 belvederes sobre o cânion. Golden hour espetacular.",
                     address: "Aiguines, 83630, Var",
-                    maps: "Aiguines+village+Verdon"
+                    maps: "Aiguines+village+Verdon",
+                    lat: 43.7355679, lon: 6.3768878,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "23:00", icon: "💻",
                     title: "Icatalk — 18:00 de Brasília",
                     desc: "⚠️ Única sexta da viagem que cai fora do Brasil. 23h no horário francês, já de volta ao Airbnb em Montmeyan. Confirmar a qualidade do Wi-Fi com a Yael antes — é zona rural. Lembrar que o casamento é no dia seguinte.",
                     address: "56 Route de Riez, 83670 Montmeyan",
-                    maps: "56+Route+de+Riez+83670+Montmeyan"
+                    maps: "56+Route+de+Riez+83670+Montmeyan",
+                    lat: 43.648746, lon: 6.063175,
+                    tz: "Europe/Paris"
                 ),
             ]
         ),
@@ -391,28 +474,36 @@ private enum VData {
                     title: "Sair de Montmeyan rumo a Aups",
                     desc: "Dress code: terno e gravata — e nada de vermelho (cor do casamento). Aups fica a ~12 min de carro de Montmeyan.",
                     address: "Montmeyan → Aups, Var",
-                    maps: "Montmeyan+to+Aups"
+                    maps: "Montmeyan+to+Aups",
+                    lat: 43.6274, lon: 6.2234,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "14:30", icon: "⛪",
                     title: "Missa — Collégiale Saint-Pancrace d'Aups",
                     desc: "Cerimônia religiosa de Bastien & Anne-Clotilde, celebrada pelo Abbé Joseph-Marie Sallé.",
                     address: "Collégiale Saint-Pancrace, Place de la Collégiale, 83630 Aups",
-                    maps: "Collegiale+Saint-Pancrace+Aups"
+                    maps: "Collegiale+Saint-Pancrace+Aups",
+                    lat: 43.627374, lon: 6.2243932,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "17:30", icon: "🥂",
                     title: "Cocktail — Domaine de la Roquette",
                     desc: "Coquetel das 17h30 às 19h30 nos jardins do domaine, em Montmeyan (~12 min de Aups).",
                     address: "Domaine de la Roquette, 3173 Route de Riez, 83670 Montmeyan",
-                    maps: "Domaine+de+la+Roquette+3173+Route+de+Riez+Montmeyan"
+                    maps: "Domaine+de+la+Roquette+3173+Route+de+Riez+Montmeyan",
+                    lat: 43.6727, lon: 6.0537,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "19:30", icon: "🍽️",
                     title: "Jantar à mesa (dîner placé)",
                     desc: "Jantar com lugares marcados, seguido de festa. À noite, arrumar as malas: amanhã a saída é cedo!",
                     address: "Domaine de la Roquette, 3173 Route de Riez, 83670 Montmeyan",
-                    maps: "Domaine+de+la+Roquette+Montmeyan"
+                    maps: "Domaine+de+la+Roquette+Montmeyan",
+                    lat: 43.6727, lon: 6.0537,
+                    tz: "Europe/Paris"
                 ),
             ]
         ),
@@ -423,7 +514,8 @@ private enum VData {
                 VEvent(
                     time: "~07:00", icon: "🌅",
                     title: "Saída do Airbnb",
-                    desc: "Dirigir ~1h30 até Marseille. Abastecer o tanque antes de devolver (posto perto da estação)."
+                    desc: "Dirigir ~1h30 até Marseille. Abastecer o tanque antes de devolver (posto perto da estação).",
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "09:00", icon: "🚗",
@@ -431,6 +523,8 @@ private enum VData {
                     desc: "Margem de 1h até o trem. Conferir instruções de devolução no voucher.",
                     address: "Alamo — Gare de Marseille St-Charles, Square Narvik, 13001 Marseille",
                     maps: "Alamo+Gare+Marseille+Saint+Charles",
+                    lat: 43.3028347, lon: 5.3783715,
+                    tz: "Europe/Paris",
                     ref: "Alamo · devolução"
                 ),
                 VEvent(
@@ -439,6 +533,8 @@ private enum VData {
                     desc: "Vagão 7, assentos 8A e 8B (Standard Silêncio). Chegada às 13:34.",
                     address: "Paris Gare de Lyon, Place Louis-Armand, 75012 Paris",
                     maps: "Paris+Gare+de+Lyon",
+                    lat: 48.8446001, lon: 2.3737772,
+                    tz: "Europe/Paris",
                     ref: "Trenitalia/Omio · DMDKRN"
                 ),
                 VEvent(
@@ -446,7 +542,9 @@ private enum VData {
                     title: "Visita à prima da Ana — Mitry-Mory",
                     desc: "De Gare de Lyon: Metrô L14 até Châtelet (~5 min) + RER B direção Mitry-Claye até a estação Villeparisis–Mitry-le-Neuf (~30 min) + ~6 min a pé. Total ~50 min. Tarde em família.",
                     address: "Mitry-Mory, 77290, Île-de-France",
-                    maps: "Villeparisis+Mitry+le+Neuf+RER"
+                    maps: "Villeparisis+Mitry+le+Neuf+RER",
+                    lat: 48.9531589, lon: 2.6031794,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "~20:00", icon: "🚇",
@@ -454,6 +552,8 @@ private enum VData {
                     desc: "RER B (Villeparisis → Gare du Nord ~28 min) + Metrô L3 (Gare du Nord → Louise Michel ~18 min) + 3 min a pé. Total ~55 min. Último RER B de Mitry passa à meia-noite, sem stress.",
                     address: "48 Rue Chaptal, 92300 Levallois-Perret",
                     maps: "Mercure+Paris+Levallois+48+Rue+Chaptal",
+                    lat: 48.889729, lon: 2.2827056,
+                    tz: "Europe/Paris",
                     ref: "Booking · 5508609912 · PIN 8588"
                 ),
             ]
@@ -467,7 +567,9 @@ private enum VData {
                     title: "Check-out Mercure + Metrô até Porte Maillot",
                     desc: "Check-out do Mercure (a partir das 06:30). Metrô L3 Louise Michel → Porte Maillot são 2 paradas (~5 min) + 4 min a pé até o Parking Pershing. Estejam lá até ~08:30.",
                     address: "Porte Maillot — Parking Pershing, 22-24 Bd Pershing, 75017 Paris",
-                    maps: "Parking+Pershing+Porte+Maillot+Beauvais+shuttle"
+                    maps: "Parking+Pershing+Porte+Maillot+Beauvais+shuttle",
+                    lat: 48.8799, lon: 2.2821,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "09:00", icon: "🚌",
@@ -475,6 +577,8 @@ private enum VData {
                     desc: "Bilhetes já comprados (2 idas). Viagem ~1h15, chegada ~10:15. Guichês abertos das 3h às 19h30 e só aceitam cartão.",
                     address: "Parking Pershing, 22-24 Boulevard Pershing, 75017 Paris",
                     maps: "Navette+Beauvais+Porte+Maillot",
+                    lat: 48.8799, lon: 2.2821,
+                    tz: "Europe/Paris",
                     ref: "Aéroport Beauvais · 8WCM8N"
                 ),
                 VEvent(
@@ -482,7 +586,9 @@ private enum VData {
                     title: "Chegada ao Aéroport de Beauvais-Tillé",
                     desc: "2h40 de folga até o voo. Check-in Ryanair + segurança. Beauvais é pequeno, mas as filas podem surpreender.",
                     address: "Aéroport de Beauvais-Tillé, 60004 Beauvais",
-                    maps: "Aeroport+Beauvais+Tille"
+                    maps: "Aeroport+Beauvais+Tille",
+                    lat: 49.4598402, lon: 2.1144819,
+                    tz: "Europe/Paris"
                 ),
                 VEvent(
                     time: "12:55", icon: "✈️",
@@ -490,6 +596,8 @@ private enum VData {
                     desc: "Chegada ~14:10 (hora de Portugal, -1h vs França).",
                     address: "Aéroport de Beauvais-Tillé, 60004 Beauvais",
                     maps: "Aeroport+Beauvais+Tille",
+                    lat: 49.4598402, lon: 2.1144819,
+                    tz: "Europe/Paris",
                     ref: "Ryanair · X5I2TQ",
                     lounge: "Beauvais é um aeroporto low-cost básico — sem sala VIP. Levem lanches e água (depois da segurança as opções são limitadas e caras)."
                 ),
@@ -498,7 +606,9 @@ private enum VData {
                     title: "Porto — chegada e encontro com Pastor Roberto",
                     desc: "⚠️ Agora é a única tarde/noite no Porto — vocês saem na manhã do dia 15. Aproveitem bem: Ribeira, caves de Vinho do Porto em Gaia, pôr do sol sobre o Douro. Hospedagem em Palmeira de Faro com o pastor (~50 min do centro).",
                     address: "Aeroporto Francisco Sá Carneiro, Pedras Rubras, 4470-558 Maia",
-                    maps: "Aeroporto+Francisco+Sa+Carneiro"
+                    maps: "Aeroporto+Francisco+Sa+Carneiro",
+                    lat: 41.2368178, lon: -8.6708281,
+                    tz: "Europe/Lisbon"
                 ),
             ]
         ),
@@ -511,7 +621,9 @@ private enum VData {
                     title: "Traslado Palmeira de Faro → aeroporto do Porto",
                     desc: "A esposa do Pastor Roberto leva vocês. Voo às 09:30, cheguem por volta das 07:30. Trajeto ~50 min.",
                     address: "Aeroporto Francisco Sá Carneiro, Pedras Rubras, 4470-558 Maia",
-                    maps: "Aeroporto+Francisco+Sa+Carneiro"
+                    maps: "Aeroporto+Francisco+Sa+Carneiro",
+                    lat: 41.2368178, lon: -8.6708281,
+                    tz: "Europe/Lisbon"
                 ),
                 VEvent(
                     time: "09:30", icon: "✈️",
@@ -519,6 +631,8 @@ private enum VData {
                     desc: "Vocês 3: Eliel, Ana Paula e José Roberto Dos Santos. Chegada 11:55 (hora UK, mesmo fuso que Portugal). Duração 2h25.",
                     address: "London Stansted Airport, Bassingbourn Rd, Stansted CM24 1QW",
                     maps: "London+Stansted+Airport",
+                    lat: 51.8899745, lon: 0.2615261,
+                    tz: "Europe/London",
                     ref: "Ryanair · Q67BHK",
                     lounge: "Porto: ANA Lounge, nível 3 junto aos portões 31–32. Priority Pass ou reserva avulsa ~€22–38 em ana.pt — vista pra pista e café da manhã."
                 ),
@@ -527,7 +641,9 @@ private enum VData {
                     title: "Imigração UK + Stansted Express → Liverpool Street",
                     desc: "Fila de imigração para brasileiros: ~30-60 min. Depois, Stansted Express (~47 min, ~£20/pessoa, trens a cada 15 min). Chegada em Liverpool Street por volta das 14h.",
                     address: "Liverpool Street Station, London EC2M 7QH",
-                    maps: "Liverpool+Street+Station+London"
+                    maps: "Liverpool+Street+Station+London",
+                    lat: 51.5172859, lon: -0.0827853,
+                    tz: "Europe/London"
                 ),
                 VEvent(
                     time: "~14:30", icon: "🏠",
@@ -535,12 +651,15 @@ private enum VData {
                     desc: "2 noites (15 e 16/09). ⚠️ A anfitriã exige que a carta de check-in seja lida por completo antes da chegada — códigos, porta certa e regras de silêncio com os vizinhos. Leia com antecedência e salve offline.",
                     address: "Central London, perto da Liverpool Street Station",
                     maps: "Liverpool+Street+Station+London",
+                    lat: 51.5172859, lon: -0.0827853,
+                    tz: "Europe/London",
                     ref: "Airbnb · hôte Maura"
                 ),
                 VEvent(
                     time: "tarde", icon: "🤝",
                     title: "Encontro com o Ivan em Londres",
-                    desc: "Foi ele quem pediu a antecipação para terça. Tarde e noite livres na cidade."
+                    desc: "Foi ele quem pediu a antecipação para terça. Tarde e noite livres na cidade.",
+                    tz: "Europe/London"
                 ),
                 VEvent(
                     time: "21:15", icon: "🛫",
@@ -548,6 +667,8 @@ private enum VData {
                     desc: "Só ele, no mesmo dia. Tarifa Classic (inclui bagagem de porão). Terminal S, check-in fecha 20:30, abre dia 14 às 09:15. Chegada no Porto 23:40. ⚠️ Dados de passaporte pendentes na reserva — ele precisa preencher antes.",
                     address: "London Gatwick Airport, South Terminal, Horley RH6 0NP",
                     maps: "London+Gatwick+South+Terminal",
+                    lat: 51.156167, lon: -0.1626062,
+                    tz: "Europe/London",
                     ref: "TAP · YZIMAB · bilhete 0472526389155",
                     lounge: "Para o Pastor: Gatwick South Terminal tem o No1 Lounge (Priority Pass/pré-reserva ~£35)."
                 ),
@@ -556,7 +677,9 @@ private enum VData {
                     title: "Trem do Pastor até Gatwick",
                     desc: "Thameslink ou Southern (~£12–16, de Farringdon ou London Bridge) em vez do Gatwick Express (£24,10). Sair de Londres por volta das 19h para chegar com folga.",
                     address: "Farringdon ou London Bridge Station, London",
-                    maps: "Thameslink+Farringdon+to+Gatwick"
+                    maps: "Thameslink+Farringdon+to+Gatwick",
+                    lat: 51.5156, lon: -0.1047,
+                    tz: "Europe/London"
                 ),
             ]
         ),
@@ -569,14 +692,18 @@ private enum VData {
                     title: "Londres com o Ivan",
                     desc: "Dia livre na cidade. Brick Lane, City, os clássicos — tudo a partir de Liverpool Street. Airbnb da Maura (2ª noite).",
                     address: "Liverpool Street / Shoreditch, London",
-                    maps: "Liverpool+Street+Station+London"
+                    maps: "Liverpool+Street+Station+London",
+                    lat: 51.5172859, lon: -0.0827853,
+                    tz: "Europe/London"
                 ),
                 VEvent(
                     time: "refeições", icon: "🍺",
                     title: "Wetherspoon — Hamilton Hall",
                     desc: "Dentro da própria estação de Liverpool Street, no antigo salão de baile do Great Eastern Hotel. Pratos de £1,99 a £13,58, a maioria já com bebida inclusa.",
                     address: "Hamilton Hall, Bishopsgate, London EC2M 7PY",
-                    maps: "Hamilton+Hall+Wetherspoon+London"
+                    maps: "Hamilton+Hall+Wetherspoon+London",
+                    lat: 51.5175171, lon: -0.0809911,
+                    tz: "Europe/London"
                 ),
             ]
         ),
@@ -589,14 +716,18 @@ private enum VData {
                     title: "Check-out do Airbnb + caminhada até Liverpool Street",
                     desc: "Deixar tudo conforme as instruções da Maura (chaves, códigos, limpeza básica). A estação fica a poucos minutos a pé.",
                     address: "Central London, perto da Liverpool Street Station",
-                    maps: "Liverpool+Street+Station+London"
+                    maps: "Liverpool+Street+Station+London",
+                    lat: 51.5172859, lon: -0.0827853,
+                    tz: "Europe/London"
                 ),
                 VEvent(
                     time: "08:25", icon: "🚆",
                     title: "Stansted Express → Stansted Airport",
                     desc: "~47 min, ~£20/pessoa (trens a cada 15 min). Chegada ~09:12 — ~2h antes do voo, ideal para Ryanair internacional.",
                     address: "Liverpool Street Station, London EC2M 7QH",
-                    maps: "Stansted+Express+Liverpool+Street"
+                    maps: "Stansted+Express+Liverpool+Street",
+                    lat: 51.5173, lon: -0.0828,
+                    tz: "Europe/London"
                 ),
                 VEvent(
                     time: "11:15", icon: "✈️",
@@ -604,6 +735,8 @@ private enum VData {
                     desc: "Assentos 14A e 14B, tarifa Plus com mala de 20kg. Chegada 14:15 (hora França).",
                     address: "London Stansted Airport, CM24 1QW",
                     maps: "London+Stansted+Airport",
+                    lat: 51.8899745, lon: 0.2615261,
+                    tz: "Europe/London",
                     ref: "Ryanair · K512SN",
                     lounge: "Stansted: Escape Lounge, após a segurança (Priority Pass ou pré-reserva ~£30-40). Chegando às ~09:12, dá quase 2h de lounge antes do embarque."
                 ),
@@ -613,6 +746,8 @@ private enum VData {
                     desc: "⚠️ Troca de terminal em MRS: vocês chegam no Terminal 2 (Ryanair) e a Iberia parte do Terminal 1 — são vizinhos, ~5-10 min a pé. Margem de 3h40, tranquilo. Chegada em Madri 19:45.",
                     address: "Aéroport Marseille Provence, 13700 Marignane",
                     maps: "Aeroport+Marseille+Provence",
+                    lat: 43.440548, lon: 5.2228209,
+                    tz: "Europe/Paris",
                     ref: "Iberia · N1L14",
                     lounge: "Marseille Terminal 1 (após a troca de terminal): Salon Lubéron (Priority Pass/pré-reserva) — ótimo pra passar parte das 3h40 de espera com conforto."
                 ),
@@ -622,6 +757,8 @@ private enum VData {
                     desc: "Passageiros: FELIPEJUNIOR/ELIEL + PEREIRADEALMEIDA/ANAPAULA. Chegada 18/09 às 05:55 (BRT).",
                     address: "Aeropuerto Adolfo Suárez Madrid-Barajas, 28042 Madrid",
                     maps: "Aeropuerto+Madrid+Barajas",
+                    lat: 40.4936983, lon: -3.5674678,
+                    tz: "Europe/Madrid",
                     ref: "Iberia · J1NDY",
                     lounge: "Madri T4S (voo intercontinental): Iberia Velázquez Premium Lounge, dentro do duty free (6h–1h) — executiva/oneworld Sapphire+. Com Priority Pass: Sala Neptuno, também no T4S. Ótima pra esperar o voo da meia-noite."
                 ),
@@ -636,21 +773,27 @@ private enum VData {
                     title: "Desembarque em Guarulhos (voo IB 267)",
                     desc: "Chegada do voo de Madri. A partir daqui: imigração (Polícia Federal) + esteira de bagagem. Contem ~1h a 1h30 — voo intercontinental costuma formar fila. Prontos por volta das 07:00–07:30.",
                     address: "Aeroporto Internacional de Guarulhos (GRU), Guarulhos – SP",
-                    maps: "Aeroporto+de+Guarulhos"
+                    maps: "Aeroporto+de+Guarulhos",
+                    lat: -23.4262732, lon: -46.4816737,
+                    tz: "America/Sao_Paulo"
                 ),
                 VEvent(
                     time: "~07:30", icon: "🚕",
                     title: "Uber/táxi — Guarulhos → Congonhas",
                     desc: "⚠️ Aeroportos diferentes! ~40 min a 1h de trajeto, mais carregado numa sexta de manhã. Custo ~R$ 80–120. Chegada em CGH por volta das 08:30.",
                     address: "GRU → Aeroporto de Congonhas, Av. Washington Luís s/n, São Paulo – SP",
-                    maps: "Aeroporto+de+Congonhas+Sao+Paulo"
+                    maps: "Aeroporto+de+Congonhas+Sao+Paulo",
+                    lat: -23.6262622, lon: -46.6594291,
+                    tz: "America/Sao_Paulo"
                 ),
                 VEvent(
                     time: "~08:30", icon: "🧳",
                     title: "Check-in LATAM em Congonhas",
                     desc: "Reserva separada da internacional: é preciso re-despachar as malas no balcão da LATAM. Voo às 11:10 — margem confortável de ~2h30. Se puderem levar só bagagem de mão neste trecho, ganham tempo.",
                     address: "Aeroporto de Congonhas (CGH), Av. Washington Luís s/n, São Paulo – SP",
-                    maps: "Aeroporto+de+Congonhas+Sao+Paulo"
+                    maps: "Aeroporto+de+Congonhas+Sao+Paulo",
+                    lat: -23.6262622, lon: -46.6594291,
+                    tz: "America/Sao_Paulo"
                 ),
                 VEvent(
                     time: "11:10", icon: "✈️",
@@ -658,6 +801,8 @@ private enum VData {
                     desc: "Voo direto, 1h15. Chegada em Londrina às 12:25.",
                     address: "Aeroporto de Congonhas (CGH), São Paulo – SP",
                     maps: "Aeroporto+de+Congonhas+Sao+Paulo",
+                    lat: -23.6262622, lon: -46.6594291,
+                    tz: "America/Sao_Paulo",
                     ref: "LATAM · QJBWJF"
                 ),
                 VEvent(
@@ -665,7 +810,9 @@ private enum VData {
                     title: "Chegada em Londrina",
                     desc: "11 dias, 4 países, 1 casamento inesquecível. Bem-vindos de volta!",
                     address: "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
-                    maps: "Aeroporto+de+Londrina+Jose+Richa"
+                    maps: "Aeroporto+de+Londrina+Jose+Richa",
+                    lat: -23.328542, lon: -51.1377836,
+                    tz: "America/Sao_Paulo"
                 ),
             ]
         ),
@@ -679,12 +826,15 @@ private enum VData {
                     desc: "Fiat Mobi ou similar (Grupo B, compacto com ar). Retirada logo após o pouso das 12:25 — o balcão fica no próprio aeroporto. Devolução no mesmo local dia 21 de manhã.",
                     address: "Localiza — Aeroporto de Londrina, Av. Santos Dumont 1772, Novo Aeroporto, Londrina – PR",
                     maps: "Localiza+Aeroporto+de+Londrina",
+                    lat: -23.328542, lon: -51.1377836,
+                    tz: "America/Sao_Paulo",
                     ref: "Localiza · IT43063 54CJJ"
                 ),
                 VEvent(
                     time: "18:00", icon: "💻",
                     title: "Icatalk — 18h de Brasília",
-                    desc: "✅ Já em casa e no fuso normal. Boa deixa para contar da viagem!"
+                    desc: "✅ Já em casa e no fuso normal. Boa deixa para contar da viagem!",
+                    tz: "America/Sao_Paulo"
                 ),
             ]
         ),
@@ -695,7 +845,8 @@ private enum VData {
                 VEvent(
                     time: "livre", icon: "🏡",
                     title: "Dias livres com a Ana em Londrina",
-                    desc: "Com o carro à disposição. Descansar do fuso e organizar as fotos e vídeos da viagem."
+                    desc: "Com o carro à disposição. Descansar do fuso e organizar as fotos e vídeos da viagem.",
+                    tz: "America/Sao_Paulo"
                 ),
             ]
         ),
@@ -709,6 +860,8 @@ private enum VData {
                     desc: "⚠️ Confirmar com a loja se abre antes das 6h — nem toda unidade de aeroporto opera tão cedo. Abastecer na véspera, ainda em Londrina. Devolução no mesmo local da retirada.",
                     address: "Localiza — Aeroporto de Londrina, Av. Santos Dumont 1772, Novo Aeroporto, Londrina – PR",
                     maps: "Localiza+Aeroporto+de+Londrina",
+                    lat: -23.328542, lon: -51.1377836,
+                    tz: "America/Sao_Paulo",
                     ref: "Localiza · IT43063 54CJJ"
                 ),
                 VEvent(
@@ -717,6 +870,8 @@ private enum VData {
                     desc: "Tarifa Classic, assento 7C. Chegada 08:30. Bagagem: 10kg de mão + 12kg pequena + 23kg despachada.",
                     address: "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
                     maps: "Aeroporto+de+Londrina+Jose+Richa",
+                    lat: -23.328542, lon: -51.1377836,
+                    tz: "America/Sao_Paulo",
                     ref: "GOL · QZDFUX"
                 ),
                 VEvent(
@@ -724,7 +879,9 @@ private enum VData {
                     title: "Conexão em Congonhas (1h40)",
                     desc: "Troca de avião, mas mesma reserva — a bagagem segue direto até Ribeirão Preto, sem re-despacho.",
                     address: "Aeroporto de Congonhas (CGH), Av. Washington Luís s/n, São Paulo – SP",
-                    maps: "Aeroporto+de+Congonhas+Sao+Paulo"
+                    maps: "Aeroporto+de+Congonhas+Sao+Paulo",
+                    lat: -23.6262622, lon: -46.6594291,
+                    tz: "America/Sao_Paulo"
                 ),
                 VEvent(
                     time: "10:10", icon: "🏡",
@@ -732,6 +889,8 @@ private enum VData {
                     desc: "Assento 8C. Chegada às 11:15. Fim da viagem!",
                     address: "Aeroporto Leite Lopes (RAO), Av. Thomaz Alberto Whately, Ribeirão Preto – SP",
                     maps: "Aeroporto+Leite+Lopes+Ribeirao+Preto",
+                    lat: -21.1392477, lon: -47.7765262,
+                    tz: "America/Sao_Paulo",
                     ref: "GOL · QZDFUX"
                 ),
             ]
@@ -784,12 +943,18 @@ private struct VEventRow: View {
     let showTopBorder: Bool
 
     private var mapsURL: URL? {
-        guard let query = event.mapsQuery else { return nil }
-        // Queries come from the JSX source as "+"-joined tokens. `.urlQueryAllowed`
-        // leaves "+" untouched, so turn it into a real space first and let it encode
-        // as %20 — unambiguous for Apple Maps.
-        let spaced = query.replacingOccurrences(of: "+", with: " ")
-        let encoded = spaced.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? spaced
+        let label = event.address ?? event.mapsQuery?.replacingOccurrences(of: "+", with: " ")
+        let encoded = label?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
+
+        // Prefer the verified coordinate: `ll` drops the pin exactly and `q` only
+        // labels it, so Apple Maps never has to guess from the text.
+        if let lat = event.lat, let lon = event.lon {
+            var url = "https://maps.apple.com/?ll=\(lat),\(lon)"
+            if let encoded { url += "&q=\(encoded)" }
+            return URL(string: url)
+        }
+
+        guard let encoded else { return nil }
         return URL(string: "https://maps.apple.com/?q=\(encoded)")
     }
 
