@@ -5,7 +5,7 @@ import SwiftUI
 // Port nativo do roteiro (React/JSX "Cronologia") para SwiftUI.
 // Viagem Set/2026 — Eliel & Ana Paula — França, Portugal, Inglaterra.
 // Timeline dia a dia com voos, hotéis, casamento e endereços
-// que abrem no Google Maps.
+// que abrem no Apple Maps.
 // ============================================================
 
 // MARK: - Cores
@@ -785,8 +785,12 @@ private struct VEventRow: View {
 
     private var mapsURL: URL? {
         guard let query = event.mapsQuery else { return nil }
-        let encoded = query.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? query
-        return URL(string: "https://maps.google.com/?q=\(encoded)")
+        // Queries come from the JSX source as "+"-joined tokens. `.urlQueryAllowed`
+        // leaves "+" untouched, so turn it into a real space first and let it encode
+        // as %20 — unambiguous for Apple Maps.
+        let spaced = query.replacingOccurrences(of: "+", with: " ")
+        let encoded = spaced.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? spaced
+        return URL(string: "https://maps.apple.com/?q=\(encoded)")
     }
 
     var body: some View {
@@ -1052,7 +1056,7 @@ struct ViagemView: View {
 
     private var footerNote: some View {
         VStack(spacing: 4) {
-            Text("Toque em qualquer endereço para abrir no Google Maps 📍")
+            Text("Toque em qualquer endereço para abrir no Apple Maps 📍")
                 .font(.system(size: 18, design: .serif))
                 .italic()
             Text("Boa viagem, Eliel & Ana 🤍")
