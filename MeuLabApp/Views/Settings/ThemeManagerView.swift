@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ThemeManagerView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var themeSettings: ThemeSettings
     @State private var isLoading = false
     @State private var error: String?
@@ -422,5 +422,5 @@ struct AdaptiveThemeModifier: ViewModifier {
 
 #Preview {
     ThemeManagerView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

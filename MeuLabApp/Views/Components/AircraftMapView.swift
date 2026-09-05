@@ -227,13 +227,13 @@ struct InfoItem: View {
 // MARK: - Fullscreen Map View
 
 struct FullscreenMapView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
         NavigationStack {
             NativeRadarMapView()
-                .environmentObject(appState)
+                .environment(appState)
                 .ignoresSafeArea(edges: .bottom)
                 .navigationTitle("Radar ADS-B")
                 .navigationBarTitleDisplayMode(.inline)

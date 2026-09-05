@@ -206,7 +206,7 @@ private struct ADSBSourceChip: View {
 }
 
 struct ADSBView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showAircraftList = false
     @State private var movementSheet: MovementFilter?
@@ -217,6 +217,7 @@ struct ADSBView: View {
     private var isCompactLayout: Bool { horizontalSizeClass == .compact }
 
     var body: some View {
+        @Bindable var appState = appState
         NavigationStack {
             ScrollView {
                 // Glass never samples other glass, so sibling glass surfaces have to
@@ -389,7 +390,8 @@ struct ADSBView: View {
     }
 
     private var trafficScopeBar: some View {
-        Group {
+        @Bindable var appState = appState
+        return Group {
             if isCompactLayout {
                 VStack(alignment: .leading, spacing: 14) {
                     HStack(alignment: .top, spacing: 12) {
@@ -2408,7 +2410,7 @@ extension Color {
 
 #Preview {
     ADSBView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }
 
 // MARK: - Services & Helpers
@@ -2586,7 +2588,7 @@ actor NearbyCityResolver {
 // MARK: - Consolidated Detail Views (Moved from AircraftDetailView.swift)
 
 struct AircraftDetailView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.dismiss) var dismiss
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     let ac: Aircraft

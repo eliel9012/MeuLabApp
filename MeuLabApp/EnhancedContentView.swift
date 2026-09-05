@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct EnhancedContentView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @EnvironmentObject var pushManager: PushNotificationManager
     @State private var selectedTab: ContentView.Tab = .adsb
     @State private var selectedDetail: DetailItem?
@@ -17,7 +17,7 @@ struct EnhancedContentView: View {
             detailView
         }
         .navigationSplitViewColumnWidth(min: 250, ideal: 300, max: 350)
-        .environmentObject(appState)
+        .environment(appState)
         .environmentObject(pushManager)
         .environmentObject(NotificationFeedManager.shared)
         .onReceive(NotificationCenter.default.publisher(for: .meulabNavigateToTab)) { note in
@@ -148,7 +148,7 @@ struct EnhancedContentView: View {
                 }
             }
         }
-        .environmentObject(appState)
+        .environment(appState)
         .environmentObject(pushManager)
         .environmentObject(NotificationFeedManager.shared)
     }
@@ -270,7 +270,7 @@ struct EnhancedQuickMetric: View {
 
 #Preview(traits: .landscapeLeft) {
     EnhancedContentView()
-        .environmentObject(AppState())
+        .environment(AppState())
         .environmentObject(PushNotificationManager.shared)
         .environmentObject(NotificationFeedManager.shared)
 }

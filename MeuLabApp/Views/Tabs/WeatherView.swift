@@ -761,7 +761,7 @@ private enum WeatherClock {
 }
 
 struct WeatherView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var selectedDayID: String?
     @State private var didRequestInitialLoad = false
@@ -1592,5 +1592,5 @@ private extension WeatherDayCardModel {
 
 #Preview {
     WeatherView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

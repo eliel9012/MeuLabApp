@@ -164,7 +164,7 @@ private struct ACARSInfoChip: View {
 }
 
 struct ACARSView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var showMessagesList = false
     @State private var showSearchResults = false
@@ -1003,5 +1003,5 @@ struct ACARSDetailedMessageRow: View {
 
 #Preview {
     ACARSView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

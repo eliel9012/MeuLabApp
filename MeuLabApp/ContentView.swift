@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @EnvironmentObject var pushManager: PushNotificationManager
     @State private var selectedTab: Tab = .adsb
     @State private var didApplyLaunchTab = false
@@ -311,7 +311,7 @@ struct ContentView: View {
 
 #Preview {
     ContentView()
-        .environmentObject(AppState())
+        .environment(AppState())
         .environmentObject(PushNotificationManager.shared)
         .environmentObject(NotificationFeedManager.shared)
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct InfraView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var searchText = ""
     @State private var selectedContainer: DockerContainer?
 
@@ -346,5 +346,5 @@ struct InfraStatCard: View {
 
 #Preview {
     InfraView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

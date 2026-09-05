@@ -17,7 +17,7 @@ enum PassFilter: String, CaseIterable {
 }
 
 struct SatelliteView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.scenePhase) private var scenePhase
     @StateObject private var passPredictor = SatellitePassPredictor.shared
     @StateObject private var satelliteMapVM = SatelliteMapViewModel()
@@ -5001,7 +5001,7 @@ extension SatelliteCategory {
 
 #Preview {
     SatelliteView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }
 
 // MARK: - Fullscreen Map View

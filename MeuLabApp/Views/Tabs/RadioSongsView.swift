@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct RadioSongsView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var items: [NowPlaying] = []
     @State private var isLoading = false
     @State private var errorMessage: String?
@@ -83,7 +83,7 @@ struct RadioSongsView: View {
 #Preview {
     NavigationStack {
         RadioSongsView()
-            .environmentObject(AppState())
+            .environment(AppState())
     }
 }
 

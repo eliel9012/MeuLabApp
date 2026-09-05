@@ -361,7 +361,7 @@ enum AnalyticsFocusPanel: String, Identifiable {
 struct AnalyticsView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var selectedPeriod: AnalyticsPeriod = .last24h
     @State private var selectedMetric: AnalyticsMetric = .cpu
     @State private var systemAnalytics: SystemAnalytics?
@@ -2112,5 +2112,5 @@ extension MetricTrend {
 
 #Preview {
     AnalyticsView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

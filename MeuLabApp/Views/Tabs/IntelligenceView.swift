@@ -7,11 +7,11 @@ import SwiftUI
 // MARK: - Router view (escolhe moderna ou legada baseado na versão do iOS)
 
 struct IntelligenceView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
 
     var body: some View {
         IntelligenceViewModern()
-            .environmentObject(appState)
+            .environment(appState)
     }
 }
 
@@ -266,7 +266,7 @@ private struct IntelligenceActionChip: View {
 }
 
 struct IntelligenceViewModern: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var sessions: [ChatSession] = ChatStore.load()
     @State private var activeSessionID: UUID?
@@ -1255,7 +1255,7 @@ private struct FlexibleChipStack<Data: RandomAccessCollection, Content: View>: V
 // MARK: - Legacy Intelligence View (iOS < 26 fallback — mantém a interface antiga)
 
 struct IntelligenceViewLegacy: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
 
     @State private var query = ""
     @State private var answer =

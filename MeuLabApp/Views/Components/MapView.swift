@@ -2,7 +2,7 @@ import SwiftUI
 import MapKit
 
 struct MapView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @StateObject private var locationManager = LocationManager.shared
     @State private var position: MapCameraPosition
     @State private var selectedAircraftID: Aircraft.ID?
@@ -71,7 +71,7 @@ struct MapView: View {
 
     var body: some View {
         NativeRadarMapView()
-            .environmentObject(appState)
+            .environment(appState)
     }
 
     private var aircraftWithPosition: [Aircraft] {
@@ -79,7 +79,8 @@ struct MapView: View {
     }
 
     private var statsOverlay: some View {
-        VStack(alignment: .trailing, spacing: 4) {
+        @Bindable var appState = appState
+        return VStack(alignment: .trailing, spacing: 4) {
             // Aeronaves locais (meu radar)
             HStack(spacing: 4) {
                 Image(systemName: "antenna.radiowaves.left.and.right")
@@ -395,10 +396,11 @@ struct MapSettingsSheet: View {
     @Binding var showUserRangeRings: Bool
     @Binding var distanceMode: MapView.DistanceMode
     @ObservedObject var locationManager: LocationManager
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.dismiss) var dismiss
 
     var body: some View {
+        @Bindable var appState = appState
         NavigationStack {
             Form {
                 Section("Estilo do Mapa") {
@@ -539,5 +541,5 @@ struct MapSettingsSheet: View {
 
 #Preview {
     MapView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

@@ -4,7 +4,7 @@ import SwiftUI
 // MARK: - Native Radar Map View
 
 struct NativeRadarMapView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @StateObject private var locationManager = LocationManager.shared
     @StateObject private var favoritesManager = FavoritesManager.shared
     @State private var position: MapCameraPosition
@@ -660,7 +660,8 @@ struct NativeRadarMapView: View {
     // MARK: - Settings Sheet
 
     private var radarSettingsSheet: some View {
-        NavigationStack {
+        @Bindable var appState = appState
+        return NavigationStack {
             Form {
                 Section("Estilo do Mapa") {
                     Picker("Tipo", selection: $mapStyle) {

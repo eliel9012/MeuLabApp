@@ -2,7 +2,7 @@ import Photos
 import SwiftUI
 
 struct AllSatellitePassesView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var allPasses: PassesListPaginated?
     @State private var isLoadingAllPasses = false
     @State private var allPassesError: String?
@@ -503,5 +503,5 @@ extension String {
 
 #Preview {
     AllSatellitePassesView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

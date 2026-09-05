@@ -162,7 +162,7 @@ enum DetailItem: Identifiable, Hashable {
 // MARK: - Specific Detail Views
 
 struct CPUDetailsView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var detailedData: CPUDetailedData?
     @State private var isLoading = false
     
@@ -455,7 +455,7 @@ struct ContainerDetailsView: View {
 
 #Preview(traits: .landscapeLeft) {
     ContentView()
-        .environmentObject(AppState())
+        .environment(AppState())
         .environmentObject(PushNotificationManager.shared)
         .environmentObject(NotificationFeedManager.shared)
 }

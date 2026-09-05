@@ -2,7 +2,7 @@ import CoreLocation
 import SwiftUI
 
 struct AircraftDetailView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.dismiss) var dismiss
     let ac: Aircraft
 

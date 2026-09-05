@@ -2,7 +2,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 struct DataExportView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var selectedDataType: ExportDataType = .systemMetrics
     @State private var selectedFormat: ExportFormat = .csv
     @State private var dateFrom: Date = Calendar.current.date(byAdding: .day, value: -7, to: Date()) ?? Date()
@@ -216,7 +216,7 @@ struct ShareSheet: UIViewControllerRepresentable {
 // MARK: - Advanced Export Options View
 
 struct AdvancedExportView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var exportRequests: [ExportRequest] = []
     @State private var showingAddExport = false
     @State private var isLoading = false
@@ -435,5 +435,5 @@ struct CustomExportView: View {
 
 #Preview {
     DataExportView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct HealthCheckView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @AppStorage("health_incident_notes") private var incidentNotes: String = ""
     @State private var currentReport: HealthCheckReport?
     @State private var historyReports: [HealthCheckReport] = []
@@ -630,5 +630,5 @@ extension HealthStatus {
 
 #Preview {
     HealthCheckView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

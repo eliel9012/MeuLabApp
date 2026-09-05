@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct ContainerLogsView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var containers: [DockerContainer] = []
     @State private var selectedContainer: DockerContainer?
     @State private var logs: [LogEntry] = []
@@ -629,5 +629,5 @@ extension DateFormatter {
 
 #Preview {
     ContainerLogsView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

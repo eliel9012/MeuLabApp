@@ -167,7 +167,7 @@ private struct RadioInfoChip: View {
 }
 
 struct RadioView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @StateObject private var player = AudioPlayer.shared
     @State private var recentTracks: [NowPlaying] = []
@@ -219,7 +219,7 @@ struct RadioView: View {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     NavigationLink {
                         RadioSongsView()
-                            .environmentObject(appState)
+                            .environment(appState)
                     } label: {
                         Image(systemName: "music.note.list")
                             .font(.system(size: 18, weight: .semibold))
@@ -715,7 +715,7 @@ struct RadioView: View {
                 Spacer()
                 NavigationLink("Ver histórico") {
                     RadioSongsView()
-                        .environmentObject(appState)
+                        .environment(appState)
                 }
                 .font(.caption.weight(.semibold))
             }
@@ -1290,13 +1290,13 @@ private struct WikipediaSummaryResponse: Decodable {
 
 #Preview {
     RadioView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }
 
 // MARK: - Songs / History
 
 struct RadioSongsView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var items: [NowPlaying] = []
     @State private var isLoading = false
     @State private var errorText: String?

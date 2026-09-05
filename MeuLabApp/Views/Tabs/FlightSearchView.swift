@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct FlightSearchView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
 
     enum Mode: String, CaseIterable {
         case flights = "Voos"
@@ -801,5 +801,5 @@ struct FlightSearchResultCard: View {
 
 #Preview {
     FlightSearchView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

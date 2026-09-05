@@ -408,7 +408,7 @@ private struct SystemAnalyticsLaunchTile: View {
 }
 
 struct SystemView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
     @State private var snapshotTarget: FirestickSnapshotTarget?
     @State private var analyticsDestination: SystemAnalyticsDestination?
@@ -476,7 +476,7 @@ struct SystemView: View {
                     initialMetricRaw: destination.metricRawValue,
                     showsDismissButton: true
                 )
-                .environmentObject(appState)
+                .environment(appState)
             }
         }
     }
@@ -1969,5 +1969,5 @@ private struct FirestickDetailView: View {
 
 #Preview {
     SystemView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

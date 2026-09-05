@@ -4,7 +4,7 @@ import UserNotifications
 @main
 struct MeuLabApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    @StateObject private var appState = AppState()
+    @State private var appState = AppState()
     @StateObject private var pushManager = PushNotificationManager.shared
     @StateObject private var notificationFeed = NotificationFeedManager.shared
     @Environment(\.scenePhase) private var scenePhase
@@ -15,7 +15,7 @@ struct MeuLabApp: App {
         WindowGroup {
             ContentView()
                 .radarSplash()
-                .environmentObject(appState)
+                .environment(appState)
                 .environmentObject(pushManager)
                 .environmentObject(notificationFeed)
                 .onAppear {

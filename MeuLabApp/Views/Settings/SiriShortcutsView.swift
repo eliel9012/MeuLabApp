@@ -83,7 +83,7 @@ class MeuLabIntentHandler: NSObject, MeuLabCheckSystemIntentHandling, MeuLabRunH
 
 @available(iOS 12.0, *)
 struct SiriShortcutsView: View {
-    @EnvironmentObject var appState: AppState
+    @Environment(AppState.self) private var appState
     @State private var showingSetup = false
     @State private var shortcuts: [SiriShortcut] = []
     
@@ -411,5 +411,5 @@ enum SiriShortcutCategory {
 
 #Preview {
     SiriShortcutsView()
-        .environmentObject(AppState())
+        .environment(AppState())
 }

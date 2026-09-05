@@ -23,3 +23,7 @@ Build iOS em cada marco compilável; teste de isolamento de Observation e bindin
 `AppState` usa `@Observable` e mantém `@MainActor`. Todos os 63 `@Published` removidos. Auditoria individual em `appstate-observation-audit.csv`: 123 membros armazenados. As 60 propriedades internas recebem `@ObservationIgnored`; membros antes publicados sem consumidor visual também são ignorados. Constantes recebem anotação explícita para documentar escopo, embora a macro já ignore `let`.
 
 `manualAirlineOverrides` alimenta normalização e reconstrução de caches; as views leem `aircraftList`/`adsbAirlines`. `activeTabRawValue` e `radarBoundingBox` alimentam somente controle de refresh. Esses membros não precisam de rastreamento visual. `didSet`, acesso e lógica de refresh preservados. Commit intermediário depende da fase 3 para compilar consumidores.
+
+## Fase 3 — views e bindings
+
+31 consumidores em 25 arquivos usam `@Environment(AppState.self)`. Instância principal usa `@State`; 9 reinjeções e 21 previews usam `.environment`. Os 6 toggles mantêm bindings com `@Bindable` local em cinco escopos: `ADSBView.body`, `trafficScopeBar`, `MapView.statsOverlay`, `MapSettingsSheet.body` e `radarSettingsSheet`. Build iOS genérico após migração: **BUILD SUCCEEDED**.
