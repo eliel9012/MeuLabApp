@@ -1193,6 +1193,7 @@ struct ViagemView: View {
     /// Only the day in focus starts open. Opening all 17 buries the one that matters.
     @State private var expandedDays: Set<String> = []
     @State private var focusDayID: String?
+    @Namespace private var glassNamespace
     @StateObject private var locator = TripLocator.shared
     @StateObject private var alerts = TripNotifications.shared
     @State private var now = Date()
@@ -1209,14 +1210,21 @@ struct ViagemView: View {
                     VStack(spacing: 16) {
                         statusCard
 
-                        ForEach(VData.days) { day in
-                            VDaySection(
-                                day: day,
-                                isExpanded: expandedDays.contains(day.id),
-                                isFocused: day.id == focusDayID,
-                                onToggle: { toggle(day.id) }
-                            )
-                            .id(day.id)
+                        // One container for the seventeen day cards: glass cannot
+                        // sample other glass, and these are siblings on screen.
+                        // `glassEffectID` lets a card's shape morph as it expands
+                        // instead of the effect being torn down and rebuilt.
+                        GlassEffectContainer(spacing: 0) {
+                            ForEach(VData.days) { day in
+                                VDaySection(
+                                    day: day,
+                                    isExpanded: expandedDays.contains(day.id),
+                                    isFocused: day.id == focusDayID,
+                                    onToggle: { toggle(day.id) }
+                                )
+                                .glassEffectID(day.id, in: glassNamespace)
+                                .id(day.id)
+                            }
                         }
                         footerNote
                     }
@@ -1437,10 +1445,12 @@ struct ViagemView: View {
     }
 
     private func toggle(_ id: String) {
-        if expandedDays.contains(id) {
-            expandedDays.remove(id)
-        } else {
-            expandedDays.insert(id)
+        withAnimation(.smooth(duration: 0.35)) {
+            if expandedDays.contains(id) {
+                expandedDays.remove(id)
+            } else {
+                expandedDays.insert(id)
+            }
         }
     }
 
