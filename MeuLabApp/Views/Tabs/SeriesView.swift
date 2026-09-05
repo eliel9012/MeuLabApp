@@ -66,21 +66,80 @@ final class EpisodeLibrary: ObservableObject {
 
     private static let playable: Set<String> = ["mp4", "m4v", "mov"]
 
+    /// Bookmark to a folder the user picked anywhere in Files. Stored because a
+    /// rebuild from Xcode can hand the app a fresh data container, which orphans
+    /// everything copied into Documents; a folder outside the container survives
+    /// that, and nothing has to be duplicated.
+    private static let bookmarkKey = "series.externalFolder"
+
+    @Published private(set) var externalFolderName: String?
+    private var externalFolder: URL?
+    private var externalIsScoped = false
+
+    /// Resolves the saved bookmark, if any. Safe to call repeatedly.
+    private func resolveExternalFolder() {
+        releaseExternal()
+        guard let data = UserDefaults.standard.data(forKey: Self.bookmarkKey) else {
+            externalFolder = nil
+            externalFolderName = nil
+            return
+        }
+        var stale = false
+        guard let url = try? URL(
+            resolvingBookmarkData: data, options: [], relativeTo: nil, bookmarkDataIsStale: &stale
+        ) else {
+            externalFolder = nil
+            externalFolderName = nil
+            return
+        }
+        externalIsScoped = url.startAccessingSecurityScopedResource()
+        externalFolder = url
+        externalFolderName = url.lastPathComponent
+        if stale { saveExternalFolder(url) }
+    }
+
+    private func releaseExternal() {
+        if externalIsScoped, let externalFolder {
+            externalFolder.stopAccessingSecurityScopedResource()
+        }
+        externalIsScoped = false
+    }
+
+    func saveExternalFolder(_ url: URL) {
+        let scoped = url.startAccessingSecurityScopedResource()
+        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+        if let data = try? url.bookmarkData(options: [], includingResourceValuesForKeys: nil, relativeTo: nil) {
+            UserDefaults.standard.set(data, forKey: Self.bookmarkKey)
+        }
+        reload()
+    }
+
+    func clearExternalFolder() {
+        releaseExternal()
+        UserDefaults.standard.removeObject(forKey: Self.bookmarkKey)
+        externalFolder = nil
+        externalFolderName = nil
+        reload()
+    }
+
     private init() {}
 
     func reload() {
+        resolveExternalFolder()
         let fm = FileManager.default
         let root = Self.documentsURL
+        let roots = [root, externalFolder].compactMap { $0 }
 
         // Walk the whole tree rather than the root plus one level. Dragging a
         // folder in through Finder often brings its wrapper along, which buried
         // the videos two levels down and made the library look empty.
         var byFolder: [URL: [URL]] = [:]
-        if let walker = fm.enumerator(
-            at: root,
-            includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey],
-            options: [.skipsHiddenFiles]
-        ) {
+        for base in roots {
+            guard let walker = fm.enumerator(
+                at: base,
+                includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey],
+                options: [.skipsHiddenFiles]
+            ) else { continue }
             for case let url as URL in walker {
                 guard Self.playable.contains(url.pathExtension.lowercased()) else { continue }
                 byFolder[url.deletingLastPathComponent(), default: []].append(url)
@@ -91,7 +150,7 @@ final class EpisodeLibrary: ObservableObject {
         // straight into Documents have no such folder.
         let out = byFolder.map { folder, files -> Series in
             makeSeries(
-                name: folder == root ? "Outros vídeos" : folder.lastPathComponent,
+                name: roots.contains(folder) ? "Outros vídeos" : folder.lastPathComponent,
                 folder: folder,
                 files: files
             )
@@ -359,6 +418,8 @@ private func timeText(_ seconds: Double) -> String {
 
 struct SeriesView: View {
     @StateObject private var library = EpisodeLibrary.shared
+    @State private var pickingFolder = false
+    @State private var pickError: String?
 
     var body: some View {
         Group {
@@ -390,6 +451,43 @@ struct SeriesView: View {
         .navigationBarTitleDisplayMode(.inline)
         .onAppear { library.reload() }
         .refreshable { library.reload() }
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                Menu {
+                    Button {
+                        pickingFolder = true
+                    } label: {
+                        Label("Escolher pasta de vídeos…", systemImage: "folder.badge.plus")
+                    }
+                    if let name = library.externalFolderName {
+                        Button(role: .destructive) {
+                            library.clearExternalFolder()
+                        } label: {
+                            Label("Parar de usar \(name)", systemImage: "folder.badge.minus")
+                        }
+                    }
+                } label: {
+                    Image(systemName: "ellipsis.circle")
+                }
+            }
+        }
+        .fileImporter(
+            isPresented: $pickingFolder,
+            allowedContentTypes: [.folder],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                if let url = urls.first { library.saveExternalFolder(url) }
+            case .failure(let error):
+                pickError = error.localizedDescription
+            }
+        }
+        .alert("Não foi possível abrir a pasta", isPresented: .constant(pickError != nil)) {
+            Button("OK") { pickError = nil }
+        } message: {
+            Text(pickError ?? "")
+        }
     }
 
     private func subtitle(for series: Series) -> String {
@@ -428,13 +526,28 @@ struct SeriesView: View {
                     }
                 }
 
-                Button {
-                    library.reload()
-                } label: {
-                    Label("Procurar de novo", systemImage: "arrow.clockwise")
+                HStack(spacing: 10) {
+                    Button {
+                        pickingFolder = true
+                    } label: {
+                        Label("Escolher pasta", systemImage: "folder.badge.plus")
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button {
+                        library.reload()
+                    } label: {
+                        Label("Procurar de novo", systemImage: "arrow.clockwise")
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
                 .padding(.top, 4)
+
+                Text(
+                    "Se você copiou os vídeos para o iPhone e eles não aparecem, use \"Escolher pasta\" e aponte para onde eles estão no app Arquivos. O app lê de lá sem copiar nada."
+                )
+                .font(.system(size: 12))
+                .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(20)
