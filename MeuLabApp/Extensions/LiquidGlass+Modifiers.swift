@@ -33,9 +33,10 @@ private struct GlassCardModifier: ViewModifier {
                 .background(shape.fill(GlassFallback.surface))
                 .overlay(shape.strokeBorder(GlassFallback.border, lineWidth: 1))
         } else {
+            // No manual fill or stroke here: Liquid Glass draws its own edge and
+            // overrides anything placed under it. Measured on screen in both
+            // themes, the previous overlays changed exactly zero pixels.
             content
-                .background(shape.fill(Color.white.opacity(0.03)))
-                .overlay(shape.strokeBorder(Color.white.opacity(0.14), lineWidth: 1))
                 .glassEffect(in: .rect(cornerRadius: cornerRadius))
         }
     }
