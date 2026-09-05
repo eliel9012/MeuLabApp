@@ -99,6 +99,11 @@ enum FlightActivityFormat {
     /// The itinerary names cities, not airports. Map the ones this trip uses and
     /// fall back to the first three letters, which still reads as a code.
     private static let cityToAirport: [String: String] = [
+        // Cities on this trip whose codes cannot be guessed from the name.
+        "ribeirão preto": "RAO", "ribeirao preto": "RAO",
+        "londrina": "LDB", "guarulhos": "GRU", "congonhas": "CGH",
+        "beauvais": "BVA", "porto": "OPO", "stansted": "STN",
+        "marseille": "MRS", "marselha": "MRS", "madrid": "MAD", "madri": "MAD",
         "guarulhos": "GRU",
         "sao paulo": "GRU",
         "são paulo": "GRU",
@@ -147,6 +152,18 @@ enum FlightActivityFormat {
     static func airportCode(for city: String) -> String {
         let trimmed = city.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return "---" }
+
+        // The itinerary already prints the code — "Londrina (LDB)", "Ribeirão
+        // Preto (RAO)" — so read it rather than guessing. Guessing produced LON
+        // for Londrina, which is London's code, and RIB for Ribeirão Preto.
+        if let open = trimmed.lastIndex(of: "("), let close = trimmed.lastIndex(of: ")"), open < close {
+            let inner = trimmed[trimmed.index(after: open)..<close]
+                .trimmingCharacters(in: .whitespaces)
+                .uppercased()
+            if inner.count == 3, inner.allSatisfy({ $0.isLetter }) {
+                return inner
+            }
+        }
 
         let key = trimmed.lowercased()
         if let hit = cityToAirport[key] { return hit }

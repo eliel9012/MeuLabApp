@@ -115,6 +115,10 @@ private struct ArrivesIn: View {
                 Text("parte em")
                 Text(timerInterval: countdown(to: state.departure, from: now), countsDown: true)
                     .monospacedDigit()
+                    // A ten-hour leg renders "10:15:22"; without this the HStack
+                    // truncates it to ":--" instead of shortening the label.
+                    .fixedSize(horizontal: true, vertical: false)
+                    .layoutPriority(1)
             }
             .font(font)
             .foregroundStyle(FlightPalette.muted)
@@ -123,6 +127,8 @@ private struct ArrivesIn: View {
                 Text("chega em")
                 Text(timerInterval: countdown(to: state.arrival, from: now), countsDown: true)
                     .monospacedDigit()
+                    .fixedSize(horizontal: true, vertical: false)
+                    .layoutPriority(1)
             }
             .font(font)
             .foregroundStyle(FlightPalette.accent)
