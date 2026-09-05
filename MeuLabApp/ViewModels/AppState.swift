@@ -1,21 +1,22 @@
-import Combine
 import CoreLocation
 import Foundation
+import Observation
 import SwiftUI
 
 #if canImport(WeatherKit)
     import WeatherKit
 #endif
 
+@Observable
 @MainActor
-class AppState: ObservableObject {
+class AppState {
     // MARK: - Active Tab Gating
     //
     // Este app mantem varias tabs "visitadas" vivas no ZStack (opacity=0). Quando
-    // o AppState publica atualizacoes frequentes (ex.: ADSB a cada 0.5s), mesmo as
-    // views escondidas recompoem e isso explode CPU e deixa a UI lenta ao trocar de tab.
-    @Published private(set) var activeTabRawValue: String = "adsb"
-    @Published var intelligenceContext: [String: String]?
+    // Observation limita invalidações às propriedades lidas por cada view.
+    // O gating continua limitando polling aos módulos da tab ativa.
+    @ObservationIgnored private(set) var activeTabRawValue: String = "adsb"
+    var intelligenceContext: [String: String]?
     func setActiveTab(_ rawValue: String) {
         let didChange = activeTabRawValue != rawValue
         activeTabRawValue = rawValue
@@ -40,17 +41,17 @@ class AppState: ObservableObject {
     }
 
     // MARK: - ADS-B
-    @Published var adsbSummary: ADSBSummary? {
+    var adsbSummary: ADSBSummary? {
         didSet { rebuildADSBViewCache() }
     }
-    @Published var aircraftList: [Aircraft] = [] {
+    var aircraftList: [Aircraft] = [] {
         didSet { rebuildADSBViewCache() }
     }
-    @Published var localAircraftCount: Int = 0  // Aeronaves do radar local
-    @Published var openskyAircraftCount: Int = 0  // Aeronaves da OpenSky
-    @Published var adsbError: String?
-    @Published var adsbLoading = false
-    @Published var isOpenSkyEnabled: Bool = false {
+    var localAircraftCount: Int = 0  // Aeronaves do radar local
+    var openskyAircraftCount: Int = 0  // Aeronaves da OpenSky
+    var adsbError: String?
+    @ObservationIgnored var adsbLoading = false
+    var isOpenSkyEnabled: Bool = false {
         didSet {
             lastOpenSkyRefresh = nil
             lastADSBSummaryRefresh = nil
@@ -58,158 +59,161 @@ class AppState: ObservableObject {
             Task { await refreshADSB(includeSummary: true, includeAircraft: true) }
         }
     }
-    @Published private(set) var manualAirlineOverrides: [String: String] = [:]
-    @Published private(set) var adsbAirlines: [Airline] = []
-    @Published private(set) var adsbNearbyAircraftPreview: [Aircraft] = []
+    @ObservationIgnored private(set) var manualAirlineOverrides: [String: String] = [:]
+    private(set) var adsbAirlines: [Airline] = []
+    private(set) var adsbNearbyAircraftPreview: [Aircraft] = []
 
     // MARK: - Map Coordination
-    @Published var mapFocusAircraft: Aircraft?
-    @Published var radarBoundingBox: [Double]?  // [minLat, maxLat, minLon, maxLon]
+    var mapFocusAircraft: Aircraft?
+    @ObservationIgnored var radarBoundingBox: [Double]?  // [minLat, maxLat, minLon, maxLon]
 
     // MARK: - System
-    @Published var systemStatus: SystemStatus?
-    @Published var systemError: String?
-    @Published var systemLoading = false
+    var systemStatus: SystemStatus?
+    var systemError: String?
+    @ObservationIgnored var systemLoading = false
 
     // MARK: - Mac Mini (API2)
-    @Published var macMiniStatus: SystemStatus?
-    @Published var macMiniError: String?
-    @Published var macMiniLoading = false
-    @Published var macMiniProcesses: [ProcessItem] = []
-    @Published var macMiniPartitions: [Partition] = []
-    @Published var macMiniNetwork: [NetworkInterface] = []
-    @Published var macMiniAnalytics: SystemAnalytics?
+    @ObservationIgnored var macMiniStatus: SystemStatus?
+    @ObservationIgnored var macMiniError: String?
+    @ObservationIgnored var macMiniLoading = false
+    @ObservationIgnored var macMiniProcesses: [ProcessItem] = []
+    @ObservationIgnored var macMiniPartitions: [Partition] = []
+    @ObservationIgnored var macMiniNetwork: [NetworkInterface] = []
+    @ObservationIgnored var macMiniAnalytics: SystemAnalytics?
 
     // MARK: - Fire Stick
-    @Published var firestickDeviceStatuses: [FirestickDeviceStatus] = []
-    @Published var firestickError: String?
-    @Published var firestickLoading = false
+    var firestickDeviceStatuses: [FirestickDeviceStatus] = []
+    var firestickError: String?
+    @ObservationIgnored var firestickLoading = false
 
     // MARK: - Radio
-    @Published var nowPlaying: NowPlaying?
-    @Published var radioError: String?
-    @Published var radioLoading = false
+    var nowPlaying: NowPlaying?
+    @ObservationIgnored var radioError: String?
+    @ObservationIgnored var radioLoading = false
 
     // MARK: - Weather
-    @Published var weather: WeatherData?
-    @Published var weatherError: String?
-    @Published var weatherLoading = false
+    var weather: WeatherData?
+    var weatherError: String?
+    var weatherLoading = false
 
     // MARK: - Satellite
-    @Published var lastImages: LastImages?
-    @Published var passes: [SatellitePass] = []
-    @Published var satelliteError: String?
-    @Published var satelliteLoading = false
+    var lastImages: LastImages?
+    var passes: [SatellitePass] = []
+    var satelliteError: String?
+    @ObservationIgnored var satelliteLoading = false
 
     // MARK: - ACARS
-    @Published var acarsSummary: ACARSSummary?
-    @Published var acarsMessages: [ACARSMessage] = []
-    @Published var acarsHourly: [ACARSHourStat] = []
-    @Published var acarsHistory: ACARSHistoryResponse?
-    @Published var acarsAlerts: [ACARSAlert] = []
-    @Published var acarsError: String?
-    @Published var acarsLoading = false
+    var acarsSummary: ACARSSummary?
+    var acarsMessages: [ACARSMessage] = []
+    var acarsHourly: [ACARSHourStat] = []
+    var acarsHistory: ACARSHistoryResponse?
+    var acarsAlerts: [ACARSAlert] = []
+    var acarsError: String?
+    @ObservationIgnored var acarsLoading = false
 
     // MARK: - System Extras
-    @Published var processes: [ProcessItem] = []
-    @Published var partitions: [Partition] = []
-    @Published var networkInterfaces: [NetworkInterface] = []
-    @Published var systemExtrasError: String?
+    var processes: [ProcessItem] = []
+    var partitions: [Partition] = []
+    var networkInterfaces: [NetworkInterface] = []
+    @ObservationIgnored var systemExtrasError: String?
 
     // MARK: - Docker
-    @Published var dockerVersion: DockerVersionResponse?
-    @Published var dockerContainers: [DockerContainer] = []
-    @Published var dockerError: String?
+    var dockerVersion: DockerVersionResponse?
+    var dockerContainers: [DockerContainer] = []
+    var dockerError: String?
 
     // MARK: - Systemd
-    @Published var systemdServices: [SystemdService] = []
-    @Published var systemdError: String?
+    var systemdServices: [SystemdService] = []
+    var systemdError: String?
 
     // MARK: - SatDump Extras
-    @Published var satDumpStatus: SatDumpStatus?
-    @Published var satDumpError: String?
+    var satDumpStatus: SatDumpStatus?
+    @ObservationIgnored var satDumpError: String?
 
     // MARK: - ADSB Extras
-    @Published var adsbHistory: ADSBHistoryResponse?
-    @Published var adsbAlerts: [ADSBAlert] = []
-    @Published var adsbHistoryError: String?
-    @Published var tuyaSensor: TuyaTemperatureHumidityResponse?
-    @Published var tuyaSensorError: String?
-    @Published var tuyaSensorLoading = false
+    var adsbHistory: ADSBHistoryResponse?
+    var adsbAlerts: [ADSBAlert] = []
+    @ObservationIgnored var adsbHistoryError: String?
+    var tuyaSensor: TuyaTemperatureHumidityResponse?
+    var tuyaSensorError: String?
+    @ObservationIgnored var tuyaSensorLoading = false
 
     // MARK: - Metrics
-    @Published var metrics: MetricsResponse?
-    @Published var metricsError: String?
+    var metrics: MetricsResponse?
+    var metricsError: String?
+
+    // Estado operacional não participa do rastreamento das views.
+    // Ver docs/appstate-observation-audit.csv para a classificação de cada membro.
 
     // MARK: - Timers
     //
     // Arquitetura: cada grupo de módulos tem seu próprio timer independente.
     // Só módulos da tab ativa são atualizados no ritmo rápido.
     // Módulos de tabs inativas NÃO fazem polling (zero custo).
-    private var adsbTimer: Timer?
-    private var moduleTimer: Timer?
-    private var radioBackgroundTimer: Timer?
+    @ObservationIgnored private var adsbTimer: Timer?
+    @ObservationIgnored private var moduleTimer: Timer?
+    @ObservationIgnored private var radioBackgroundTimer: Timer?
 
     // Per-group in-flight guards — nunca bloqueia outro grupo.
-    private var adsbInFlight = false
-    private var systemInFlight = false
-    private var radioInFlight = false
-    private var weatherInFlight = false
-    private var satelliteInFlight = false
-    private var acarsInFlight = false
+    @ObservationIgnored private var adsbInFlight = false
+    @ObservationIgnored private var systemInFlight = false
+    @ObservationIgnored private var radioInFlight = false
+    @ObservationIgnored private var weatherInFlight = false
+    @ObservationIgnored private var satelliteInFlight = false
+    @ObservationIgnored private var acarsInFlight = false
 
     // Intervalos de cada módulo quando a tab está ativa
-    private let adsbTimerInterval: TimeInterval = 0.75
-    private let adsbSummaryInterval: TimeInterval = 0.75
-    private let adsbAircraftInterval: TimeInterval = 1.5
-    private let systemInterval: TimeInterval = 5.0
-    private let firestickInterval: TimeInterval = 10.0
-    private let radioInterval: TimeInterval = 1.0
-    private let radioBackgroundInterval: TimeInterval = 5.0
-    private let weatherInterval: TimeInterval = 60.0
-    private let satelliteInterval: TimeInterval = 120.0
-    private let acarsInterval: TimeInterval = 10.0
-    private let processesInterval: TimeInterval = 10.0
-    private let partitionsInterval: TimeInterval = 60.0
-    private let networkInterval: TimeInterval = 10.0
-    private let dockerStatusInterval: TimeInterval = 20.0
-    private let dockerVersionInterval: TimeInterval = 300.0
-    private let systemdInterval: TimeInterval = 30.0
-    private let satDumpStatusInterval: TimeInterval = 60.0
-    private let adsbHistoryInterval: TimeInterval = 300.0
-    private let adsbAlertsInterval: TimeInterval = 60.0
-    private let tuyaSensorInterval: TimeInterval = 30.0
-    private let acarsHistoryInterval: TimeInterval = 300.0
-    private let acarsAlertsInterval: TimeInterval = 60.0
-    private let metricsInterval: TimeInterval = 10.0
+    @ObservationIgnored private let adsbTimerInterval: TimeInterval = 0.75
+    @ObservationIgnored private let adsbSummaryInterval: TimeInterval = 0.75
+    @ObservationIgnored private let adsbAircraftInterval: TimeInterval = 1.5
+    @ObservationIgnored private let systemInterval: TimeInterval = 5.0
+    @ObservationIgnored private let firestickInterval: TimeInterval = 10.0
+    @ObservationIgnored private let radioInterval: TimeInterval = 1.0
+    @ObservationIgnored private let radioBackgroundInterval: TimeInterval = 5.0
+    @ObservationIgnored private let weatherInterval: TimeInterval = 60.0
+    @ObservationIgnored private let satelliteInterval: TimeInterval = 120.0
+    @ObservationIgnored private let acarsInterval: TimeInterval = 10.0
+    @ObservationIgnored private let processesInterval: TimeInterval = 10.0
+    @ObservationIgnored private let partitionsInterval: TimeInterval = 60.0
+    @ObservationIgnored private let networkInterval: TimeInterval = 10.0
+    @ObservationIgnored private let dockerStatusInterval: TimeInterval = 20.0
+    @ObservationIgnored private let dockerVersionInterval: TimeInterval = 300.0
+    @ObservationIgnored private let systemdInterval: TimeInterval = 30.0
+    @ObservationIgnored private let satDumpStatusInterval: TimeInterval = 60.0
+    @ObservationIgnored private let adsbHistoryInterval: TimeInterval = 300.0
+    @ObservationIgnored private let adsbAlertsInterval: TimeInterval = 60.0
+    @ObservationIgnored private let tuyaSensorInterval: TimeInterval = 30.0
+    @ObservationIgnored private let acarsHistoryInterval: TimeInterval = 300.0
+    @ObservationIgnored private let acarsAlertsInterval: TimeInterval = 60.0
+    @ObservationIgnored private let metricsInterval: TimeInterval = 10.0
 
-    private var lastADSBSummaryRefresh: Date?
-    private var lastADSBListRefresh: Date?
-    private var lastSystemRefresh: Date?
-    private var lastFirestickRefresh: Date?
-    private var lastRadioRefresh: Date?
-    private var lastWeatherRefresh: Date?
-    private var lastSatelliteRefresh: Date?
-    private var lastACARSRefresh: Date?
-    private var lastProcessesRefresh: Date?
-    private var lastPartitionsRefresh: Date?
-    private var lastNetworkRefresh: Date?
-    private var lastDockerStatusRefresh: Date?
-    private var lastDockerVersionRefresh: Date?
-    private var lastSystemdRefresh: Date?
-    private var lastSatDumpStatusRefresh: Date?
-    private var lastADSBHistoryRefresh: Date?
-    private var lastADSBAlertsRefresh: Date?
-    private var lastTuyaSensorRefresh: Date?
-    private var lastACARSHistoryRefresh: Date?
-    private var lastACARSAlertsRefresh: Date?
-    private var lastMetricsRefresh: Date?
-    private var lastOpenSkyRefresh: Date?
+    @ObservationIgnored private var lastADSBSummaryRefresh: Date?
+    @ObservationIgnored private var lastADSBListRefresh: Date?
+    @ObservationIgnored private var lastSystemRefresh: Date?
+    @ObservationIgnored private var lastFirestickRefresh: Date?
+    @ObservationIgnored private var lastRadioRefresh: Date?
+    @ObservationIgnored private var lastWeatherRefresh: Date?
+    @ObservationIgnored private var lastSatelliteRefresh: Date?
+    @ObservationIgnored private var lastACARSRefresh: Date?
+    @ObservationIgnored private var lastProcessesRefresh: Date?
+    @ObservationIgnored private var lastPartitionsRefresh: Date?
+    @ObservationIgnored private var lastNetworkRefresh: Date?
+    @ObservationIgnored private var lastDockerStatusRefresh: Date?
+    @ObservationIgnored private var lastDockerVersionRefresh: Date?
+    @ObservationIgnored private var lastSystemdRefresh: Date?
+    @ObservationIgnored private var lastSatDumpStatusRefresh: Date?
+    @ObservationIgnored private var lastADSBHistoryRefresh: Date?
+    @ObservationIgnored private var lastADSBAlertsRefresh: Date?
+    @ObservationIgnored private var lastTuyaSensorRefresh: Date?
+    @ObservationIgnored private var lastACARSHistoryRefresh: Date?
+    @ObservationIgnored private var lastACARSAlertsRefresh: Date?
+    @ObservationIgnored private var lastMetricsRefresh: Date?
+    @ObservationIgnored private var lastOpenSkyRefresh: Date?
 
-    private let api = APIService.shared
-    private let openSkyService = OpenSkyService.shared
-    private let manualAirlineOverridesDefaultsKey = "adsb.manualAirlineOverrides"
-    private var hasBootstrapped = false
+    @ObservationIgnored private let api = APIService.shared
+    @ObservationIgnored private let openSkyService = OpenSkyService.shared
+    @ObservationIgnored private let manualAirlineOverridesDefaultsKey = "adsb.manualAirlineOverrides"
+    @ObservationIgnored private var hasBootstrapped = false
 
     init() {
         loadManualAirlineOverrides()
@@ -616,7 +620,7 @@ class AppState: ObservableObject {
     }
 
     /// OpenSky roda em background separado — nunca bloqueia o refresh rápido do ADSB local.
-    private var cachedOpenSkyItems: [Aircraft] = []
+    @ObservationIgnored private var cachedOpenSkyItems: [Aircraft] = []
 
     private func refreshOpenSkyBackground() async {
         var box: (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double)? = nil
@@ -1163,7 +1167,7 @@ class AppState: ObservableObject {
     }
 
     // MARK: - Registration Cache
-    private var registrationCache: [String: String] = [:]
+    @ObservationIgnored private var registrationCache: [String: String] = [:]
 
     // MARK: - Manual Airline Overrides
 

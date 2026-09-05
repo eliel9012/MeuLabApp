@@ -1,0 +1,124 @@
+property,kind,observation,reason,view_references_at_baseline
+activeTabRawValue,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+intelligenceContext,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/EnhancedContentView.swift:36; MeuLabApp/ContentView.swift:254; MeuLabApp/Views/Tabs/WeatherView.swift:840; MeuLabApp/Views/Tabs/WeatherView.swift:852; MeuLabApp/Views/Tabs/SatelliteView.swift:137; MeuLabApp/Views/Tabs/SatelliteView.swift:147; MeuLabApp/Views/Tabs/ACARSView.swift:289; MeuLabApp/Views/Tabs/ACARSView.swift:299
+adsbSummary,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/AircraftDetailView.swift:310; MeuLabApp/Views/Tabs/IntelligenceView.swift:496; MeuLabApp/Views/Tabs/ADSBView.swift:231; MeuLabApp/Views/Tabs/ADSBView.swift:530; MeuLabApp/Views/Tabs/ADSBView.swift:2978
+aircraftList,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/ContentView.swift:265; MeuLabApp/Views/Tabs/IntelligenceView.swift:496; MeuLabApp/Views/Tabs/IntelligenceView.swift:1201; MeuLabApp/Views/Tabs/ADSBView.swift:240; MeuLabApp/Views/Tabs/ADSBView.swift:261; MeuLabApp/Views/Tabs/ADSBView.swift:282; MeuLabApp/Views/Tabs/ADSBView.swift:359; MeuLabApp/Views/Tabs/ADSBView.swift:539; MeuLabApp/Views/Tabs/ADSBView.swift:550; MeuLabApp/Views/Tabs/ADSBView.swift:806; MeuLabApp/Views/Tabs/ADSBView.swift:1033; MeuLabApp/Views/Tabs/ADSBView.swift:1035; MeuLabApp/Views/Components/MapView.swift:78; MeuLabApp/Views/Components/AircraftMapView.swift:250; MeuLabApp/Views/Components/NativeRadarMapView.swift:77; MeuLabApp/Views/Components/NativeRadarMapView.swift:171
+localAircraftCount,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:516; MeuLabApp/Views/Components/MapView.swift:88; MeuLabApp/Views/Components/MapView.swift:419; MeuLabApp/Views/Components/NativeRadarMapView.swift:368; MeuLabApp/Views/Components/NativeRadarMapView.swift:687
+openskyAircraftCount,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:522; MeuLabApp/Views/Components/NativeRadarMapView.swift:360; MeuLabApp/Views/Components/NativeRadarMapView.swift:704
+adsbError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:259
+adsbLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+isOpenSkyEnabled,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:239; MeuLabApp/Views/Tabs/ADSBView.swift:347; MeuLabApp/Views/Tabs/ADSBView.swift:405; MeuLabApp/Views/Tabs/ADSBView.swift:409; MeuLabApp/Views/Tabs/ADSBView.swift:415; MeuLabApp/Views/Tabs/ADSBView.swift:429; MeuLabApp/Views/Tabs/ADSBView.swift:440; MeuLabApp/Views/Tabs/ADSBView.swift:447; MeuLabApp/Views/Tabs/ADSBView.swift:461; MeuLabApp/Views/Tabs/ADSBView.swift:465; MeuLabApp/Views/Tabs/ADSBView.swift:471; MeuLabApp/Views/Tabs/ADSBView.swift:487; MeuLabApp/Views/Tabs/ADSBView.swift:494; MeuLabApp/Views/Tabs/ADSBView.swift:501; MeuLabApp/Views/Tabs/ADSBView.swift:511; MeuLabApp/Views/Tabs/ADSBView.swift:521; MeuLabApp/Views/Tabs/ADSBView.swift:610; MeuLabApp/Views/Tabs/ADSBView.swift:854; MeuLabApp/Views/Components/MapView.swift:106; MeuLabApp/Views/Components/MapView.swift:107; MeuLabApp/Views/Components/MapView.swift:424; MeuLabApp/Views/Components/NativeRadarMapView.swift:320; MeuLabApp/Views/Components/NativeRadarMapView.swift:321; MeuLabApp/Views/Components/NativeRadarMapView.swift:355; MeuLabApp/Views/Components/NativeRadarMapView.swift:692; MeuLabApp/Views/Components/NativeRadarMapView.swift:700
+manualAirlineOverrides,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+adsbAirlines,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:527; MeuLabApp/Views/Tabs/ADSBView.swift:528
+adsbNearbyAircraftPreview,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:893
+mapFocusAircraft,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/ContentView.swift:269; MeuLabApp/Views/Tabs/AircraftDetailView.swift:148; MeuLabApp/Views/Tabs/IntelligenceView.swift:1205; MeuLabApp/Views/Tabs/ADSBView.swift:2773; MeuLabApp/Views/Components/NativeRadarMapView.swift:192; MeuLabApp/Views/Components/NativeRadarMapView.swift:202
+radarBoundingBox,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+systemStatus,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/EnhancedContentView.swift:61; MeuLabApp/iPadSplitView.swift:172; MeuLabApp/Views/Tabs/IntelligenceView.swift:294; MeuLabApp/Views/Tabs/IntelligenceView.swift:497; MeuLabApp/Views/Tabs/IntelligenceView.swift:680; MeuLabApp/Views/Tabs/IntelligenceView.swift:1394; MeuLabApp/Views/Tabs/SystemView.swift:424
+systemError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SystemView.swift:426
+systemLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+macMiniStatus,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+macMiniError,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+macMiniLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+macMiniProcesses,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+macMiniPartitions,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+macMiniNetwork,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+macMiniAnalytics,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+firestickDeviceStatuses,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SystemView.swift:679; MeuLabApp/Views/Tabs/SystemView.swift:681; MeuLabApp/Views/Tabs/SystemView.swift:687
+firestickError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SystemView.swift:679; MeuLabApp/Views/Tabs/SystemView.swift:681
+firestickLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+nowPlaying,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/IntelligenceView.swift:1065; MeuLabApp/Views/Tabs/IntelligenceView.swift:1095; MeuLabApp/Views/Tabs/RadioView.swift:190; MeuLabApp/Views/Tabs/RadioView.swift:239; MeuLabApp/Views/Tabs/RadioView.swift:398; MeuLabApp/Views/Tabs/RadioView.swift:455; MeuLabApp/Views/Tabs/RadioView.swift:527; MeuLabApp/Views/Tabs/RadioView.swift:531; MeuLabApp/Views/Tabs/RadioView.swift:535; MeuLabApp/Views/Tabs/RadioView.swift:540; MeuLabApp/Views/Tabs/RadioView.swift:546; MeuLabApp/Views/Tabs/RadioView.swift:551; MeuLabApp/Views/Tabs/RadioView.swift:660; MeuLabApp/Views/Tabs/RadioView.swift:681; MeuLabApp/Views/Tabs/RadioView.swift:918; MeuLabApp/Views/Tabs/RadioView.swift:929; MeuLabApp/Views/Tabs/RadioView.swift:973; MeuLabApp/Views/Tabs/RadioView.swift:1027; MeuLabApp/Views/Tabs/RadioView.swift:1306; MeuLabApp/Views/Tabs/RadioView.swift:1450
+radioError,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+radioLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+weather,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/WeatherView.swift:776; MeuLabApp/Views/Tabs/WeatherView.swift:789; MeuLabApp/Views/Tabs/WeatherView.swift:834; MeuLabApp/Views/Tabs/WeatherView.swift:846; MeuLabApp/Views/Tabs/WeatherView.swift:902; MeuLabApp/Views/Tabs/WeatherView.swift:910; MeuLabApp/Views/Tabs/WeatherView.swift:1576; MeuLabApp/Views/Tabs/IntelligenceView.swift:507
+weatherError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/WeatherView.swift:778; MeuLabApp/Views/Tabs/WeatherView.swift:910
+weatherLoading,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/WeatherView.swift:805; MeuLabApp/Views/Tabs/WeatherView.swift:860; MeuLabApp/Views/Tabs/WeatherView.swift:910
+lastImages,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SatelliteView.swift:55
+passes,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SatelliteView.swift:72; MeuLabApp/Views/Tabs/SatelliteView.swift:145; MeuLabApp/Views/Tabs/SatelliteView.swift:528
+satelliteError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SatelliteView.swift:57
+satelliteLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+acarsSummary,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/IntelligenceView.swift:500; MeuLabApp/Views/Tabs/IntelligenceView.swift:502; MeuLabApp/Views/Tabs/ACARSView.swift:185; MeuLabApp/Views/Tabs/ACARSView.swift:266
+acarsMessages,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/IntelligenceView.swift:326; MeuLabApp/Views/Tabs/IntelligenceView.swift:500; MeuLabApp/Views/Tabs/IntelligenceView.swift:502; MeuLabApp/Views/Tabs/ACARSView.swift:197; MeuLabApp/Views/Tabs/ACARSView.swift:277; MeuLabApp/Views/Tabs/ACARSView.swift:610
+acarsHourly,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ACARSView.swift:439; MeuLabApp/Views/Tabs/ACARSView.swift:440; MeuLabApp/Views/Tabs/ACARSView.swift:443
+acarsHistory,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ACARSView.swift:201
+acarsAlerts,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/IntelligenceView.swift:293; MeuLabApp/Views/Tabs/IntelligenceView.swift:489; MeuLabApp/Views/Tabs/IntelligenceView.swift:490; MeuLabApp/Views/Tabs/IntelligenceView.swift:689; MeuLabApp/Views/Tabs/IntelligenceView.swift:1402
+acarsError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ACARSView.swift:190; MeuLabApp/Views/Tabs/ACARSView.swift:266
+acarsLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+processes,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SystemView.swift:714; MeuLabApp/Views/Tabs/SystemView.swift:717
+partitions,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SystemView.swift:737; MeuLabApp/Views/Tabs/SystemView.swift:740
+networkInterfaces,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SystemView.swift:769; MeuLabApp/Views/Tabs/SystemView.swift:772
+systemExtrasError,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+dockerVersion,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/InfraView.swift:22
+dockerContainers,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/InfraView.swift:31; MeuLabApp/Views/Tabs/InfraView.swift:32
+dockerError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/InfraView.swift:33
+systemdServices,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/InfraView.swift:37; MeuLabApp/Views/Tabs/InfraView.swift:38
+systemdError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/InfraView.swift:39
+satDumpStatus,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/SatelliteView.swift:49
+satDumpError,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+adsbHistory,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:289
+adsbAlerts,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/IntelligenceView.swift:293; MeuLabApp/Views/Tabs/IntelligenceView.swift:489; MeuLabApp/Views/Tabs/IntelligenceView.swift:490; MeuLabApp/Views/Tabs/IntelligenceView.swift:689; MeuLabApp/Views/Tabs/IntelligenceView.swift:1402
+adsbHistoryError,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+tuyaSensor,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:945; MeuLabApp/Views/Tabs/ADSBView.swift:1064; MeuLabApp/Views/Tabs/SystemView.swift:1321
+tuyaSensorError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/ADSBView.swift:1067; MeuLabApp/Views/Tabs/SystemView.swift:1338
+tuyaSensorLoading,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+metrics,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/InfraView.swift:16
+metricsError,var,tracked,"View/body, subview ou modificador dependente",MeuLabApp/Views/Tabs/InfraView.swift:18
+adsbTimer,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+moduleTimer,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+radioBackgroundTimer,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+adsbInFlight,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+systemInFlight,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+radioInFlight,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+weatherInFlight,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+satelliteInFlight,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+acarsInFlight,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+adsbTimerInterval,let,ignored,Constante interna; macro não rastreia let,
+adsbSummaryInterval,let,ignored,Constante interna; macro não rastreia let,
+adsbAircraftInterval,let,ignored,Constante interna; macro não rastreia let,
+systemInterval,let,ignored,Constante interna; macro não rastreia let,
+firestickInterval,let,ignored,Constante interna; macro não rastreia let,
+radioInterval,let,ignored,Constante interna; macro não rastreia let,
+radioBackgroundInterval,let,ignored,Constante interna; macro não rastreia let,
+weatherInterval,let,ignored,Constante interna; macro não rastreia let,
+satelliteInterval,let,ignored,Constante interna; macro não rastreia let,
+acarsInterval,let,ignored,Constante interna; macro não rastreia let,
+processesInterval,let,ignored,Constante interna; macro não rastreia let,
+partitionsInterval,let,ignored,Constante interna; macro não rastreia let,
+networkInterval,let,ignored,Constante interna; macro não rastreia let,
+dockerStatusInterval,let,ignored,Constante interna; macro não rastreia let,
+dockerVersionInterval,let,ignored,Constante interna; macro não rastreia let,
+systemdInterval,let,ignored,Constante interna; macro não rastreia let,
+satDumpStatusInterval,let,ignored,Constante interna; macro não rastreia let,
+adsbHistoryInterval,let,ignored,Constante interna; macro não rastreia let,
+adsbAlertsInterval,let,ignored,Constante interna; macro não rastreia let,
+tuyaSensorInterval,let,ignored,Constante interna; macro não rastreia let,
+acarsHistoryInterval,let,ignored,Constante interna; macro não rastreia let,
+acarsAlertsInterval,let,ignored,Constante interna; macro não rastreia let,
+metricsInterval,let,ignored,Constante interna; macro não rastreia let,
+lastADSBSummaryRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastADSBListRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastSystemRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastFirestickRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastRadioRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastWeatherRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastSatelliteRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastACARSRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastProcessesRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastPartitionsRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastNetworkRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastDockerStatusRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastDockerVersionRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastSystemdRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastSatDumpStatusRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastADSBHistoryRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastADSBAlertsRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastTuyaSensorRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastACARSHistoryRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastACARSAlertsRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastMetricsRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+lastOpenSkyRefresh,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+api,let,ignored,Constante interna; macro não rastreia let,
+openSkyService,let,ignored,Constante interna; macro não rastreia let,
+manualAirlineOverridesDefaultsKey,let,ignored,Constante interna; macro não rastreia let,
+hasBootstrapped,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+cachedOpenSkyItems,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",
+registrationCache,var,ignored,"Estado interno; sem leitura em view, inclusive helpers visuais",

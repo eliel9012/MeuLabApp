@@ -17,3 +17,9 @@ Migrar somente `AppState`; preservar `@MainActor`, assinaturas, modelos, `didSet
 ## Validação prevista
 
 Build iOS em cada marco compilável; teste de isolamento de Observation e bindings; teste de equivalência do filtro e histórico do radar; conferência final do diff. Medições de CPU/Energy dependem de cenário e dispositivo comparáveis; não inferir ganho percentual de testes sintéticos.
+
+## Fase 2 — modelo
+
+`AppState` usa `@Observable` e mantém `@MainActor`. Todos os 63 `@Published` removidos. Auditoria individual em `appstate-observation-audit.csv`: 123 membros armazenados. As 60 propriedades internas recebem `@ObservationIgnored`; membros antes publicados sem consumidor visual também são ignorados. Constantes recebem anotação explícita para documentar escopo, embora a macro já ignore `let`.
+
+`manualAirlineOverrides` alimenta normalização e reconstrução de caches; as views leem `aircraftList`/`adsbAirlines`. `activeTabRawValue` e `radarBoundingBox` alimentam somente controle de refresh. Esses membros não precisam de rastreamento visual. `didSet`, acesso e lógica de refresh preservados. Commit intermediário depende da fase 3 para compilar consumidores.
