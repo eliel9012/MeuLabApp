@@ -93,7 +93,7 @@ struct ContentView: View {
 
         /// Tabs principais que aparecem na barra inferior do iPhone
         static var primaryTabs: [Tab] {
-            [.adsb, .satellite, .system, .radio]
+            [.adsb, .system, .radio]
         }
 
         /// Tabs secundárias acessíveis via menu "Mais"
@@ -117,12 +117,6 @@ struct ContentView: View {
                 tabView(for: .adsb)
             } label: {
                 Label(Tab.adsb.title, systemImage: Tab.adsb.icon)
-            }
-
-            SwiftUI.Tab(value: Tab.satellite) {
-                tabView(for: .satellite)
-            } label: {
-                Label(Tab.satellite.title, systemImage: Tab.satellite.icon)
             }
 
             SwiftUI.Tab(value: Tab.system) {
