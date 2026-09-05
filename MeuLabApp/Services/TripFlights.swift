@@ -1,3 +1,4 @@
+import CoreLocation
 import Foundation
 
 // ============================================================
@@ -30,6 +31,10 @@ struct TripFlight: Identifiable, Equatable, Sendable {
     let dayDate: String
     let time: String
     let date: Date?
+    /// Where this leg departs from. Used to decide whether any ADS-B source in
+    /// use could plausibly see it at all.
+    let latitude: Double?
+    let longitude: Double?
 
     /// "IB 268" — what the ticket calls it.
     var displayCode: String {
@@ -181,7 +186,9 @@ enum TripFlightParser {
                         stopTitle: stop.title,
                         dayDate: stop.dayDate,
                         time: stop.time,
-                        date: stop.date
+                        date: stop.date,
+                        latitude: stop.latitude,
+                        longitude: stop.longitude
                     )
                 )
             }
@@ -232,6 +239,38 @@ final class TripFlights: ObservableObject {
     }
 
     /// The itinerary flight this aircraft is broadcasting, if any.
+    /// The receiver in Franca-SP, and the box the global source is queried with,
+    /// both reach roughly five degrees. A São Paulo leg is inside that; a
+    /// Marseille-Madrid leg is not, and listing it would only ever render
+    /// "sem sinal" — noise dressed as information.
+    static let coverageRadius: CLLocationDistance = 550_000
+
+    /// Reference point for coverage: where the traveller actually is when the
+    /// device knows, otherwise the ADS-B receiver in Franca.
+    static let receiverCoordinate = CLLocationCoordinate2D(latitude: -20.512504, longitude: -47.400830)
+
+    private var referenceLocation: CLLocation {
+        if let fix = TripLocator.shared.lastKnownLocation { return fix }
+        return CLLocation(
+            latitude: Self.receiverCoordinate.latitude,
+            longitude: Self.receiverCoordinate.longitude
+        )
+    }
+
+    /// Flights a source in use could plausibly pick up right now.
+    var flightsInReach: [TripFlight] {
+        let reference = referenceLocation
+        return flights.filter { flight in
+            guard let lat = flight.latitude, let lon = flight.longitude else { return false }
+            let origin = CLLocation(latitude: lat, longitude: lon)
+            return reference.distance(from: origin) <= Self.coverageRadius
+        }
+    }
+
+    /// Flights excluded for being outside every source's reach — reported as a
+    /// count so the omission is visible rather than silent.
+    var flightsOutOfReachCount: Int { flights.count - flightsInReach.count }
+
     func flight(matching aircraft: Aircraft) -> TripFlight? {
         let key = TripFlightParser.normalizedCallsign(aircraft.callsign)
         guard !key.isEmpty else { return nil }

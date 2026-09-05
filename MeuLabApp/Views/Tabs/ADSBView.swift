@@ -256,7 +256,9 @@ struct ADSBView: View {
                         tuyaSensorSection
 
                         // Voos da minha viagem
-                        if !tripFlights.flights.isEmpty {
+                        // Hide the section entirely when nothing is in range —
+                        // an empty "Meus Voos" is worse than no section.
+                        if !tripFlights.flightsInReach.isEmpty {
                             myTripFlightsSection
                         }
 
@@ -783,7 +785,11 @@ struct ADSBView: View {
     /// here is almost always a gap in the feed, not a grounded aircraft.
     private var myTripFlightsSection: some View {
         let live = tripFlights.liveAircraftByFlightID(in: appState.aircraftList)
-        let flights = tripFlights.flights
+        // Only legs a source in use could actually see. The European flights are
+        // out of reach of both the Franca receiver and the global query box, so
+        // listing them would just be a column of "sem sinal".
+        let flights = tripFlights.flightsInReach
+        let hidden = tripFlights.flightsOutOfReachCount
 
         return VStack(alignment: .leading, spacing: 12) {
             HStack {

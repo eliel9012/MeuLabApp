@@ -17,6 +17,8 @@ final class TripLocator: NSObject, ObservableObject {
     @Published private(set) var nearestStop: TripStop?
     @Published private(set) var isAuthorized = false
     @Published private(set) var lastFix: Date?
+    /// Latest position, for callers that need the raw fix rather than a matched stop.
+    @Published private(set) var lastKnownLocation: CLLocation?
 
     private let manager = CLLocationManager()
 
@@ -48,6 +50,7 @@ final class TripLocator: NSObject, ObservableObject {
     fileprivate func evaluate(_ location: CLLocation) {
         let engine = TripEngine.shared
         lastFix = Date()
+        lastKnownLocation = location
         if let (stop, distance) = engine.nearestStop(to: location) {
             nearestStop = stop
             nearestDistance = distance
