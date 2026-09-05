@@ -137,6 +137,41 @@ final class EpisodeLibrary: ObservableObject {
         )
     }
 
+    /// What is actually on disk under Documents, listed verbatim. When the library
+    /// comes up empty the question is always "did the files land where the app
+    /// looks?", and only the app can answer that.
+    func diagnostics() -> [String] {
+        let fm = FileManager.default
+        let root = Self.documentsURL
+        var lines: [String] = []
+        lines.append(root.path)
+
+        guard let entries = try? fm.contentsOfDirectory(
+            at: root, includingPropertiesForKeys: [.isDirectoryKey, .fileSizeKey], options: []
+        ) else {
+            lines.append("— não foi possível ler a pasta —")
+            return lines
+        }
+        if entries.isEmpty {
+            lines.append("— pasta vazia —")
+            return lines
+        }
+        for e in entries.sorted(by: { $0.lastPathComponent < $1.lastPathComponent }) {
+            let vals = try? e.resourceValues(forKeys: [.isDirectoryKey, .fileSizeKey])
+            if vals?.isDirectory == true {
+                let inner = (try? fm.contentsOfDirectory(atPath: e.path))?.count ?? 0
+                lines.append("📁 \(e.lastPathComponent) — \(inner) itens")
+                let mp4 = (try? fm.contentsOfDirectory(atPath: e.path))?
+                    .filter { $0.lowercased().hasSuffix(".mp4") }.count ?? 0
+                lines.append("    \(mp4) .mp4")
+            } else {
+                let size = Int64(vals?.fileSize ?? 0)
+                lines.append("📄 \(e.lastPathComponent) — \(ByteCountFormatter.string(fromByteCount: size, countStyle: .file))")
+            }
+        }
+        return lines
+    }
+
     private func existing(_ url: URL) -> URL? {
         FileManager.default.fileExists(atPath: url.path) ? url : nil
     }
@@ -365,12 +400,43 @@ struct SeriesView: View {
     }
 
     private var emptyState: some View {
-        ContentUnavailableView {
-            Label("Nenhum vídeo", systemImage: "film.stack")
-        } description: {
-            Text(
-                "Conecte o iPhone ao Mac, abra o Finder, escolha o aparelho na barra lateral e vá em Arquivos › MeuLab. Crie uma pasta com o nome da série e arraste os .mp4 para dentro."
-            )
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Label("Nenhum vídeo", systemImage: "film.stack")
+                    .font(.system(size: 20, weight: .semibold))
+
+                Text(
+                    "Conecte o iPhone ao Mac, abra o Finder, escolha o aparelho na barra lateral e vá em Arquivos › MeuLab. Crie uma pasta com o nome da série e arraste os .mp4 para dentro."
+                )
+                .font(.system(size: 14))
+                .foregroundStyle(.secondary)
+
+                Divider()
+
+                Text("O QUE O APP ESTÁ VENDO")
+                    .font(.system(size: 11, weight: .bold))
+                    .tracking(1.1)
+                    .foregroundStyle(.secondary)
+
+                VStack(alignment: .leading, spacing: 3) {
+                    ForEach(library.diagnostics(), id: \.self) { line in
+                        Text(line)
+                            .font(.system(size: 11, design: .monospaced))
+                            .foregroundStyle(.primary.opacity(0.75))
+                            .textSelection(.enabled)
+                    }
+                }
+
+                Button {
+                    library.reload()
+                } label: {
+                    Label("Procurar de novo", systemImage: "arrow.clockwise")
+                }
+                .buttonStyle(.bordered)
+                .padding(.top, 4)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(20)
         }
     }
 }
