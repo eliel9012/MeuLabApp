@@ -232,28 +232,66 @@ private enum VData {
         ),
         VDay(
             id: "d09", date: "09 set", weekday: "quarta-feira",
-            title: "Montpellier — visitas & passeio", tone: .leisure,
+            title: "Montpellier — visitas de manhã, Aigues-Mortes à tarde", tone: .leisure,
             events: [
                 VEvent(
-                    time: "manhã", icon: "🫖",
+                    time: "~09:00", icon: "🫖",
                     title: "Visita à Mme Maleville",
-                    desc: "Visita à Place Jean Bène. O Tram 1 ou 2 deixa perto, dependendo do ponto de partida.",
+                    desc: "Antecipada para a manhã. Place Jean Bène fica no centro, acessível de tram.",
                     address: "33 Place Jean Bène, 34000 Montpellier",
                     maps: "33+Place+Jean+Bene+Montpellier"
                 ),
                 VEvent(
-                    time: "tarde", icon: "🏫",
+                    time: "~11:00", icon: "🏫",
                     title: "Visita à Accent Français",
-                    desc: "A escola de francês no coração de Montpellier — a 2 min da Place de la Comédie.",
+                    desc: "A 2 min da Place de la Comédie e pertinho da Gare Saint-Roch — dá para emendar direto no trem.",
                     address: "Accent Français, 2 Rue de Verdun, 34000 Montpellier",
                     maps: "Accent+Francais+Montpellier"
                 ),
                 VEvent(
-                    time: "fim de tarde", icon: "🌞",
-                    title: "Passeio pelo centro histórico",
-                    desc: "Place de la Comédie, Arco do Triunfo, Promenade du Peyrou — tudo a pé entre as visitas.",
-                    address: "Place de la Comédie, 34000 Montpellier",
-                    maps: "Place+de+la+Comedie+Montpellier"
+                    time: "~12:30", icon: "🥖",
+                    title: "Almoço rápido perto da Gare Saint-Roch",
+                    desc: "Comer leve antes de embarcar. O Empanadas Club tem formule a €10.",
+                    address: "Gare de Montpellier Saint-Roch, Pl. Auguste Gibert, 34000 Montpellier",
+                    maps: "Gare+Montpellier+Saint+Roch"
+                ),
+                VEvent(
+                    time: "13:50", icon: "🚆",
+                    title: "TGV INOUI 6204 + TER 77557 — Montpellier → Aigues-Mortes",
+                    desc: "⚡ O trem mais rápido do dia: 1h14. TGV até Nîmes (14:15), baldeação de 9 min, TER 14:24 → Aigues-Mortes 15:04. ⚠️ Conexão curta: se o TGV atrasar, o das 14:12 chega às 16:09 com 35 min de folga.",
+                    address: "Gare de Montpellier Saint-Roch, Pl. Auguste Gibert, 34000 Montpellier",
+                    maps: "Gare+Montpellier+Saint+Roch",
+                    ref: "SNCF · comprar no dia (~€6–17/pax)"
+                ),
+                VEvent(
+                    time: "15:04", icon: "🏰",
+                    title: "Aigues-Mortes — cidade murada e as salinas rosas",
+                    desc: "Muralhas medievais do séc. XIII, Tour de Constance, e o trenzinho turístico pelas Salins du Midi. O rosa vem da alga Dunaliella salina — setembro é o auge da cor, depois de um verão inteiro de evaporação.",
+                    address: "Aigues-Mortes, 30220, Gard",
+                    maps: "Aigues-Mortes+Salins+du+Midi"
+                ),
+                VEvent(
+                    time: "~18:30", icon: "🌅",
+                    title: "Golden hour nas salinas",
+                    desc: "Fim de tarde é quando o rosa fica mais intenso e a luz favorece as fotos. Bom momento para a Pocket 3.",
+                    address: "Salins d'Aigues-Mortes, 30220",
+                    maps: "Salins+Aigues-Mortes"
+                ),
+                VEvent(
+                    time: "18:49", icon: "🚆",
+                    title: "TER 77582 — Aigues-Mortes → Montpellier",
+                    desc: "Chegada 20:25 em Saint-Roch. Alternativas: 17:20 (chega 19:00) se quiserem jantar em Montpellier, ou o último às 20:07 (chega 22:03).",
+                    address: "Gare d'Aigues-Mortes, 30220",
+                    maps: "Gare+Aigues-Mortes",
+                    ref: "SNCF · comprar no dia"
+                ),
+                VEvent(
+                    time: "noite", icon: "🏨",
+                    title: "Ibis Budget Montpellier — 2ª noite",
+                    desc: "Jantar no centro ou perto do hotel. Amanhã: check-out às 11h e carro às 11h30.",
+                    address: "Rue des Frères Lumière, ZA Blaise Pascal, 34000 Montpellier",
+                    maps: "Ibis+Budget+Montpellier+Centre+Millenaire",
+                    ref: "Booking · 6850519282"
                 ),
             ]
         ),
@@ -458,7 +496,7 @@ private enum VData {
                 VEvent(
                     time: "~14:30", icon: "🤝",
                     title: "Porto — chegada e encontro com Pastor Roberto",
-                    desc: "Metrô Linha E (violeta) do aeroporto até o centro (Trindade) ~27 min, €2,30 (bilhete Z4). Hospedagem com conhecidos.",
+                    desc: "⚠️ Agora é a única tarde/noite no Porto — vocês saem na manhã do dia 15. Aproveitem bem: Ribeira, caves de Vinho do Porto em Gaia, pôr do sol sobre o Douro. Hospedagem em Palmeira de Faro com o pastor (~50 min do centro).",
                     address: "Aeroporto Francisco Sá Carneiro, Pedras Rubras, 4470-558 Maia",
                     maps: "Aeroporto+Francisco+Sa+Carneiro"
                 ),
@@ -466,60 +504,79 @@ private enum VData {
         ),
         VDay(
             id: "d15", date: "15 set", weekday: "terça-feira",
-            title: "Porto — dia inteiro", tone: .leisure,
+            title: "Porto → Londres", tone: .travel,
             events: [
                 VEvent(
-                    time: "dia todo", icon: "🍷",
-                    title: "Porto com o Pastor Roberto",
-                    desc: "Livraria Lello, Estação São Bento, Ponte Dom Luís I, cruzeiro no Douro. Dormir cedo: amanhã o voo é às 07:05!",
-                    address: "Ribeira do Porto, 4050 Porto",
-                    maps: "Ribeira+Porto+Portugal"
+                    time: "~06:45", icon: "🚗",
+                    title: "Traslado Palmeira de Faro → aeroporto do Porto",
+                    desc: "A esposa do Pastor Roberto leva vocês. Voo às 09:30, cheguem por volta das 07:30. Trajeto ~50 min.",
+                    address: "Aeroporto Francisco Sá Carneiro, Pedras Rubras, 4470-558 Maia",
+                    maps: "Aeroporto+Francisco+Sa+Carneiro"
+                ),
+                VEvent(
+                    time: "09:30", icon: "✈️",
+                    title: "Voo Ryanair FR 520 — Porto → London Stansted",
+                    desc: "Vocês 3: Eliel, Ana Paula e José Roberto Dos Santos. Chegada 11:55 (hora UK, mesmo fuso que Portugal). Duração 2h25.",
+                    address: "London Stansted Airport, Bassingbourn Rd, Stansted CM24 1QW",
+                    maps: "London+Stansted+Airport",
+                    ref: "Ryanair · Q67BHK",
+                    lounge: "Porto: ANA Lounge, nível 3 junto aos portões 31–32. Priority Pass ou reserva avulsa ~€22–38 em ana.pt — vista pra pista e café da manhã."
+                ),
+                VEvent(
+                    time: "~12:15", icon: "🛂",
+                    title: "Imigração UK + Stansted Express → Liverpool Street",
+                    desc: "Fila de imigração para brasileiros: ~30-60 min. Depois, Stansted Express (~47 min, ~£20/pessoa, trens a cada 15 min). Chegada em Liverpool Street por volta das 14h.",
+                    address: "Liverpool Street Station, London EC2M 7QH",
+                    maps: "Liverpool+Street+Station+London"
+                ),
+                VEvent(
+                    time: "~14:30", icon: "🏠",
+                    title: "Check-in — Airbnb da Maura, Liverpool Street",
+                    desc: "2 noites (15 e 16/09). ⚠️ A anfitriã exige que a carta de check-in seja lida por completo antes da chegada — códigos, porta certa e regras de silêncio com os vizinhos. Leia com antecedência e salve offline.",
+                    address: "Central London, perto da Liverpool Street Station",
+                    maps: "Liverpool+Street+Station+London",
+                    ref: "Airbnb · hôte Maura"
+                ),
+                VEvent(
+                    time: "tarde", icon: "🤝",
+                    title: "Encontro com o Ivan em Londres",
+                    desc: "Foi ele quem pediu a antecipação para terça. Tarde e noite livres na cidade."
+                ),
+                VEvent(
+                    time: "21:15", icon: "🛫",
+                    title: "Pastor Roberto volta — TAP TP 1331, Gatwick → Porto",
+                    desc: "Só ele, no mesmo dia. Tarifa Classic (inclui bagagem de porão). Terminal S, check-in fecha 20:30, abre dia 14 às 09:15. Chegada no Porto 23:40. ⚠️ Dados de passaporte pendentes na reserva — ele precisa preencher antes.",
+                    address: "London Gatwick Airport, South Terminal, Horley RH6 0NP",
+                    maps: "London+Gatwick+South+Terminal",
+                    ref: "TAP · YZIMAB · bilhete 0472526389155",
+                    lounge: "Para o Pastor: Gatwick South Terminal tem o No1 Lounge (Priority Pass/pré-reserva ~£35)."
+                ),
+                VEvent(
+                    time: "~19:00", icon: "🚆",
+                    title: "Trem do Pastor até Gatwick",
+                    desc: "Thameslink ou Southern (~£12–16, de Farringdon ou London Bridge) em vez do Gatwick Express (£24,10). Sair de Londres por volta das 19h para chegar com folga.",
+                    address: "Farringdon ou London Bridge Station, London",
+                    maps: "Thameslink+Farringdon+to+Gatwick"
                 ),
             ]
         ),
         VDay(
             id: "d16", date: "16 set", weekday: "quarta-feira",
-            title: "Porto → Londres", tone: .travel,
+            title: "Londres — dia inteiro", tone: .leisure,
             events: [
                 VEvent(
-                    time: "~04:15", icon: "🚕",
-                    title: "Uber/táxi até o aeroporto do Porto (3h antes)",
-                    desc: "⚠️ O metrô só abre às 5h57 — tarde demais para o voo das 7h05! De táxi/Uber do centro são ~15 min, ~€20-25. Combinar na véspera com os anfitriões ou pré-agendar. Chegar ~04:30 (2h30-3h antes).",
-                    address: "Aeroporto Francisco Sá Carneiro, Pedras Rubras, 4470-558 Maia",
-                    maps: "Aeroporto+Francisco+Sa+Carneiro"
-                ),
-                VEvent(
-                    time: "07:05", icon: "✈️",
-                    title: "Voo Ryanair FR 1262 — Porto → London Stansted",
-                    desc: "Vocês 3 na mesma reserva: Eliel (15A), Ana Paula (15B) e José Roberto Dos Santos (15C). Todos com 20kg despachados. Chegada 09:30 (hora UK, mesmo fuso que Portugal).",
-                    address: "London Stansted Airport, Bassingbourn Rd, Stansted CM24 1QW",
-                    maps: "London+Stansted+Airport",
-                    ref: "Ryanair · Q67BHK",
-                    lounge: "Porto: ANA Lounge, nível 3 junto aos portões 31–32, abre às 4h (perfeito pro voo das 7h05). Priority Pass/DragonPass ou reserva avulsa ~€22–38 em ana.pt — vista pra pista e café da manhã."
-                ),
-                VEvent(
-                    time: "~09:50", icon: "🚆",
-                    title: "Imigração UK + Stansted Express → Liverpool Street",
-                    desc: "Fila de imigração UK para brasileiros: ~30-60 min. Depois, Stansted Express (~47 min, ~£20/pessoa, trens a cada 15 min) até Liverpool Street. Dia inteiro com seu amigo em Londres.",
-                    address: "Liverpool Street Station, London EC2M 7QH",
+                    time: "dia todo", icon: "🇬🇧",
+                    title: "Londres com o Ivan",
+                    desc: "Dia livre na cidade. Brick Lane, City, os clássicos — tudo a partir de Liverpool Street. Airbnb da Maura (2ª noite).",
+                    address: "Liverpool Street / Shoreditch, London",
                     maps: "Liverpool+Street+Station+London"
                 ),
                 VEvent(
-                    time: "14:00+", icon: "🏨",
-                    title: "Check-in — Brick Lane Hotel",
-                    desc: "1 noite. Check-in 14:00–23:00. A ~10 min a pé de Liverpool Street, no coração do East End — rua famosa pelos currys e arte de rua.",
-                    address: "13 Brick Lane, Tower Hamlets, London E1 6PU",
-                    maps: "Brick+Lane+Hotel+13+Brick+Lane+London",
-                    ref: "Booking · Brick Lane Hotel"
-                ),
-                VEvent(
-                    time: "21:15", icon: "🛫",
-                    title: "Pastor Roberto volta — TAP TP 1331, Gatwick → Porto",
-                    desc: "Só ele. Terminal S, check-in fecha 20:30. Chegada no Porto 23:40.",
-                    address: "London Gatwick Airport, South Terminal, Horley RH6 0NP",
-                    maps: "London+Gatwick+South+Terminal",
-                    ref: "TAP · YZIMAB",
-                    lounge: "Para o Pastor: Gatwick South Terminal tem o No1 Lounge (Priority Pass/pré-reserva ~£35). A TAP em tarifa Discount não inclui lounge."
+                    time: "refeições", icon: "🍺",
+                    title: "Wetherspoon — Hamilton Hall",
+                    desc: "Dentro da própria estação de Liverpool Street, no antigo salão de baile do Great Eastern Hotel. Pratos de £1,99 a £13,58, a maioria já com bebida inclusa.",
+                    address: "Hamilton Hall, Bishopsgate, London EC2M 7PY",
+                    maps: "Hamilton+Hall+Wetherspoon+London"
                 ),
             ]
         ),
@@ -529,10 +586,10 @@ private enum VData {
             events: [
                 VEvent(
                     time: "08:00", icon: "🚶",
-                    title: "Check-out Brick Lane + caminhada até Liverpool Street",
-                    desc: "Check-out a partir das 08:00. ~10 min a pé do Brick Lane Hotel até a estação de Liverpool Street.",
-                    address: "13 Brick Lane → Liverpool Street Station",
-                    maps: "Brick+Lane+to+Liverpool+Street+Station"
+                    title: "Check-out do Airbnb + caminhada até Liverpool Street",
+                    desc: "Deixar tudo conforme as instruções da Maura (chaves, códigos, limpeza básica). A estação fica a poucos minutos a pé.",
+                    address: "Central London, perto da Liverpool Street Station",
+                    maps: "Liverpool+Street+Station+London"
                 ),
                 VEvent(
                     time: "08:25", icon: "🚆",
@@ -610,21 +667,54 @@ private enum VData {
                     address: "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
                     maps: "Aeroporto+de+Londrina+Jose+Richa"
                 ),
+            ]
+        ),
+        VDay(
+            id: "d18b", date: "18 set", weekday: "sexta (tarde)",
+            title: "Retirada do carro em Londrina", tone: .home,
+            events: [
+                VEvent(
+                    time: "12:30", icon: "🚗",
+                    title: "Retirar carro — Localiza, Aeroporto de Londrina",
+                    desc: "Fiat Mobi ou similar (Grupo B, compacto com ar). Retirada logo após o pouso das 12:25 — o balcão fica no próprio aeroporto. Devolução no mesmo local dia 21 de manhã.",
+                    address: "Localiza — Aeroporto de Londrina, Av. Santos Dumont 1772, Novo Aeroporto, Londrina – PR",
+                    maps: "Localiza+Aeroporto+de+Londrina",
+                    ref: "Localiza · IT43063 54CJJ"
+                ),
                 VEvent(
                     time: "18:00", icon: "💻",
-                    title: "Icatalk — de volta ao horário normal",
-                    desc: "✅ Já em casa, no fuso de Brasília. Chegando ao meio-dia, dá tempo de descansar antes. Boa deixa para contar da viagem!"
+                    title: "Icatalk — 18h de Brasília",
+                    desc: "✅ Já em casa e no fuso normal. Boa deixa para contar da viagem!"
                 ),
             ]
         ),
         VDay(
-            id: "d19", date: "21 set", weekday: "segunda-feira",
+            id: "d19", date: "19–20 set", weekday: "sábado e domingo",
+            title: "Fim de semana em Londrina", tone: .leisure,
+            events: [
+                VEvent(
+                    time: "livre", icon: "🏡",
+                    title: "Dias livres com a Ana em Londrina",
+                    desc: "Com o carro à disposição. Descansar do fuso e organizar as fotos e vídeos da viagem."
+                ),
+            ]
+        ),
+        VDay(
+            id: "d21", date: "21 set", weekday: "segunda-feira",
             title: "Londrina → Ribeirão Preto (só Eliel)", tone: .home,
             events: [
                 VEvent(
+                    time: "~05:45", icon: "🚗",
+                    title: "Devolver carro — Localiza, Aeroporto de Londrina",
+                    desc: "⚠️ Confirmar com a loja se abre antes das 6h — nem toda unidade de aeroporto opera tão cedo. Abastecer na véspera, ainda em Londrina. Devolução no mesmo local da retirada.",
+                    address: "Localiza — Aeroporto de Londrina, Av. Santos Dumont 1772, Novo Aeroporto, Londrina – PR",
+                    maps: "Localiza+Aeroporto+de+Londrina",
+                    ref: "Localiza · IT43063 54CJJ"
+                ),
+                VEvent(
                     time: "07:20", icon: "✈️",
                     title: "GOL G3 1209 — Londrina (LDB) → Congonhas (CGH)",
-                    desc: "Tarifa Classic. Assento 7C. Chegada às 08:30. Bagagem: 10kg de mão + 12kg pequena + 23kg despachada.",
+                    desc: "Tarifa Classic, assento 7C. Chegada 08:30. Bagagem: 10kg de mão + 12kg pequena + 23kg despachada.",
                     address: "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
                     maps: "Aeroporto+de+Londrina+Jose+Richa",
                     ref: "GOL · QZDFUX"
@@ -632,14 +722,14 @@ private enum VData {
                 VEvent(
                     time: "08:30 → 10:10", icon: "⏱️",
                     title: "Conexão em Congonhas (1h40)",
-                    desc: "Troca de avião, mas mesma reserva — a bagagem segue direto até Ribeirão Preto. Sem re-despacho.",
+                    desc: "Troca de avião, mas mesma reserva — a bagagem segue direto até Ribeirão Preto, sem re-despacho.",
                     address: "Aeroporto de Congonhas (CGH), Av. Washington Luís s/n, São Paulo – SP",
                     maps: "Aeroporto+de+Congonhas+Sao+Paulo"
                 ),
                 VEvent(
                     time: "10:10", icon: "🏡",
                     title: "GOL G3 1338 — Congonhas (CGH) → Ribeirão Preto (RAO)",
-                    desc: "Assento 8C. Chegada às 11:15. Fim da viagem — 3h55 de duração total com a conexão.",
+                    desc: "Assento 8C. Chegada às 11:15. Fim da viagem!",
                     address: "Aeroporto Leite Lopes (RAO), Av. Thomaz Alberto Whately, Ribeirão Preto – SP",
                     maps: "Aeroporto+Leite+Lopes+Ribeirao+Preto",
                     ref: "GOL · QZDFUX"
