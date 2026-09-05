@@ -40,6 +40,12 @@ enum Secrets {
         )
     }
 
+    /// FlightAware AeroAPI key, used to refine flight arrival estimates.
+    /// Empty means the feature falls back to the itinerary's own times.
+    static var flightAwareAPIKey: String {
+        loadSecret(key: "FLIGHTAWARE_API_KEY", fallback: "")
+    }
+
     /// Check if API token is configured
     static var isConfigured: Bool {
         !apiToken.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty

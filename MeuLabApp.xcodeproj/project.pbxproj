@@ -114,6 +114,7 @@
 		WN12 /* MeuLabComplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN11 /* MeuLabComplications.swift */; };
 		WN14 /* MeuLabSmartStackWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN15 /* MeuLabSmartStackWidgets.swift */; };
 		WN20 /* MeuLabTripComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN21 /* MeuLabTripComplication.swift */; };
+		FPRGB /* MeuLabApp/Services/FlightProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = FPRGF /* MeuLabApp/Services/FlightProgress.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -276,6 +277,7 @@
 		WN11 /* MeuLabComplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabComplications.swift; sourceTree = "<group>"; };
 		WN15 /* MeuLabSmartStackWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabSmartStackWidgets.swift; sourceTree = "<group>"; };
 		WN21 /* MeuLabTripComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabTripComplication.swift; sourceTree = "<group>"; };
+		FPRGF /* MeuLabApp/Services/FlightProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/FlightProgress.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -806,6 +808,7 @@
 				007 /* SatelliteModels.swift in Sources */,
 				008 /* APIService.swift in Sources */,
 				009 /* AudioPlayer.swift in Sources */,
+				FPRGB /* MeuLabApp/Services/FlightProgress.swift in Sources */,
 				TFLTB /* MeuLabApp/Services/TripFlights.swift in Sources */,
 				RESVB /* MeuLabApp/Views/Tabs/ReservasView.swift in Sources */,
 				TRIPEB /* MeuLabApp/Services/TripEngine.swift in Sources */,
