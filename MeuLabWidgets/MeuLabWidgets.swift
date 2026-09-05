@@ -27,7 +27,14 @@ struct WidgetSharedData: Codable {
     var satName: String?
     var satNextPass: String? // "14:30"
     var satElevation: String? // "45°"
-    
+
+    // Trip (next itinerary event)
+    // All optional so previously persisted payloads keep decoding.
+    var tripNextTitle: String?
+    var tripNextTime: String? // "12 set · 17:30"
+    var tripNextIcon: String? // SF Symbol name
+    var tripNextDate: Date?
+
     var lastUpdate: Date
     
     static var placeholder: WidgetSharedData {
@@ -46,6 +53,10 @@ struct WidgetSharedData: Codable {
             satName: "Meteor M2",
             satNextPass: "14:30",
             satElevation: "85°",
+            tripNextTitle: "Voo GRU → LIS",
+            tripNextTime: "12 set · 17:30",
+            tripNextIcon: "airplane.departure",
+            tripNextDate: Date().addingTimeInterval(3600),
             lastUpdate: Date()
         )
     }
@@ -660,6 +671,7 @@ struct MeuLabWidgetBundle: WidgetBundle {
         RadioWidget()
         AcarsWidget()
         SatelliteWidget()
+        ViagemWidget()
     }
 }
 

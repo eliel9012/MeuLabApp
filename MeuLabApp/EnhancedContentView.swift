@@ -141,6 +141,8 @@ struct EnhancedContentView: View {
                     TesouroReservaView()
                 case .viagem:
                     ViagemView()
+                case .reservas:
+                    ReservasView()
                 }
             }
         }

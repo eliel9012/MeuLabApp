@@ -23,6 +23,7 @@ struct ContentView: View {
         case bible
         case tesouroReserva
         case viagem
+        case reservas
 
         var title: String {
             switch self {
@@ -42,6 +43,7 @@ struct ContentView: View {
             case .bible: return "Bíblia"
             case .tesouroReserva: return "Tesouro Reserva"
             case .viagem: return "Viagem"
+            case .reservas: return "Reservas"
             }
         }
 
@@ -63,6 +65,7 @@ struct ContentView: View {
             case .bible: return "book.closed"
             case .tesouroReserva: return "banknote"
             case .viagem: return "airplane.circle"
+            case .reservas: return "ticket"
             }
         }
 
@@ -84,6 +87,7 @@ struct ContentView: View {
             case .bible: return "book.closed.fill"
             case .tesouroReserva: return "banknote.fill"
             case .viagem: return "airplane.circle.fill"
+            case .reservas: return "ticket.fill"
             }
         }
 
@@ -96,7 +100,7 @@ struct ContentView: View {
         static var secondaryTabs: [Tab] {
             [
                 .map, .acars, .infra, .weather, .flightSearch, .export,
-                .remote, .intelligence, .bible, .tesouroReserva, .viagem,
+                .remote, .intelligence, .bible, .tesouroReserva, .viagem, .reservas,
             ]
         }
 
@@ -203,6 +207,12 @@ struct ContentView: View {
                     } label: {
                         Label(Tab.viagem.title, systemImage: Tab.viagem.icon)
                     }
+
+                    SwiftUI.Tab(value: Tab.reservas) {
+                        tabView(for: .reservas)
+                    } label: {
+                        Label(Tab.reservas.title, systemImage: Tab.reservas.icon)
+                    }
                 }
             }
         }
@@ -288,6 +298,7 @@ struct ContentView: View {
         case .bible: BibleView()
         case .tesouroReserva: TesouroReservaView()
         case .viagem: ViagemView()
+        case .reservas: ReservasView()
         }
     }
 

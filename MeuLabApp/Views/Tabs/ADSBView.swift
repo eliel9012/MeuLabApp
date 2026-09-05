@@ -65,6 +65,11 @@ private enum ADSBTheme {
         light: adsbRGBA(1.00, 1.00, 1.00, 0.92),
         dark: adsbRGBA(0.26, 0.31, 0.42, 0.88)
     )
+    /// Reserved for the traveller's own flights — never used by ordinary traffic.
+    static let tripAccent = adsbAdaptiveColor(
+        light: adsbRGBA(0.45, 0.19, 0.72),
+        dark: adsbRGBA(0.76, 0.58, 1.00)
+    )
     static let toolbarBubble = adsbAdaptiveColor(
         light: adsbRGBA(1.00, 1.00, 1.00, 0.78),
         dark: adsbRGBA(0.16, 0.20, 0.28, 0.94)
@@ -207,6 +212,7 @@ struct ADSBView: View {
     @State private var movementSheet: MovementFilter?
     @State private var selectedHighlightAircraft: Aircraft?
     @State private var selectedAirline: Airline?
+    @ObservedObject private var tripFlights = TripFlights.shared
 
     private var isCompactLayout: Bool { horizontalSizeClass == .compact }
 
@@ -249,6 +255,11 @@ struct ADSBView: View {
 
                         tuyaSensorSection
 
+                        // Voos da minha viagem
+                        if !tripFlights.flights.isEmpty {
+                            myTripFlightsSection
+                        }
+
                         // Aircraft List Preview
                         if !appState.aircraftList.isEmpty {
                             aircraftPreviewSection
@@ -289,6 +300,7 @@ struct ADSBView: View {
             }
             .navigationTitle("ADS-B")
             .navigationBarTitleDisplayMode(.inline)
+            .onAppear { tripFlights.reloadIfNeeded() }
             .toolbar {
                 ToolbarItem(placement: .principal) {
                     ADSBToolbarTitle()
@@ -761,6 +773,72 @@ struct ADSBView: View {
                     }
                 }
             }
+        }
+    }
+
+    // MARK: - Meus Voos
+
+    /// The traveller's own flights, cross-checked against whatever the radar is
+    /// showing right now. Deliberately honest about coverage: a flight missing
+    /// here is almost always a gap in the feed, not a grounded aircraft.
+    private var myTripFlightsSection: some View {
+        let live = tripFlights.liveAircraftByFlightID(in: appState.aircraftList)
+        let flights = tripFlights.flights
+
+        return VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionHeader(title: "Meus Voos", icon: "suitcase.rolling.fill")
+
+                Spacer()
+
+                Text("\(live.count) de \(flights.count) no ar")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(ADSBTheme.secondaryInk)
+            }
+
+            VStack(spacing: 0) {
+                ForEach(Array(flights.enumerated()), id: \.element.id) { index, flight in
+                    let aircraft = live[flight.id]
+
+                    Button {
+                        if let aircraft {
+                            selectedHighlightAircraft = aircraft
+                        }
+                    } label: {
+                        TripFlightRow(flight: flight, live: aircraft)
+                            .contentShape(Rectangle())
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(aircraft == nil)
+
+                    if index < flights.count - 1 {
+                        Divider().padding(.leading, 46)
+                    }
+                }
+
+                Divider().padding(.top, 6)
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Label(
+                        "O radar local (Franca-SP) só enxerga o tráfego daqui, e a cobertura da OpenSky na Europa é irregular. \"Sem sinal\" não quer dizer que o voo não está voando — quer dizer que nenhuma fonte o mostra agora.",
+                        systemImage: "exclamationmark.triangle"
+                    )
+                    .font(.caption2)
+                    .foregroundStyle(ADSBTheme.secondaryInk)
+
+                    if !appState.isOpenSkyEnabled {
+                        Text(
+                            "Ligue o Tráfego Global (OpenSky) acima para ter alguma chance de ver os voos fora do alcance do radar."
+                        )
+                        .font(.caption2)
+                        .foregroundStyle(ADSBTheme.tertiaryInk)
+                    }
+                }
+                .padding(.top, 10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .padding(16)
+            .glassCard(cornerRadius: 16)
         }
     }
 
@@ -1541,6 +1619,75 @@ struct AirlineChip: View {
     }
 }
 
+/// One itinerary flight, with whatever the radar knows about it right now.
+private struct TripFlightRow: View {
+    let flight: TripFlight
+    let live: Aircraft?
+
+    private var isLive: Bool { live != nil }
+
+    var body: some View {
+        HStack(spacing: 12) {
+            ZStack {
+                Circle()
+                    .fill((isLive ? ADSBTheme.radarGreen : ADSBTheme.tertiaryInk).opacity(0.15))
+                    .frame(width: 34, height: 34)
+
+                Image(systemName: isLive ? "airplane" : "airplane.circle")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundStyle(isLive ? ADSBTheme.radarGreen : ADSBTheme.tertiaryInk)
+            }
+
+            VStack(alignment: .leading, spacing: 3) {
+                HStack(spacing: 6) {
+                    Text(flight.displayCode)
+                        .font(.subheadline.weight(.bold))
+                        .monospacedDigit()
+                        .foregroundStyle(ADSBTheme.tripAccent)
+
+                    if let callsign = live?.displayCallsign ?? flight.primaryCallsign {
+                        Text(callsign)
+                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                            .foregroundStyle(ADSBTheme.tertiaryInk)
+                    }
+                }
+
+                Text(flight.stopTitle)
+                    .font(.caption)
+                    .foregroundStyle(ADSBTheme.secondaryInk)
+                    .lineLimit(1)
+
+                Text("\(flight.dayDate) · \(flight.time)")
+                    .font(.caption2)
+                    .foregroundStyle(ADSBTheme.tertiaryInk)
+            }
+
+            Spacer(minLength: 8)
+
+            VStack(alignment: .trailing, spacing: 3) {
+                Text(isLive ? "NO AR" : "SEM SINAL")
+                    .font(.system(size: 9, weight: .black, design: .rounded))
+                    .tracking(0.8)
+                    .padding(.horizontal, 7)
+                    .padding(.vertical, 3)
+                    .background(
+                        (isLive ? ADSBTheme.radarGreen : ADSBTheme.tertiaryInk).opacity(0.16),
+                        in: Capsule()
+                    )
+                    .foregroundStyle(isLive ? ADSBTheme.radarGreen : ADSBTheme.tertiaryInk)
+
+                if let live {
+                    Text(Formatters.altitudeDual(live.altitudeFt).aviation)
+                        .font(.caption2)
+                        .monospacedDigit()
+                        .foregroundStyle(ADSBTheme.secondaryInk)
+                }
+            }
+        }
+        .padding(.vertical, 9)
+    }
+}
+
 struct AircraftRowApple: View {
     let aircraft: Aircraft
 
@@ -1570,9 +1717,14 @@ struct AircraftRowApple: View {
                         }
                     }
 
+                    let tripFlight = TripFlights.shared.flight(matching: aircraft)
+
                     Text(aircraft.displayCallsign)
                         .font(.subheadline.weight(.semibold))
                         .monospacedDigit()
+                        .foregroundStyle(
+                            tripFlight == nil ? ADSBTheme.ink : ADSBTheme.tripAccent
+                        )
 
                     // Source badge
                     Text(
@@ -1585,6 +1737,17 @@ struct AircraftRowApple: View {
                     .background(badgeColor.opacity(0.15))
                     .foregroundStyle(badgeColor)
                     .clipShape(Capsule())
+
+                    // Voo da minha viagem
+                    if let tripFlight {
+                        Text("MINHA VIAGEM · \(tripFlight.displayCode)")
+                            .font(.system(size: 8, weight: .bold))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 2)
+                            .background(ADSBTheme.tripAccent.opacity(0.16))
+                            .foregroundStyle(ADSBTheme.tripAccent)
+                            .clipShape(Capsule())
+                    }
                 }
 
                 if let model = aircraft.model {

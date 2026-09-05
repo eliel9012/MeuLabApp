@@ -27,7 +27,14 @@ struct WidgetSharedData: Codable {
     var satName: String?
     var satNextPass: String? // "14:30"
     var satElevation: String? // "45°"
-    
+
+    // Trip (next itinerary event)
+    // All optional so previously persisted payloads keep decoding.
+    var tripNextTitle: String?
+    var tripNextTime: String? // "12 set · 17:30"
+    var tripNextIcon: String? // SF Symbol name
+    var tripNextDate: Date?
+
     var lastUpdate: Date
 }
 
@@ -102,6 +109,17 @@ class WidgetDataManager {
         data.satName = name
         data.satNextPass = nextPass
         data.satElevation = elevation
+        saveData(data)
+    }
+
+    /// Publish the next itinerary event to the widgets / complications.
+    /// Pass `nil` for every field to clear it (trip finished or no upcoming event).
+    func updateTrip(title: String?, time: String?, icon: String?, date: Date?) {
+        var data = loadCurrentData()
+        data.tripNextTitle = title
+        data.tripNextTime = time
+        data.tripNextIcon = icon
+        data.tripNextDate = date
         saveData(data)
     }
 

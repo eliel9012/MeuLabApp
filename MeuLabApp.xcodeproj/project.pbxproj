@@ -87,6 +87,11 @@
 		INTV02 /* IntelligenceView.swift in Sources */ = {isa = PBXBuildFile; fileRef = INTV01 /* IntelligenceView.swift */; };
 		LGM02 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = LGM01 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift */; };
 		TESB01 /* TesouroReservaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TESV01 /* TesouroReservaView.swift */; };
+		TRIPEB /* MeuLabApp/Services/TripEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRIPEF /* MeuLabApp/Services/TripEngine.swift */; };
+		TFLTB /* MeuLabApp/Services/TripFlights.swift in Sources */ = {isa = PBXBuildFile; fileRef = TFLTF /* MeuLabApp/Services/TripFlights.swift */; };
+		RESVB /* MeuLabApp/Views/Tabs/ReservasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = RESVF /* MeuLabApp/Views/Tabs/ReservasView.swift */; };
+		TRIPLB /* MeuLabApp/Services/TripLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRIPLF /* MeuLabApp/Services/TripLocator.swift */; };
+		TRIPNB /* MeuLabApp/Services/TripNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRIPNF /* MeuLabApp/Services/TripNotifications.swift */; };
 		VIAB01 /* ViagemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = VIAV01 /* ViagemView.swift */; };
 		W001 /* MeuLabWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = W101 /* MeuLabWatchApp.swift */; };
 		W002 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = W102 /* ContentView.swift */; };
@@ -108,6 +113,7 @@
 		WN10 /* WatchTuyaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN09 /* WatchTuyaView.swift */; };
 		WN12 /* MeuLabComplications.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN11 /* MeuLabComplications.swift */; };
 		WN14 /* MeuLabSmartStackWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN15 /* MeuLabSmartStackWidgets.swift */; };
+		WN20 /* MeuLabTripComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN21 /* MeuLabTripComplication.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -242,6 +248,11 @@
 		INTV01 /* IntelligenceView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IntelligenceView.swift; sourceTree = "<group>"; };
 		LGM01 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MeuLabApp/Extensions/LiquidGlass+Modifiers.swift"; sourceTree = SOURCE_ROOT; };
 		TESV01 /* TesouroReservaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TesouroReservaView.swift; sourceTree = "<group>"; };
+		TRIPEF /* MeuLabApp/Services/TripEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripEngine.swift; sourceTree = SOURCE_ROOT; };
+		TFLTF /* MeuLabApp/Services/TripFlights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripFlights.swift; sourceTree = SOURCE_ROOT; };
+		RESVF /* MeuLabApp/Views/Tabs/ReservasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Views/Tabs/ReservasView.swift; sourceTree = SOURCE_ROOT; };
+		TRIPLF /* MeuLabApp/Services/TripLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripLocator.swift; sourceTree = SOURCE_ROOT; };
+		TRIPNF /* MeuLabApp/Services/TripNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripNotifications.swift; sourceTree = SOURCE_ROOT; };
 		VIAV01 /* ViagemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViagemView.swift; sourceTree = "<group>"; };
 		W100 /* MeuLabWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = MeuLabWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		W101 /* MeuLabWatchApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWatchApp.swift; sourceTree = "<group>"; };
@@ -264,6 +275,7 @@
 		WN09 /* WatchTuyaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WatchTuyaView.swift; sourceTree = "<group>"; };
 		WN11 /* MeuLabComplications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabComplications.swift; sourceTree = "<group>"; };
 		WN15 /* MeuLabSmartStackWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabSmartStackWidgets.swift; sourceTree = "<group>"; };
+		WN21 /* MeuLabTripComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabTripComplication.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -503,6 +515,9 @@
 				FM200 /* MeuLabApp/Core/Services/FavoritesManager.swift */,
 				LGM01 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift */,
 				E181A3D935D7491286930152 /* MeuLabWatch/Services/WatchSecrets.swift */,
+				TRIPEF /* MeuLabApp/Services/TripEngine.swift */,
+				TRIPNF /* MeuLabApp/Services/TripNotifications.swift */,
+				TRIPLF /* MeuLabApp/Services/TripLocator.swift */,
 			);
 			name = "Recovered References";
 			sourceTree = "<group>";
@@ -573,6 +588,7 @@
 			children = (
 				WN11 /* MeuLabComplications.swift */,
 				WN15 /* MeuLabSmartStackWidgets.swift */,
+				WN21 /* MeuLabTripComplication.swift */,
 			);
 			path = Complications;
 			sourceTree = "<group>";
@@ -790,6 +806,11 @@
 				007 /* SatelliteModels.swift in Sources */,
 				008 /* APIService.swift in Sources */,
 				009 /* AudioPlayer.swift in Sources */,
+				TFLTB /* MeuLabApp/Services/TripFlights.swift in Sources */,
+				RESVB /* MeuLabApp/Views/Tabs/ReservasView.swift in Sources */,
+				TRIPEB /* MeuLabApp/Services/TripEngine.swift in Sources */,
+				TRIPNB /* MeuLabApp/Services/TripNotifications.swift in Sources */,
+				TRIPLB /* MeuLabApp/Services/TripLocator.swift in Sources */,
 				010 /* AppState.swift in Sources */,
 				011 /* ADSBView.swift in Sources */,
 				012 /* SystemView.swift in Sources */,
@@ -885,6 +906,7 @@
 				WN10 /* WatchTuyaView.swift in Sources */,
 				WN12 /* MeuLabComplications.swift in Sources */,
 				WN14 /* MeuLabSmartStackWidgets.swift in Sources */,
+				WN20 /* MeuLabTripComplication.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1062,7 +1084,7 @@
 				INFOPLIST_FILE = MeuLabApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MeuLab;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "MeuLab usa sua localização para alertar quando aviões interessantes passarem perto de você.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MeuLab usa sua localização para calcular a distância até aeronaves, mostrar clima local e prever passes de satélite visíveis da sua posição.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MeuLab usa sua localização para identificar em qual etapa do roteiro de viagem você está, calcular a distância até aeronaves, mostrar clima local e prever passes de satélite visíveis da sua posição.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MeuLab precisa de acesso para salvar imagens de satélite na sua galeria.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;
@@ -1114,7 +1136,7 @@
 				INFOPLIST_FILE = MeuLabApp/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = MeuLab;
 				INFOPLIST_KEY_NSLocationAlwaysAndWhenInUseUsageDescription = "MeuLab usa sua localização para alertar quando aviões interessantes passarem perto de você.";
-				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MeuLab usa sua localização para calcular a distância até aeronaves, mostrar clima local e prever passes de satélite visíveis da sua posição.";
+				INFOPLIST_KEY_NSLocationWhenInUseUsageDescription = "MeuLab usa sua localização para identificar em qual etapa do roteiro de viagem você está, calcular a distância até aeronaves, mostrar clima local e prever passes de satélite visíveis da sua posição.";
 				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "MeuLab precisa de acesso para salvar imagens de satélite na sua galeria.";
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchStoryboardName = LaunchScreen;

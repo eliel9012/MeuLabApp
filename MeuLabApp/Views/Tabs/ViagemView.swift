@@ -942,6 +942,21 @@ private struct VEventRow: View {
     let accent: Color
     let showTopBorder: Bool
 
+    /// DST-aware, for the same reason as `zoneLabel`: in September these events are
+    /// on summer time, so the standard-time abbreviation would be off by an hour.
+    static func zoneAbbreviation(_ zone: TimeZone, at date: Date) -> String {
+        let style: NSTimeZone.NameStyle =
+            zone.isDaylightSavingTime(for: date) ? .shortDaylightSaving : .shortStandard
+        return zone.localizedName(for: style, locale: Locale(identifier: "pt_BR"))
+            ?? zone.abbreviation(for: date)
+            ?? zone.identifier
+    }
+
+    /// Real instant of this event, used only to decide summer vs winter time.
+    private var eventDate: Date? {
+        TripEngine.shared.stops.first { $0.title == event.title && $0.time == event.time }?.date
+    }
+
     private var mapsURL: URL? {
         let label = event.address ?? event.mapsQuery?.replacingOccurrences(of: "+", with: " ")
         let encoded = label?.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed)
@@ -960,11 +975,20 @@ private struct VEventRow: View {
 
     var body: some View {
         HStack(alignment: .top, spacing: 14) {
-            Text(event.time)
-                .font(.system(size: 12.5, weight: .bold, design: .monospaced))
-                .foregroundColor(accent)
-                .multilineTextAlignment(.trailing)
-                .frame(width: 74, alignment: .trailing)
+            VStack(alignment: .trailing, spacing: 1) {
+                Text(event.time)
+                    .font(.system(size: 12.5, weight: .bold, design: .monospaced))
+                    .foregroundColor(accent)
+                    .multilineTextAlignment(.trailing)
+                // The itinerary crosses four zones; an unlabelled "17:30" invites
+                // reading it as local time.
+                if let zone = event.timeZone, zone.identifier != TimeZone.current.identifier {
+                    Text(VEventRow.zoneAbbreviation(zone, at: eventDate ?? Date()))
+                        .font(.system(size: 9, weight: .semibold))
+                        .foregroundColor(VPalette.muted)
+                }
+            }
+            .frame(width: 74, alignment: .trailing)
 
             Text(event.icon)
                 .font(.system(size: 19))
@@ -1043,6 +1067,8 @@ private struct VEventRow: View {
 private struct VDaySection: View {
     let day: VDay
     let isExpanded: Bool
+    /// The day the trip is on right now, ringed so it is findable in a list of 17.
+    var isFocused: Bool = false
     let onToggle: () -> Void
 
     private var dayNumber: String {
@@ -1067,9 +1093,12 @@ private struct VDaySection: View {
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
         .overlay(
             RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(VPalette.cardBorder.opacity(0.55), lineWidth: 1.5)
+                .stroke(
+                    isFocused ? day.tone.accent : VPalette.cardBorder.opacity(0.55),
+                    lineWidth: isFocused ? 2.5 : 1.5
+                )
         )
-        .shadow(color: Color.black.opacity(0.10), radius: 16, y: 9)
+        .shadow(color: Color.black.opacity(isFocused ? 0.18 : 0.10), radius: 16, y: 9)
     }
 
     private var headerButton: some View {
@@ -1131,26 +1160,41 @@ private struct VDaySection: View {
 // MARK: - View principal
 
 struct ViagemView: View {
-    @State private var expandedDays: Set<String> = Set(VData.days.map(\.id))
+    /// Only the day in focus starts open. Opening all 17 buries the one that matters.
+    @State private var expandedDays: Set<String> = []
+    @State private var focusDayID: String?
+    @StateObject private var locator = TripLocator.shared
+    @StateObject private var alerts = TripNotifications.shared
+    @State private var now = Date()
+
+    /// Drives the "agora" card; a minute is plenty for a two-week itinerary.
+    private let tick = Timer.publish(every: 60, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ScrollView {
-            VStack(spacing: 0) {
-                heroHeader
+            ScrollViewReader { proxy in
+                VStack(spacing: 0) {
+                    heroHeader
 
-                VStack(spacing: 16) {
-                    ForEach(VData.days) { day in
-                        VDaySection(
-                            day: day,
-                            isExpanded: expandedDays.contains(day.id),
-                            onToggle: { toggle(day.id) }
-                        )
+                    VStack(spacing: 16) {
+                        statusCard
+
+                        ForEach(VData.days) { day in
+                            VDaySection(
+                                day: day,
+                                isExpanded: expandedDays.contains(day.id),
+                                isFocused: day.id == focusDayID,
+                                onToggle: { toggle(day.id) }
+                            )
+                            .id(day.id)
+                        }
+                        footerNote
                     }
-                    footerNote
+                    .padding(.horizontal, 18)
+                    .padding(.top, 20)
+                    .padding(.bottom, 40)
                 }
-                .padding(.horizontal, 18)
-                .padding(.top, 20)
-                .padding(.bottom, 40)
+                .onAppear { focusToday(proxy: proxy) }
             }
         }
         .background(VPalette.bg.ignoresSafeArea())
@@ -1164,6 +1208,210 @@ struct ViagemView: View {
             }
         }
         .preferredColorScheme(.light)
+        .onReceive(tick) { now = $0 }
+        .task {
+            TripEngine.shared.load(ViagemBridge.makeStops())
+            locator.start()
+            await alerts.requestAuthorizationIfNeeded()
+            await alerts.rescheduleAll(stops: TripEngine.shared.stops)
+            publishNextStopToWidget()
+        }
+    }
+
+    // MARK: - Agora
+
+    private var currentStop: TripStop? { TripEngine.shared.currentStop(now: now) }
+    private var nextStop: TripStop? { TripEngine.shared.nextStop(now: now) }
+
+    /// Time zone to treat as "there": the place the traveller is actually standing
+    /// when GPS knows, otherwise the zone of the itinerary entry in force.
+    private var thereZone: TimeZone? {
+        locator.stopHere?.timeZone ?? TripEngine.shared.activeTimeZone(now: now)
+    }
+
+    @ViewBuilder
+    private var statusCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Text("AGORA")
+                    .font(.system(size: 10.5, weight: .bold))
+                    .tracking(1.4)
+                    .foregroundColor(VPalette.muted)
+                Spacer()
+                if alerts.scheduledCount > 0 {
+                    Label("\(alerts.scheduledCount) alertas", systemImage: "bell.fill")
+                        .font(.system(size: 10.5, weight: .semibold))
+                        .foregroundColor(VPalette.muted)
+                }
+            }
+
+            clockRow
+
+            if let here = locator.stopHere {
+                // Standing at a venue is not the same as being at that scheduled
+                // activity: the cocktail is on the 12th even if you drive past the
+                // estate today. Only claim the stage when the clock agrees too.
+                let onSchedule = here.id == currentStop?.id || here.id == nextStop?.id
+                statusLine(
+                    icon: "location.fill",
+                    tint: onSchedule ? VTone.leisure.accent : VPalette.muted,
+                    text: onSchedule
+                        ? "Você está em: \(placeName(here)) — \(here.title)"
+                        : "Você está em: \(placeName(here))"
+                )
+            } else if let near = locator.nearestStop, let d = locator.nearestDistance {
+                statusLine(icon: "location", tint: VPalette.muted,
+                           text: "\(formatDistance(d)) de \(placeName(near))")
+            } else if !locator.isAuthorized {
+                statusLine(icon: "location.slash", tint: VPalette.muted,
+                           text: "Localização desligada — etapa detectada só pelo horário")
+            }
+
+            if let next = nextStop {
+                Divider().padding(.vertical, 2)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text("A SEGUIR")
+                        .font(.system(size: 9.5, weight: .bold))
+                        .tracking(1.2)
+                        .foregroundColor(VPalette.muted)
+                    Text("\(next.icon) \(next.title)")
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(VPalette.ink)
+                    Text("\(next.dayDate) · \(next.time)\(zoneSuffix(next))")
+                        .font(.system(size: 12))
+                        .foregroundColor(VPalette.muted)
+                }
+            }
+        }
+        .padding(16)
+        .background(VPalette.cardBg)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .overlay(
+            RoundedRectangle(cornerRadius: 18, style: .continuous)
+                .stroke(VTone.leisure.accent.opacity(0.4), lineWidth: 1.5)
+        )
+    }
+
+    /// Home and destination clocks side by side. Getting this wrong is how people
+    /// miss flights, so it is shown even when both zones agree.
+    private var clockRow: some View {
+        let home = TimeZone(identifier: "America/Sao_Paulo") ?? .current
+        let there = thereZone ?? home
+        return HStack(spacing: 0) {
+            clockCell(place: "Brasil", zone: home)
+            if there.identifier != home.identifier {
+                Rectangle().fill(VPalette.cardBorder).frame(width: 1, height: 40)
+                clockCell(place: countryName(for: there), zone: there, highlighted: true)
+            }
+        }
+    }
+
+    private func clockCell(place: String, zone: TimeZone, highlighted: Bool = false) -> some View {
+        let df = DateFormatter()
+        df.dateFormat = "HH:mm"
+        df.timeZone = zone
+        return VStack(alignment: .leading, spacing: 1) {
+            Text(place.uppercased())
+                .font(.system(size: 9.5, weight: .bold))
+                .tracking(1.0)
+                .foregroundColor(VPalette.muted)
+            Text(df.string(from: now))
+                .font(.system(size: 22, weight: .semibold, design: .rounded))
+                .foregroundColor(highlighted ? VTone.leisure.accent : VPalette.ink)
+            Text(gmtOffset(zone, at: now))
+                .font(.system(size: 9.5, weight: .medium))
+                .foregroundColor(VPalette.muted)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.leading, highlighted ? 14 : 0)
+    }
+
+    private func statusLine(icon: String, tint: Color, text: String) -> some View {
+        HStack(spacing: 7) {
+            Image(systemName: icon)
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundColor(tint)
+            Text(text)
+                .font(.system(size: 12.5))
+                .foregroundColor(VPalette.ink)
+            Spacer(minLength: 0)
+        }
+    }
+
+    /// Country the trip is in, named from its time zone. "GMT+1" alone tells the
+    /// traveller nothing about where that clock belongs.
+    private func countryName(for zone: TimeZone) -> String {
+        switch zone.identifier {
+        case "America/Sao_Paulo": return "Brasil"
+        case "Europe/Madrid": return "Espanha"
+        case "Europe/Paris": return "França"
+        case "Europe/Lisbon": return "Portugal"
+        case "Europe/London": return "Inglaterra"
+        default: return zone.identifier.split(separator: "/").last
+            .map { $0.replacingOccurrences(of: "_", with: " ") } ?? zone.identifier
+        }
+    }
+
+    /// Real offset at that instant, so September's summer time reads GMT+2 for
+    /// Paris rather than the standard-time GMT+1.
+    private func gmtOffset(_ zone: TimeZone, at date: Date) -> String {
+        let seconds = zone.secondsFromGMT(for: date)
+        let hours = seconds / 3600
+        let minutes = abs(seconds % 3600) / 60
+        let sign = hours < 0 ? "−" : "+"
+        return minutes == 0
+            ? "GMT\(sign)\(abs(hours))"
+            : String(format: "GMT%@%d:%02d", sign, abs(hours), minutes)
+    }
+
+    /// Place name for the GPS line — the venue, not the scheduled activity.
+    private func placeName(_ stop: TripStop) -> String {
+        if let address = stop.address,
+            let first = address.split(separator: ",").first,
+            !first.isEmpty
+        {
+            return String(first).trimmingCharacters(in: .whitespaces)
+        }
+        return stop.title
+    }
+
+    /// Marks a time that is not in the phone's current zone, so "17:30" is never
+    /// silently read as local.
+    private func zoneSuffix(_ stop: TripStop) -> String {
+        guard let zone = stop.timeZone, zone.identifier != TimeZone.current.identifier else { return "" }
+        let at = stop.date ?? now
+        return " · \(countryName(for: zone)) \(gmtOffset(zone, at: at))"
+    }
+
+    private func formatDistance(_ meters: CLLocationDistance) -> String {
+        meters < 1000
+            ? "\(Int(meters)) m"
+            : String(format: "%.0f km", meters / 1000)
+    }
+
+    private func focusToday(proxy: ScrollViewProxy) {
+        TripEngine.shared.load(ViagemBridge.makeStops())
+        guard let id = TripEngine.shared.focusDayID(now: Date()) else {
+            expandedDays = Set(VData.days.map(\.id))
+            return
+        }
+        focusDayID = id
+        expandedDays = [id]
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            withAnimation(.easeInOut(duration: 0.4)) {
+                proxy.scrollTo(id, anchor: .top)
+            }
+        }
+    }
+
+    private func publishNextStopToWidget() {
+        guard let next = TripEngine.shared.nextStop() else { return }
+        WidgetDataManager.shared.updateTrip(
+            title: next.title,
+            time: "\(next.dayDate) · \(next.time)",
+            icon: next.icon,
+            date: next.date
+        )
     }
 
     private func toggle(_ id: String) {
@@ -1237,4 +1485,40 @@ struct ViagemView: View {
 
 #Preview {
     ViagemView()
+}
+
+// MARK: - Ponte para o TripEngine
+
+/// Flattens the nested day/event data into resolved `TripStop`s. Everything that
+/// needs the itinerary outside this view — alerts, GPS, widgets, the bookings
+/// screen — reads it through `TripEngine.shared.stops`, never from `VData`.
+enum ViagemBridge {
+    static func makeStops() -> [TripStop] {
+        var out: [TripStop] = []
+        for day in VData.days {
+            for (index, event) in day.events.enumerated() {
+                let tz = event.timeZone
+                out.append(
+                    TripStop(
+                        id: "\(day.id).\(index)",
+                        dayID: day.id,
+                        dayTitle: day.title,
+                        dayDate: day.date,
+                        time: event.time,
+                        icon: event.icon,
+                        title: event.title,
+                        detail: event.desc,
+                        address: event.address,
+                        ref: event.ref,
+                        latitude: event.lat,
+                        longitude: event.lon,
+                        timeZoneID: event.tz,
+                        date: TripParser.date(dateText: day.date, timeText: event.time, timeZone: tz)
+                    )
+                )
+            }
+        }
+        // Entries with no clock time keep their listed order; the rest sort by instant.
+        return out
+    }
 }
