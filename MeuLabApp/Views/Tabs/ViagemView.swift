@@ -1208,6 +1208,10 @@ struct ViagemView: View {
                     heroHeader
 
                     VStack(spacing: 16) {
+                        // Above "AGORA" on purpose: while a flight is in the air,
+                        // it is the only thing on this screen worth looking at.
+                        FlightProgressCard(legs: flightLegs, now: now)
+
                         statusCard
 
                         // One container for the seventeen day cards: glass cannot
@@ -1256,6 +1260,10 @@ struct ViagemView: View {
     // MARK: - Agora
 
     private var currentStop: TripStop? { TripEngine.shared.currentStop(now: now) }
+
+    /// Flight legs paired out of the itinerary. Rebuilt with the minute tick,
+    /// which is also what keeps the card honest after `TripEngine` loads.
+    private var flightLegs: [FlightLeg] { FlightLegBuilder.legs(from: TripEngine.shared.stops) }
     private var nextStop: TripStop? { TripEngine.shared.nextStop(now: now) }
 
     /// Time zone to treat as "there": the place the traveller is actually standing

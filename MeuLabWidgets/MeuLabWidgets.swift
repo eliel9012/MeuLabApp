@@ -672,6 +672,9 @@ struct MeuLabWidgetBundle: WidgetBundle {
         AcarsWidget()
         SatelliteWidget()
         ViagemWidget()
+        // An ActivityConfiguration is only registered when it appears in the
+        // extension's @main bundle — there is no way to opt in from elsewhere.
+        FlightLiveActivity()
     }
 }
 

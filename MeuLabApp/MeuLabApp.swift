@@ -51,6 +51,9 @@ struct MeuLabApp: App {
             setupPushNotificationsIfNeeded()
             notificationFeed.start()
             appState.setRefreshEnabled(true)
+            // Watches for a flight leaving soon and drives its Live Activity.
+            // No-ops when Live Activities are off or no leg is near.
+            FlightActivityController.shared.startMonitoring()
             if #available(iOS 18.0, *) {
                 Task {
                     await LabEntityIndexer.shared.reindexIfNeeded()

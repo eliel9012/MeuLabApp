@@ -52,6 +52,7 @@
 		049 /* ContainerLogsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 150 /* ContainerLogsView.swift */; };
 		050 /* HealthCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 151 /* HealthCheckView.swift */; };
 		051 /* StatCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 152 /* StatCard.swift */; };
+		FPCARDB /* FlightProgressCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FPCARDF /* FlightProgressCard.swift */; };
 		052 /* FirestickModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 153 /* FirestickModels.swift */; };
 		053 /* NativeRadarMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 154 /* NativeRadarMapView.swift */; };
 		3909786604B94EE5BE1AD25A /* MeuLabWatch/Services/WatchSecrets.swift in Sources */ = {isa = PBXBuildFile; fileRef = E181A3D935D7491286930152 /* MeuLabWatch/Services/WatchSecrets.swift */; };
@@ -115,6 +116,9 @@
 		WN14 /* MeuLabSmartStackWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN15 /* MeuLabSmartStackWidgets.swift */; };
 		WN20 /* MeuLabTripComplication.swift in Sources */ = {isa = PBXBuildFile; fileRef = WN21 /* MeuLabTripComplication.swift */; };
 		FPRGB /* MeuLabApp/Services/FlightProgress.swift in Sources */ = {isa = PBXBuildFile; fileRef = FPRGF /* MeuLabApp/Services/FlightProgress.swift */; };
+		FLIVEAB /* MeuLabWidgets/FlightActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FLIVEAF /* MeuLabWidgets/FlightActivityAttributes.swift */; };
+		FLIVECB /* MeuLabApp/Services/FlightActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FLIVECF /* MeuLabApp/Services/FlightActivityController.swift */; };
+		FASVB /* MeuLabApp/Services/FlightAwareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FASVF /* MeuLabApp/Services/FlightAwareService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -216,6 +220,7 @@
 		150 /* ContainerLogsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContainerLogsView.swift; sourceTree = "<group>"; };
 		151 /* HealthCheckView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HealthCheckView.swift; sourceTree = "<group>"; };
 		152 /* StatCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatCard.swift; sourceTree = "<group>"; };
+		FPCARDF /* FlightProgressCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightProgressCard.swift; sourceTree = "<group>"; };
 		153 /* FirestickModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FirestickModels.swift; sourceTree = "<group>"; };
 		154 /* NativeRadarMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NativeRadarMapView.swift; sourceTree = "<group>"; };
 		AC200 /* MeuLabApp/Core/Utils/AircraftClassification.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Core/Utils/AircraftClassification.swift; sourceTree = SOURCE_ROOT; };
@@ -278,6 +283,9 @@
 		WN15 /* MeuLabSmartStackWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabSmartStackWidgets.swift; sourceTree = "<group>"; };
 		WN21 /* MeuLabTripComplication.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabTripComplication.swift; sourceTree = "<group>"; };
 		FPRGF /* MeuLabApp/Services/FlightProgress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/FlightProgress.swift; sourceTree = SOURCE_ROOT; };
+		FLIVEAF /* MeuLabWidgets/FlightActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWidgets/FlightActivityAttributes.swift; sourceTree = SOURCE_ROOT; };
+		FLIVECF /* MeuLabApp/Services/FlightActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/FlightActivityController.swift; sourceTree = SOURCE_ROOT; };
+		FASVF /* MeuLabApp/Services/FlightAwareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/FlightAwareService.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -486,6 +494,7 @@
 				129 /* RadarSplashSwiftUI.swift */,
 				154 /* NativeRadarMapView.swift */,
 				152 /* StatCard.swift */,
+				FPCARDF /* FlightProgressCard.swift */,
 			);
 			path = Components;
 			sourceTree = "<group>";
@@ -808,7 +817,10 @@
 				007 /* SatelliteModels.swift in Sources */,
 				008 /* APIService.swift in Sources */,
 				009 /* AudioPlayer.swift in Sources */,
+				FLIVEAB /* MeuLabWidgets/FlightActivityAttributes.swift in Sources */,
+				FLIVECB /* MeuLabApp/Services/FlightActivityController.swift in Sources */,
 				FPRGB /* MeuLabApp/Services/FlightProgress.swift in Sources */,
+				FASVB /* MeuLabApp/Services/FlightAwareService.swift in Sources */,
 				TFLTB /* MeuLabApp/Services/TripFlights.swift in Sources */,
 				RESVB /* MeuLabApp/Views/Tabs/ReservasView.swift in Sources */,
 				TRIPEB /* MeuLabApp/Services/TripEngine.swift in Sources */,
@@ -859,6 +871,7 @@
 				049 /* ContainerLogsView.swift in Sources */,
 				050 /* HealthCheckView.swift in Sources */,
 				051 /* StatCard.swift in Sources */,
+				FPCARDB /* FlightProgressCard.swift in Sources */,
 				053 /* NativeRadarMapView.swift in Sources */,
 				A1B2C3D4E5F6A7B8C9D0E1F2 /* MeuLabApp/Core/Secrets.swift in Sources */,
 				B1C2D3E4F5A6B7C8D9E0F1A2 /* MeuLabApp/Core/NetworkEnvironment.swift in Sources */,
