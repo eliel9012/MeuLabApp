@@ -926,7 +926,7 @@ private struct VShimmerBadge: View {
     @State private var animate = false
 
     var body: some View {
-        Text("✅ Tudo reservado — 17 reservas confirmadas!")
+        Text("✅ Tudo reservado — 27 reservas confirmadas!")
             .font(.system(size: 14, weight: .bold))
             .foregroundColor(VPalette.shimmerText)
             .padding(.horizontal, 24)
@@ -1466,7 +1466,7 @@ struct ViagemView: View {
 
     private var heroHeader: some View {
         VStack(spacing: 12) {
-            Text("CRONOLOGIA FINAL · 7–18 SET 2026")
+            Text("CRONOLOGIA FINAL · 06–21 SET 2026")
                 .font(.system(size: 11.5, weight: .semibold))
                 .tracking(3)
                 .foregroundColor(VPalette.heroInk.opacity(0.78))
