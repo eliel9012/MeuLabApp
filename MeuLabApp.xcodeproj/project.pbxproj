@@ -119,6 +119,7 @@
 		FLIVEAB /* MeuLabWidgets/FlightActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = FLIVEAF /* MeuLabWidgets/FlightActivityAttributes.swift */; };
 		FLIVECB /* MeuLabApp/Services/FlightActivityController.swift in Sources */ = {isa = PBXBuildFile; fileRef = FLIVECF /* MeuLabApp/Services/FlightActivityController.swift */; };
 		FASVB /* MeuLabApp/Services/FlightAwareService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FASVF /* MeuLabApp/Services/FlightAwareService.swift */; };
+		SERIESB /* MeuLabApp/Views/Tabs/SeriesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = SERIESF /* MeuLabApp/Views/Tabs/SeriesView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -286,6 +287,7 @@
 		FLIVEAF /* MeuLabWidgets/FlightActivityAttributes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabWidgets/FlightActivityAttributes.swift; sourceTree = SOURCE_ROOT; };
 		FLIVECF /* MeuLabApp/Services/FlightActivityController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/FlightActivityController.swift; sourceTree = SOURCE_ROOT; };
 		FASVF /* MeuLabApp/Services/FlightAwareService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/FlightAwareService.swift; sourceTree = SOURCE_ROOT; };
+		SERIESF /* MeuLabApp/Views/Tabs/SeriesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Views/Tabs/SeriesView.swift; sourceTree = SOURCE_ROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
@@ -817,6 +819,7 @@
 				007 /* SatelliteModels.swift in Sources */,
 				008 /* APIService.swift in Sources */,
 				009 /* AudioPlayer.swift in Sources */,
+				SERIESB /* MeuLabApp/Views/Tabs/SeriesView.swift in Sources */,
 				FLIVEAB /* MeuLabWidgets/FlightActivityAttributes.swift in Sources */,
 				FLIVECB /* MeuLabApp/Services/FlightActivityController.swift in Sources */,
 				FPRGB /* MeuLabApp/Services/FlightProgress.swift in Sources */,

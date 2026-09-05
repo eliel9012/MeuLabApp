@@ -143,6 +143,8 @@ struct EnhancedContentView: View {
                     ViagemView()
                 case .reservas:
                     ReservasView()
+                case .series:
+                    SeriesView()
                 }
             }
         }

@@ -24,6 +24,7 @@ struct ContentView: View {
         case tesouroReserva
         case viagem
         case reservas
+        case series
 
         var title: String {
             switch self {
@@ -44,6 +45,7 @@ struct ContentView: View {
             case .tesouroReserva: return "Tesouro Reserva"
             case .viagem: return "Viagem"
             case .reservas: return "Reservas"
+            case .series: return "Séries"
             }
         }
 
@@ -66,6 +68,7 @@ struct ContentView: View {
             case .tesouroReserva: return "banknote"
             case .viagem: return "airplane.circle"
             case .reservas: return "ticket"
+            case .series: return "film.stack"
             }
         }
 
@@ -88,6 +91,7 @@ struct ContentView: View {
             case .tesouroReserva: return "banknote.fill"
             case .viagem: return "airplane.circle.fill"
             case .reservas: return "ticket.fill"
+            case .series: return "film.stack.fill"
             }
         }
 
@@ -100,7 +104,7 @@ struct ContentView: View {
         static var secondaryTabs: [Tab] {
             [
                 .map, .acars, .infra, .weather, .flightSearch, .export,
-                .remote, .intelligence, .bible, .tesouroReserva, .viagem, .reservas,
+                .remote, .intelligence, .bible, .tesouroReserva, .viagem, .reservas, .series,
             ]
         }
 
@@ -207,6 +211,12 @@ struct ContentView: View {
                     } label: {
                         Label(Tab.reservas.title, systemImage: Tab.reservas.icon)
                     }
+
+                    SwiftUI.Tab(value: Tab.series) {
+                        tabView(for: .series)
+                    } label: {
+                        Label(Tab.series.title, systemImage: Tab.series.icon)
+                    }
                 }
             }
         }
@@ -293,6 +303,7 @@ struct ContentView: View {
         case .tesouroReserva: TesouroReservaView()
         case .viagem: ViagemView()
         case .reservas: ReservasView()
+        case .series: SeriesView()
         }
     }
 
