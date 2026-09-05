@@ -148,7 +148,9 @@ struct NativeRadarMapView: View {
             .animation(.easeInOut(duration: 0.25), value: selectedAircraft?.id)
         }
         .onChange(of: selectedAircraftID) { _, newID in
-            // If the user just dismissed this aircraft, reject Map re-selection
+            // Reject MapKit re-selecting the aircraft the user just closed. This
+            // fires repeatedly, once per annotation rebuild, so it has to keep
+            // rejecting rather than expire.
             if let newID, newID == dismissedAircraftID {
                 selectedAircraft = nil
                 isFollowing = false
@@ -157,6 +159,7 @@ struct NativeRadarMapView: View {
             }
             withAnimation(.easeInOut(duration: 0.2)) {
                 if let id = newID {
+                    // A different aircraft was chosen, so the dismissal is spent.
                     dismissedAircraftID = nil
                     selectedAircraft = aircraftWithPosition.first { $0.id == id }
                 } else {
@@ -167,11 +170,16 @@ struct NativeRadarMapView: View {
         }
         .onChange(of: appState.aircraftList) { _, _ in
             updateTrails()
-            if isFollowing, let ac = selectedAircraft,
-                let updated = aircraftWithPosition.first(where: { $0.id == ac.id }),
-                let lat = updated.lat, let lon = updated.lon
-            {
-                selectedAircraft = updated
+
+            // The card's figures have to track the feed whether or not the camera
+            // is following. Refreshing only while following left altitude, speed
+            // and vertical rate frozen at whatever they were when the card opened.
+            guard let ac = selectedAircraft,
+                let updated = aircraftWithPosition.first(where: { $0.id == ac.id })
+            else { return }
+            selectedAircraft = updated
+
+            if isFollowing, let lat = updated.lat, let lon = updated.lon {
                 withAnimation(.easeInOut(duration: 0.3)) {
                     position = .region(
                         MKCoordinateRegion(
@@ -606,6 +614,7 @@ struct NativeRadarMapView: View {
         .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: -4)
         .padding(.horizontal, 8)
         .padding(.bottom, 44)  // space for altitude bar
+
     }
 
     private func computedDistanceNm(for aircraft: Aircraft) -> Double? {
@@ -866,13 +875,12 @@ struct NativeRadarMapView: View {
             selectedAircraft = nil
             isFollowing = false
         }
-
-        // Keep the dismissed id briefly so MapKit cannot immediately restore the selection.
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            if selectedAircraftID == nil {
-                dismissedAircraftID = nil
-            }
-        }
+        // No timed release here. MapKit re-asserts its selection whenever the
+        // annotations are rebuilt, and the aircraft list refreshes about once a
+        // second — so any window short enough to feel responsive expires before
+        // the re-selection arrives, and the card comes back. The id is held until
+        // a different aircraft is chosen, which is the only moment it stops
+        // meaning anything.
     }
 
     private func updateTrails() {
@@ -1035,22 +1043,31 @@ private struct RadarStatCell: View {
     var body: some View {
         VStack(spacing: 3) {
             Image(systemName: icon)
-                .font(.system(size: 10))
-                .foregroundStyle(color.opacity(0.7))
+                .font(.system(size: 11, weight: .semibold))
+                .foregroundStyle(color)
 
             Text(value)
-                .font(.system(size: 14, weight: .bold, design: .monospaced))
+                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .monospacedDigit()
                 .foregroundStyle(.primary)
                 .lineLimit(1)
-                .minimumScaleFactor(0.7)
+                .minimumScaleFactor(0.6)
 
-            Text(unit)
-                .font(.system(size: 9))
-                .foregroundStyle(.secondary)
+            // The unit was .secondary over an already pale tint, which is the
+            // weakest contrast on the card. A solid label with real weight reads
+            // at a glance without shouting over the number.
+            Text(unit.uppercased())
+                .font(.system(size: 9.5, weight: .semibold))
+                .tracking(0.4)
+                .foregroundStyle(.primary.opacity(0.55))
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 8)
-        .background(color.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .padding(.vertical, 9)
+        .background(color.opacity(0.16))
+        .overlay(
+            RoundedRectangle(cornerRadius: 10, style: .continuous)
+                .strokeBorder(color.opacity(0.30), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
 }
