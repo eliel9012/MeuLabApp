@@ -16,23 +16,35 @@ struct HealthCheckView: View {
         NavigationStack {
             ScrollView {
                 LazyVStack(spacing: 20) {
-                    // Current Status
-                    if let report = currentReport {
-                        currentHealthSection(report)
+                    // Status + automatic-check settings: two adjacent glass cards with no
+                    // opaque surface between them, so they share a container.
+                    GlassSection(spacing: 0) {
+                        VStack(spacing: 20) {
+                            // Current Status
+                            if let report = currentReport {
+                                currentHealthSection(report)
+                            }
+
+                            // Auto Check Settings
+                            autoCheckSection
+                        }
                     }
 
-                    // Auto Check Settings
-                    autoCheckSection
-
-                    // Quick Actions
+                    // Quick Actions — opaque tiles, no glass. Acts as the visual break
+                    // that separates the two glass groups on this screen.
                     quickActionsSection
 
-                    // Incident Notes (Writing Tools works here)
-                    incidentNotesSection
+                    // Notes + history: the second run of adjacent glass cards.
+                    GlassSection(spacing: 0) {
+                        VStack(spacing: 20) {
+                            // Incident Notes (Writing Tools works here)
+                            incidentNotesSection
 
-                    // History
-                    if !historyReports.isEmpty {
-                        historySection
+                            // History
+                            if !historyReports.isEmpty {
+                                historySection
+                            }
+                        }
                     }
 
                     if isLoading {

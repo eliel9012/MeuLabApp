@@ -219,56 +219,75 @@ struct ADSBView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
+                // Glass never samples other glass, so sibling glass surfaces have to
+                // share a GlassEffectContainer to be rendered as one system. The
+                // groups below follow the reading blocks of the screen rather than
+                // wrapping the whole column: a single screen-wide container would
+                // merge shapes that are visually unrelated and pay for the effect
+                // across content that is scrolled off anyway.
                 LazyVStack(spacing: 20) {
+                    trafficScopeBar
+
+                    if let summary = appState.adsbSummary {
+                        // Group 1 — live summary: the big count, the movement grid and
+                        // the highlights list read as one panel stacked together.
+                        GlassSection(spacing: 20) {
+                            VStack(spacing: 20) {
+                                // Live Stats Header
+                                liveStatsHeader(
+                                    summary,
+                                    countOverride: appState.isOpenSkyEnabled
+                                        ? appState.aircraftList.count : nil)
+
+                                // Quick Stats Grid
+                                statsGridSection(summary)
+
+                                // Highlights Section
+                                if summary.highlights.highest != nil
+                                    || summary.highlights.fastest != nil
+                                    || summary.highlights.closest != nil
+                                {
+                                    highlightsSection(summary.highlights)
+                                }
+                            }
+                        }
+
+                        // Airlines Carousel
+                        if !airlinesForSection.isEmpty {
+                            airlinesSection(airlinesForSection)
+                        }
+                    } else if let error = appState.adsbError {
+                        ErrorCard(message: error)
+                    } else if !appState.aircraftList.isEmpty {
+                        ErrorCard(message: "Resumo indisponivel. Mostrando aeronaves da rede.")
+                    } else {
+                        LoadingCard()
+                    }
+
+                    // Group 2 — the stacked list cards: sensor, itinerary and nearby
+                    // traffic are three glass surfaces in a row, the densest run of
+                    // glass on the screen and the one that most needs to be shared.
                     GlassSection(spacing: 20) {
-                        trafficScopeBar
+                        VStack(spacing: 20) {
+                            tuyaSensorSection
 
-                        if let summary = appState.adsbSummary {
-                            // Live Stats Header
-                            liveStatsHeader(
-                                summary,
-                                countOverride: appState.isOpenSkyEnabled
-                                    ? appState.aircraftList.count : nil)
-
-                            // Quick Stats Grid
-                            statsGridSection(summary)
-
-                            // Highlights Section
-                            if summary.highlights.highest != nil
-                                || summary.highlights.fastest != nil
-                                || summary.highlights.closest != nil
-                            {
-                                highlightsSection(summary.highlights)
+                            // Voos da minha viagem
+                            // Hide the section entirely when nothing is in range —
+                            // an empty "Meus Voos" is worse than no section.
+                            if !tripFlights.flightsInReach.isEmpty {
+                                myTripFlightsSection
                             }
 
-                            // Airlines Carousel
-                            if !airlinesForSection.isEmpty {
-                                airlinesSection(airlinesForSection)
+                            // Aircraft List Preview
+                            if !appState.aircraftList.isEmpty {
+                                aircraftPreviewSection
                             }
-                        } else if let error = appState.adsbError {
-                            ErrorCard(message: error)
-                        } else if !appState.aircraftList.isEmpty {
-                            ErrorCard(message: "Resumo indisponivel. Mostrando aeronaves da rede.")
-                        } else {
-                            LoadingCard()
                         }
+                    }
 
-                        tuyaSensorSection
-
-                        // Voos da minha viagem
-                        // Hide the section entirely when nothing is in range —
-                        // an empty "Meus Voos" is worse than no section.
-                        if !tripFlights.flightsInReach.isEmpty {
-                            myTripFlightsSection
-                        }
-
-                        // Aircraft List Preview
-                        if !appState.aircraftList.isEmpty {
-                            aircraftPreviewSection
-                        }
-
-                        // History Chart
-                        if let history = appState.adsbHistory {
+                    // Group 3 — history: the chart card plus its record bubbles.
+                    if let history = appState.adsbHistory {
+                        GlassSection(spacing: 20) {
                             historyChartSection(history)
                         }
                     }
@@ -789,7 +808,7 @@ struct ADSBView: View {
         // out of reach of both the Franca receiver and the global query box, so
         // listing them would just be a column of "sem sinal".
         let flights = tripFlights.flightsInReach
-        let hidden = tripFlights.flightsOutOfReachCount
+        _ = tripFlights.flightsOutOfReachCount
 
         return VStack(alignment: .leading, spacing: 12) {
             HStack {
@@ -2592,289 +2611,303 @@ struct AircraftDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: detailSpacing) {
-                // Premium Header with Airline Logo and Main Info
-                HStack(spacing: 16) {
-                    if let logoURL = ac.airlineLogoURL {
-                        AsyncImage(url: logoURL) { phase in
-                            switch phase {
-                            case .success(let image):
-                                image.resizable().aspectRatio(contentMode: .fit)
-                            case .failure, .empty:
-                                Image(systemName: "airplane.circle.fill")
-                                    .font(.system(size: 40))
-                                    .foregroundStyle(.blue.opacity(0.3))
-                            @unknown default:
-                                EmptyView()
+                // Group 4 — flight identity: callsign card, route strip and
+                // photo are stacked tight at the top of the sheet, so their
+                // glass shapes are grouped instead of each sampling alone.
+                GlassSection(spacing: detailSpacing) {
+                    VStack(spacing: detailSpacing) {
+                        // Premium Header with Airline Logo and Main Info
+                        HStack(spacing: 16) {
+                            if let logoURL = ac.airlineLogoURL {
+                                AsyncImage(url: logoURL) { phase in
+                                    switch phase {
+                                    case .success(let image):
+                                        image.resizable().aspectRatio(contentMode: .fit)
+                                    case .failure, .empty:
+                                        Image(systemName: "airplane.circle.fill")
+                                            .font(.system(size: 40))
+                                            .foregroundStyle(.blue.opacity(0.3))
+                                    @unknown default:
+                                        EmptyView()
+                                    }
+                                }
+                                .frame(width: 60, height: 60)
+                                .padding(8)
+                                .background(
+                                    .ultraThinMaterial,
+                                    in: RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                        .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                                )
                             }
-                        }
-                        .frame(width: 60, height: 60)
-                        .padding(8)
-                        .background(
-                            .ultraThinMaterial,
-                            in: RoundedRectangle(cornerRadius: 16, style: .continuous)
-                        )
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                .stroke(Color.white.opacity(0.22), lineWidth: 1)
-                        )
-                    }
 
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(ac.displayCallsign)
-                            .font(.system(size: 30, weight: .bold, design: .monospaced))
-                            .lineLimit(1)
-                        if let airline = classifiedAirlineName ?? ac.airline {
-                            Text(airline)
-                                .font(.headline)
-                                .foregroundStyle(.blue)
-                        }
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(ac.displayCallsign)
+                                    .font(.system(size: 30, weight: .bold, design: .monospaced))
+                                    .lineLimit(1)
+                                if let airline = classifiedAirlineName ?? ac.airline {
+                                    Text(airline)
+                                        .font(.headline)
+                                        .foregroundStyle(.blue)
+                                }
 
-                        if let faFlight {
-                            HStack(spacing: 6) {
-                                Text(faFlight.origin?.bestCode ?? "-")
-                                    .font(.caption.weight(.semibold))
-                                Image(systemName: "arrow.right")
-                                    .font(.caption2)
+                                if let faFlight {
+                                    HStack(spacing: 6) {
+                                        Text(faFlight.origin?.bestCode ?? "-")
+                                            .font(.caption.weight(.semibold))
+                                        Image(systemName: "arrow.right")
+                                            .font(.caption2)
+                                            .foregroundStyle(.secondary)
+                                        Text(faFlight.destination?.bestCode ?? "-")
+                                            .font(.caption.weight(.semibold))
+                                    }
                                     .foregroundStyle(.secondary)
-                                Text(faFlight.destination?.bestCode ?? "-")
-                                    .font(.caption.weight(.semibold))
+                                }
                             }
-                            .foregroundStyle(.secondary)
-                        }
-                    }
-                    Spacer()
-                }
-                .padding()
-                .glassCard(cornerRadius: 24)
-
-                // Route Visualizer (FlightAware)
-                if let faFlight {
-                    AircraftRouteView(flight: faFlight)
-                        .padding(isWide ? 16 : 14)
-                        .glassCard(cornerRadius: 20)
-                        .zIndex(2)
-                }
-
-                // Aircraft Photo (PlaneSpotters with OpenSky Fallback)
-                AircraftPhotoView(aircraft: ac)
-                    .frame(height: photoHeight)
-                    .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                    .glassCard(cornerRadius: 12)
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 12)
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .padding(.top, 2)
-                    .zIndex(1)
-
-                // Flight Data Grid
-                VStack(spacing: 16) {
-                    // Classification Section
-                    Button {
-                        showClassificationSheet = true
-                    } label: {
-                        HStack {
-                            Label(
-                                "Classificar empresa aérea", systemImage: "building.2.crop.circle"
-                            )
-                            .font(.subheadline.weight(.semibold))
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                        }
-                        .padding(.vertical, 4)
-                    }
-                    .buttonStyle(.plain)
-
-                    if isLoadingClassification {
-                        HStack {
-                            ProgressView()
-                                .scaleEffect(0.85)
-                            Text("Carregando classificação...")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
                             Spacer()
                         }
-                    }
-
-                    if let message = classificationMessage {
-                        Text(message)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                    }
-
-                    Divider()
-
-                    DetailRow_Legacy(icon: "airplane", title: "Modelo", value: ac.model ?? "N/A")
-                    DetailRow_Legacy(
-                        icon: "number", title: "Matrícula",
-                        value: registration ?? ac.registration ?? "N/A")
-                    DetailRow_Legacy(
-                        icon: "arrow.up.forward", title: "Altitude", value: "\(ac.altitudeFt) ft")
-                    DetailRow_Legacy(
-                        icon: "speedometer", title: "Velocidade",
-                        value: "\(ac.speedKt) kt (\(ac.speedKmh) km/h)")
-                    DetailRow_Legacy(
-                        icon: "arrow.up.and.down", title: "Razão Vertical",
-                        value: "\(ac.verticalRateFpm) fpm")
-                    if let track = ac.track {
-                        DetailRow_Legacy(
-                            icon: "compass.drawing", title: "Proa",
-                            value: String(format: "%.0f°", track))
-                    }
-                    if let lat = ac.lat, let lon = ac.lon {
-                        let coordinates = String(format: "%.4f, %.4f", lat, lon)
-                        let locationValue =
-                            nearbyCity.map { "\(coordinates) • próximo a \($0)" } ?? coordinates
-                        DetailRow_Legacy(
-                            icon: "location.fill", title: "Coordenadas", value: locationValue)
-                    }
-                    if let dist = ac.distanceNm {
-                        DetailRow_Legacy(
-                            icon: "location.fill", title: "Distância",
-                            value: String(format: "%.1f nm", dist))
-                    }
-
-                    // Open in Map Button
-                    Button {
-                        appState.mapFocusAircraft = ac
-                        NotificationCenter.default.post(
-                            name: Notification.Name("meulab.navigateToTab"),
-                            object: nil,
-                            userInfo: ["tab": "map"]
-                        )
-                        dismiss()
-                    } label: {
-                        HStack {
-                            Image(systemName: "map.fill")
-                            Text("Ver no Mapa")
-                        }
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
                         .padding()
-                        .foregroundStyle(.primary)
-                        .glassInteractive(cornerRadius: 12)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                .stroke(Color.blue.opacity(0.35), lineWidth: 1.5)
-                        )
-                    }
-                    .padding(.top, 8)
-                }
-                .padding()
-                .glassCard(cornerRadius: 24)
+                        .glassCard(cornerRadius: 24)
 
-                // FlightAware block (gate/terminal/schedule)
-                VStack(alignment: .leading, spacing: 12) {
-                    HStack {
-                        Label("FlightAware", systemImage: "clock.badge.checkmark")
-                            .font(.headline)
-                        Spacer()
-                        if faLoading {
-                            ProgressView().scaleEffect(0.9)
-                        }
-                    }
-
-                    if let faFlight {
-                        let orig = faFlight.origin?.bestCode ?? "-"
-                        let dest = faFlight.destination?.bestCode ?? "-"
-
-                        HStack(spacing: 10) {
-                            Text(orig)
-                                .font(.title3.bold())
-                                .monospaced()
-                            Image(systemName: "arrow.right")
-                                .foregroundStyle(.secondary)
-                            Text(dest)
-                                .font(.title3.bold())
-                                .monospaced()
-                            Spacer()
-                            Text(faFlight.bestIdent)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundStyle(.secondary)
-                                .monospaced()
+                        // Route Visualizer (FlightAware)
+                        if let faFlight {
+                            AircraftRouteView(flight: faFlight)
+                                .padding(isWide ? 16 : 14)
+                                .glassCard(cornerRadius: 20)
+                                .zIndex(2)
                         }
 
-                        Divider()
-
-                        HStack(spacing: 16) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Saída")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(
-                                    FlightAwareTime.short(faFlight.actualOut)
-                                        ?? FlightAwareTime.short(faFlight.estimatedOut)
-                                        ?? FlightAwareTime.short(faFlight.scheduledOut)
-                                        ?? "-"
-                                )
-                                .font(.headline.monospacedDigit())
-                                Text(
-                                    "T\(faFlight.terminalOrigin ?? "-") • G\(faFlight.gateOrigin ?? "-")"
-                                )
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            }
-
-                            Spacer()
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Chegada")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(
-                                    FlightAwareTime.short(faFlight.actualIn)
-                                        ?? FlightAwareTime.short(faFlight.estimatedIn)
-                                        ?? FlightAwareTime.short(faFlight.scheduledIn)
-                                        ?? "-"
-                                )
-                                .font(.headline.monospacedDigit())
-                                Text(
-                                    "T\(faFlight.terminalDestination ?? "-") • G\(faFlight.gateDestination ?? "-")"
-                                )
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            }
-                        }
-
-                        Divider()
-
-                        HStack(spacing: 16) {
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Operadora")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(faFlight.operator ?? faFlight.operatorIcao ?? "-")
-                                    .font(.subheadline.weight(.semibold))
-                                    .lineLimit(1)
-                            }
-
-                            Spacer()
-
-                            VStack(alignment: .leading, spacing: 6) {
-                                Text("Status")
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
-                                Text(flightAwareStatus(faFlight))
-                                    .font(.subheadline.weight(.semibold))
-                                    .foregroundStyle(.primary)
-                                    .lineLimit(1)
-                            }
-                        }
-                    } else if let faError {
-                        Text(faError)
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    } else {
-                        Text("Sem dados de horário/gate para este ident agora.")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        // Aircraft Photo (PlaneSpotters with OpenSky Fallback)
+                        AircraftPhotoView(aircraft: ac)
+                            .frame(height: photoHeight)
+                            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+                            .glassCard(cornerRadius: 12)
+                            .overlay(
+                                RoundedRectangle(cornerRadius: 12)
+                                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                            )
+                            .padding(.top, 2)
+                            .zIndex(1)
                     }
                 }
-                .padding()
-                .glassCard(cornerRadius: 16)
+
+                // Group 5 — flight data: the telemetry card (which itself holds
+                // the interactive glass "Ver no Mapa" button) and the FlightAware
+                // card sit directly below each other and share a container.
+                GlassSection(spacing: detailSpacing) {
+                    VStack(spacing: detailSpacing) {
+                        // Flight Data Grid
+                        VStack(spacing: 16) {
+                            // Classification Section
+                            Button {
+                                showClassificationSheet = true
+                            } label: {
+                                HStack {
+                                    Label(
+                                        "Classificar empresa aérea", systemImage: "building.2.crop.circle"
+                                    )
+                                    .font(.subheadline.weight(.semibold))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
+                                .padding(.vertical, 4)
+                            }
+                            .buttonStyle(.plain)
+
+                            if isLoadingClassification {
+                                HStack {
+                                    ProgressView()
+                                        .scaleEffect(0.85)
+                                    Text("Carregando classificação...")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    Spacer()
+                                }
+                            }
+
+                            if let message = classificationMessage {
+                                Text(message)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
+                            }
+
+                            Divider()
+
+                            DetailRow_Legacy(icon: "airplane", title: "Modelo", value: ac.model ?? "N/A")
+                            DetailRow_Legacy(
+                                icon: "number", title: "Matrícula",
+                                value: registration ?? ac.registration ?? "N/A")
+                            DetailRow_Legacy(
+                                icon: "arrow.up.forward", title: "Altitude", value: "\(ac.altitudeFt) ft")
+                            DetailRow_Legacy(
+                                icon: "speedometer", title: "Velocidade",
+                                value: "\(ac.speedKt) kt (\(ac.speedKmh) km/h)")
+                            DetailRow_Legacy(
+                                icon: "arrow.up.and.down", title: "Razão Vertical",
+                                value: "\(ac.verticalRateFpm) fpm")
+                            if let track = ac.track {
+                                DetailRow_Legacy(
+                                    icon: "compass.drawing", title: "Proa",
+                                    value: String(format: "%.0f°", track))
+                            }
+                            if let lat = ac.lat, let lon = ac.lon {
+                                let coordinates = String(format: "%.4f, %.4f", lat, lon)
+                                let locationValue =
+                                    nearbyCity.map { "\(coordinates) • próximo a \($0)" } ?? coordinates
+                                DetailRow_Legacy(
+                                    icon: "location.fill", title: "Coordenadas", value: locationValue)
+                            }
+                            if let dist = ac.distanceNm {
+                                DetailRow_Legacy(
+                                    icon: "location.fill", title: "Distância",
+                                    value: String(format: "%.1f nm", dist))
+                            }
+
+                            // Open in Map Button
+                            Button {
+                                appState.mapFocusAircraft = ac
+                                NotificationCenter.default.post(
+                                    name: Notification.Name("meulab.navigateToTab"),
+                                    object: nil,
+                                    userInfo: ["tab": "map"]
+                                )
+                                dismiss()
+                            } label: {
+                                HStack {
+                                    Image(systemName: "map.fill")
+                                    Text("Ver no Mapa")
+                                }
+                                .font(.headline)
+                                .frame(maxWidth: .infinity)
+                                .padding()
+                                .foregroundStyle(.primary)
+                                .glassInteractive(cornerRadius: 12)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                                        .stroke(Color.blue.opacity(0.35), lineWidth: 1.5)
+                                )
+                            }
+                            .padding(.top, 8)
+                        }
+                        .padding()
+                        .glassCard(cornerRadius: 24)
+
+                        // FlightAware block (gate/terminal/schedule)
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Label("FlightAware", systemImage: "clock.badge.checkmark")
+                                    .font(.headline)
+                                Spacer()
+                                if faLoading {
+                                    ProgressView().scaleEffect(0.9)
+                                }
+                            }
+
+                            if let faFlight {
+                                let orig = faFlight.origin?.bestCode ?? "-"
+                                let dest = faFlight.destination?.bestCode ?? "-"
+
+                                HStack(spacing: 10) {
+                                    Text(orig)
+                                        .font(.title3.bold())
+                                        .monospaced()
+                                    Image(systemName: "arrow.right")
+                                        .foregroundStyle(.secondary)
+                                    Text(dest)
+                                        .font(.title3.bold())
+                                        .monospaced()
+                                    Spacer()
+                                    Text(faFlight.bestIdent)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundStyle(.secondary)
+                                        .monospaced()
+                                }
+
+                                Divider()
+
+                                HStack(spacing: 16) {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("Saída")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text(
+                                            FlightAwareTime.short(faFlight.actualOut)
+                                                ?? FlightAwareTime.short(faFlight.estimatedOut)
+                                                ?? FlightAwareTime.short(faFlight.scheduledOut)
+                                                ?? "-"
+                                        )
+                                        .font(.headline.monospacedDigit())
+                                        Text(
+                                            "T\(faFlight.terminalOrigin ?? "-") • G\(faFlight.gateOrigin ?? "-")"
+                                        )
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    }
+
+                                    Spacer()
+
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("Chegada")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text(
+                                            FlightAwareTime.short(faFlight.actualIn)
+                                                ?? FlightAwareTime.short(faFlight.estimatedIn)
+                                                ?? FlightAwareTime.short(faFlight.scheduledIn)
+                                                ?? "-"
+                                        )
+                                        .font(.headline.monospacedDigit())
+                                        Text(
+                                            "T\(faFlight.terminalDestination ?? "-") • G\(faFlight.gateDestination ?? "-")"
+                                        )
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                    }
+                                }
+
+                                Divider()
+
+                                HStack(spacing: 16) {
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("Operadora")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text(faFlight.operator ?? faFlight.operatorIcao ?? "-")
+                                            .font(.subheadline.weight(.semibold))
+                                            .lineLimit(1)
+                                    }
+
+                                    Spacer()
+
+                                    VStack(alignment: .leading, spacing: 6) {
+                                        Text("Status")
+                                            .font(.caption)
+                                            .foregroundStyle(.secondary)
+                                        Text(flightAwareStatus(faFlight))
+                                            .font(.subheadline.weight(.semibold))
+                                            .foregroundStyle(.primary)
+                                            .lineLimit(1)
+                                    }
+                                }
+                            } else if let faError {
+                                Text(faError)
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            } else {
+                                Text("Sem dados de horário/gate para este ident agora.")
+                                    .font(.caption)
+                                    .foregroundStyle(.secondary)
+                            }
+                        }
+                        .padding()
+                        .glassCard(cornerRadius: 16)
+                    }
+                }
             }
             .frame(maxWidth: detailMaxWidth)
             .frame(maxWidth: .infinity)

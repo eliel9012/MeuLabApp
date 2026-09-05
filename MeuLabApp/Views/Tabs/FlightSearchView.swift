@@ -382,17 +382,21 @@ struct FlightSearchView: View {
     private func airportBoardList(_ response: FlightAwareAirportBoardResponse) -> some View {
         let flights = airportBoardFlights(from: response)
         return ScrollView {
-            LazyVStack(spacing: 10) {
-                ForEach(flights) { f in
-                    AirportBoardCard(flight: f)
-                }
+            // Every board row is a glass card; grouping the siblings in one container
+            // keeps the whole board sampling a single backdrop.
+            GlassSection(spacing: 0) {
+                LazyVStack(spacing: 10) {
+                    ForEach(flights) { f in
+                        AirportBoardCard(flight: f)
+                    }
 
-                if flights.isEmpty {
-                    ContentUnavailableView("Nenhum voo encontrado", systemImage: "airplane")
-                        .padding(.top, 40)
+                    if flights.isEmpty {
+                        ContentUnavailableView("Nenhum voo encontrado", systemImage: "airplane")
+                            .padding(.top, 40)
+                    }
                 }
+                .padding()
             }
-            .padding()
         }
     }
 

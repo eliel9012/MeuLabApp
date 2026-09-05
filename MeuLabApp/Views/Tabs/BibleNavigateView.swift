@@ -9,14 +9,18 @@ struct BibleNavigateView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                LazyVStack(spacing: 20) {
-                    ForEach([BibleBook.Testament.old, .new], id: \.self) { testament in
-                        let books = BibleCatalogue.books.filter { $0.testament == testament }
-                        TestamentSection(testament: testament.rawValue, books: books)
+                // The two testament cards are the screen's only glass surfaces and they are
+                // siblings, so one container covers both.
+                GlassSection(spacing: 0) {
+                    LazyVStack(spacing: 20) {
+                        ForEach([BibleBook.Testament.old, .new], id: \.self) { testament in
+                            let books = BibleCatalogue.books.filter { $0.testament == testament }
+                            TestamentSection(testament: testament.rawValue, books: books)
+                        }
                     }
+                    .padding(.horizontal)
+                    .padding(.vertical, 12)
                 }
-                .padding(.horizontal)
-                .padding(.vertical, 12)
             }
             .navigationDestination(for: BibleBook.self) { book in
                 BibleChaptersView(book: book)

@@ -1,5 +1,6 @@
 import SwiftUI
 import Charts
+import UIKit
 
 // ============================================================
 // TESOURO RESERVA — LIVRO DE RENDIMENTOS
@@ -23,16 +24,34 @@ private extension Color {
     }
 }
 
+/// Two-tone colour resolved from the interface style. The ledger's gold, mint and
+/// red keep their hue in both appearances — only the luminance moves, because a
+/// pale mint that glows on deep green vanishes on white.
+private func trAdaptive(light: UInt32, dark: UInt32) -> Color {
+    Color(uiColor: UIColor { traits in
+        UIColor(Color(hex: traits.userInterfaceStyle == .dark ? dark : light))
+    })
+}
+
 private enum TRPalette {
-    static let bg = Color(hex: 0x0F241C)
-    static let panel = Color(hex: 0x163327)
-    static let panel2 = Color(hex: 0x1B3D2F)
-    static let line = Color(hex: 0x2A5240)
-    static let ink = Color(hex: 0xE9F1EA)
-    static let inkDim = Color(hex: 0x9FB8A9)
-    static let gold = Color(hex: 0xD9A441)
-    static let mint = Color(hex: 0x8FD3B0)
-    static let red = Color(hex: 0xE08A7A)
+    // Structure — page, fields, rules and text follow the system appearance; the
+    // card surfaces themselves are glass and no longer painted here.
+    static let bg = Color(uiColor: .systemGroupedBackground)
+    static let panel2 = Color(uiColor: .secondarySystemBackground)
+    static let line = Color(uiColor: .separator)
+    static let ink = Color(uiColor: .label)
+    static let inkDim = Color(uiColor: .secondaryLabel)
+
+    // Identity — the ledger accents.
+    static let gold = trAdaptive(light: 0x8A6210, dark: 0xD9A441)
+    static let mint = trAdaptive(light: 0x1D6B45, dark: 0x8FD3B0)
+    static let red = trAdaptive(light: 0xA1352A, dark: 0xE08A7A)
+    /// Gold as a *fill* (the resgate cell, the legend swatch): fixed, because the
+    /// dark ink printed on top of it is fixed too.
+    static let goldFill = Color(hex: 0xD9A441)
+
+    // The paper receipt is a printed slip inside the screen: always cream stock
+    // with dark ink, in either appearance.
     static let paper = Color(hex: 0xF5F1E3)
     static let paperInk = Color(hex: 0x26352C)
     static let paperInkDim = Color(hex: 0x4C5C51)
@@ -718,12 +737,7 @@ private struct TRCard<Content: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(TRPalette.panel)
-        .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 10, style: .continuous)
-                .stroke(TRPalette.line, lineWidth: 1)
-        )
+        .glassCard(cornerRadius: 10)
     }
 }
 
@@ -912,14 +926,11 @@ struct TesouroReservaView: View {
         .background(TRPalette.bg.ignoresSafeArea())
         .navigationTitle("Tesouro Reserva")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(TRPalette.bg, for: .navigationBar)
-        .toolbarColorScheme(.dark, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 styledNavTitle
             }
         }
-        .preferredColorScheme(.dark)
         .task { await fx.loadIfNeeded() }
         .task { await selicLoader.loadIfNeeded() }
         .task(id: aporteISO) {
@@ -930,7 +941,7 @@ struct TesouroReservaView: View {
     private var styledNavTitle: some View {
         HStack(spacing: 6) {
             Circle()
-                .fill(TRPalette.gold)
+                .fill(TRPalette.goldFill)
                 .frame(width: 6, height: 6)
             Text("Tesouro")
                 .font(.system(size: 17, weight: .regular, design: .serif))
@@ -1227,7 +1238,7 @@ struct TesouroReservaView: View {
                 .strokeBorder(TRPalette.paperLine, lineWidth: 1)
                 .padding(6)
         )
-        .shadow(color: .black.opacity(0.35), radius: 12, y: 8)
+        .shadow(color: .black.opacity(0.22), radius: 12, y: 8)
     }
 
     // MARK: Comparativo
@@ -1369,8 +1380,8 @@ struct TesouroReservaView: View {
                 }
 
                 HStack(spacing: 14) {
-                    legendItem(color: TRPalette.gold, filled: true, label: "resgate")
-                    legendItem(color: TRPalette.gold, filled: false, label: "aporte")
+                    legendItem(color: TRPalette.goldFill, filled: true, label: "resgate")
+                    legendItem(color: TRPalette.goldFill, filled: false, label: "aporte")
                     legendItem(color: TRPalette.mint, filled: false, label: "hoje")
                     Spacer()
                 }
@@ -1408,13 +1419,13 @@ struct TesouroReservaView: View {
             }
             .frame(maxWidth: .infinity, minHeight: 46, alignment: .topLeading)
             .padding(6)
-            .background(isResgate ? TRPalette.gold : TRPalette.panel2)
+            .background(isResgate ? TRPalette.goldFill : TRPalette.panel2)
             .opacity(before ? 0.35 : (biz ? 1 : 0.55))
             .clipShape(RoundedRectangle(cornerRadius: 7))
             .overlay(
                 RoundedRectangle(cornerRadius: 7)
                     .stroke(
-                        isAporte ? TRPalette.gold : (isToday ? TRPalette.mint : TRPalette.line),
+                        isAporte ? TRPalette.goldFill : (isToday ? TRPalette.mint : TRPalette.line),
                         lineWidth: isToday ? 1.5 : 1
                     )
             )

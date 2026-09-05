@@ -8,26 +8,38 @@ struct InfraView: View {
     var body: some View {
         ScrollView {
             LazyVStack(spacing: 16) {
-                if let metrics = appState.metrics {
-                    metricsSection(metrics)
-                } else if let error = appState.metricsError {
-                    ErrorCard(message: error)
+                // Overview group: the API metrics card and the Docker version card are
+                // adjacent glass siblings, so they share one container and sample the same
+                // backdrop instead of each rendering its own isolated effect.
+                GlassSection(spacing: 0) {
+                    VStack(spacing: 16) {
+                        if let metrics = appState.metrics {
+                            metricsSection(metrics)
+                        } else if let error = appState.metricsError {
+                            ErrorCard(message: error)
+                        }
+
+                        if let dockerVersion = appState.dockerVersion {
+                            dockerVersionSection(dockerVersion)
+                        }
+                    }
                 }
 
-                if let dockerVersion = appState.dockerVersion {
-                    dockerVersionSection(dockerVersion)
-                }
+                // Inventory group: the two long list cards (containers and systemd units).
+                GlassSection(spacing: 0) {
+                    VStack(spacing: 16) {
+                        if !appState.dockerContainers.isEmpty {
+                            dockerContainersSection(appState.dockerContainers)
+                        } else if let error = appState.dockerError {
+                            ErrorCard(message: error)
+                        }
 
-                if !appState.dockerContainers.isEmpty {
-                    dockerContainersSection(appState.dockerContainers)
-                } else if let error = appState.dockerError {
-                    ErrorCard(message: error)
-                }
-
-                if !appState.systemdServices.isEmpty {
-                    systemdSection(appState.systemdServices)
-                } else if let error = appState.systemdError {
-                    ErrorCard(message: error)
+                        if !appState.systemdServices.isEmpty {
+                            systemdSection(appState.systemdServices)
+                        } else if let error = appState.systemdError {
+                            ErrorCard(message: error)
+                        }
+                    }
                 }
             }
             .padding()
@@ -51,23 +63,27 @@ struct InfraView: View {
                     .font(.headline)
             }
 
-            LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
-                InfraStatCard(
-                    title: "Uptime",
-                    value: Formatters.formatDuration(seconds: metrics.uptimeSeconds),
-                    icon: "clock",
-                    color: .blue
-                )
-                InfraStatCard(
-                    title: "Requests", value: "\(metrics.requestCount)",
-                    icon: "arrow.up.arrow.down", color: .green)
-                InfraStatCard(
-                    title: "Latência Média",
-                    value: String(format: "%.1f ms", metrics.avgResponseMs), icon: "speedometer",
-                    color: .orange)
-                InfraStatCard(
-                    title: "Última", value: String(format: "%.1f ms", metrics.lastResponseMs),
-                    icon: "timer", color: .purple)
+            // The four stat cards are glass siblings inside the grid; grouping them keeps
+            // the tiles visually consistent and costs a single rendering pass.
+            GlassSection(spacing: 0) {
+                LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
+                    InfraStatCard(
+                        title: "Uptime",
+                        value: Formatters.formatDuration(seconds: metrics.uptimeSeconds),
+                        icon: "clock",
+                        color: .blue
+                    )
+                    InfraStatCard(
+                        title: "Requests", value: "\(metrics.requestCount)",
+                        icon: "arrow.up.arrow.down", color: .green)
+                    InfraStatCard(
+                        title: "Latência Média",
+                        value: String(format: "%.1f ms", metrics.avgResponseMs), icon: "speedometer",
+                        color: .orange)
+                    InfraStatCard(
+                        title: "Última", value: String(format: "%.1f ms", metrics.lastResponseMs),
+                        icon: "timer", color: .purple)
+                }
             }
 
             Divider()

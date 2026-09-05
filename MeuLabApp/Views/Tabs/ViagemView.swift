@@ -1,5 +1,6 @@
 import CoreLocation
 import SwiftUI
+import UIKit
 
 // ============================================================
 // VIAGEM — CRONOLOGIA FINAL
@@ -23,21 +24,42 @@ private extension Color {
     }
 }
 
+/// Two-tone colour resolved from the interface style. Used for the accents that
+/// carry this screen's voice — the warm sepias and the booking green — which must
+/// keep their hue but change luminance to stay readable on either backdrop.
+private func vAdaptive(light: UInt32, dark: UInt32) -> Color {
+    Color(uiColor: UIColor { traits in
+        UIColor(Color(hex: traits.userInterfaceStyle == .dark ? dark : light))
+    })
+}
+
 private enum VPalette {
-    static let bg = Color(hex: 0xF7F3EB)
-    static let ink = Color(hex: 0x2A2520)
+    // Structure — page, text and rules follow the system appearance so the glass
+    // has something to refract that matches the rest of the app.
+    static let bg = Color(uiColor: .systemGroupedBackground)
+    static let ink = Color(uiColor: .label)
+    static let muted = Color(uiColor: .secondaryLabel)
+    static let descColor = Color(uiColor: .secondaryLabel)
+    static let cardBorder = Color(uiColor: .separator)
+
+    // Identity — the hero gradient and the cream it is printed on. Fixed on
+    // purpose: the gradient is always dark, so its text is always light.
     static let heroStart = Color(hex: 0x1B2A4A)
     static let heroMid = Color(hex: 0x2E4470)
     static let heroEnd = Color(hex: 0x6E5A8E)
-    static let cardBg = Color(hex: 0xFFFDF8)
-    static let cardBorder = Color(hex: 0xD8CDB8)
-    static let muted = Color(hex: 0x8A7E6B)
-    static let descColor = Color(hex: 0x5A5248)
-    static let mapsLink = Color(hex: 0x6E6452)
-    static let mapsDot = Color(hex: 0xA89C87)
-    static let loungeText = Color(hex: 0x7A5C1E)
+    static let heroInk = Color(hex: 0xF7F3EB)
+    /// The navy of the hero, lifted in dark mode so the nav-bar title reads.
+    static let titleAccent = vAdaptive(light: 0x2E4470, dark: 0x9DB6E4)
+
+    // Accents drawn over the adaptive surface.
+    static let mapsLink = vAdaptive(light: 0x6E6452, dark: 0xC2B69C)
+    static let mapsDot = vAdaptive(light: 0xA89C87, dark: 0x9A8F79)
+    static let loungeText = vAdaptive(light: 0x7A5C1E, dark: 0xEEC479)
     static let loungeBase = Color(hex: 0xE3A857)
-    static let refBase = Color(hex: 0x2E7D5A)
+    static let refBase = vAdaptive(light: 0x2E7D5A, dark: 0x74D3A6)
+
+    // Shimmer badge — always sits on the dark hero gradient, so it stays fixed.
+    static let shimmerBase = Color(hex: 0x2E7D5A)
     static let shimmerMint = Color(hex: 0x8CDCB4)
     static let shimmerText = Color(hex: 0xCFF3DF)
 }
@@ -47,21 +69,21 @@ private enum VPalette {
 private enum VTone {
     case travel, leisure, wedding, home
 
+    /// Same four hues in both appearances; only the luminance moves, because a
+    /// 0x2E4470 navy that reads as ink on cream disappears against dark glass.
     var accent: Color {
         switch self {
-        case .travel: return Color(hex: 0x2E4470)
-        case .leisure: return Color(hex: 0x2E7D5A)
-        case .wedding: return Color(hex: 0xB8862D)
-        case .home: return Color(hex: 0x6E5A8E)
+        case .travel: return vAdaptive(light: 0x2E4470, dark: 0x8FAAD9)
+        case .leisure: return vAdaptive(light: 0x2E7D5A, dark: 0x6FCFA0)
+        case .wedding: return vAdaptive(light: 0xB8862D, dark: 0xE3B860)
+        case .home: return vAdaptive(light: 0x6E5A8E, dark: 0xB49CD8)
         }
     }
 
     var chip: Color {
         switch self {
-        case .travel: return Color(hex: 0x2E4470).opacity(0.10)
-        case .leisure: return Color(hex: 0x2E7D5A).opacity(0.10)
-        case .wedding: return Color(hex: 0xE3A857).opacity(0.14)
-        case .home: return Color(hex: 0x6E5A8E).opacity(0.10)
+        case .wedding: return accent.opacity(0.16)
+        default: return accent.opacity(0.14)
         }
     }
 
@@ -911,12 +933,12 @@ private struct VShimmerBadge: View {
             .padding(.vertical, 11)
             .background(
                 ZStack {
-                    Capsule().fill(VPalette.refBase.opacity(0.18))
+                    Capsule().fill(VPalette.shimmerBase.opacity(0.18))
                     LinearGradient(
                         colors: [
-                            VPalette.refBase.opacity(0.15),
+                            VPalette.shimmerBase.opacity(0.15),
                             VPalette.shimmerMint.opacity(0.45),
-                            VPalette.refBase.opacity(0.15),
+                            VPalette.shimmerBase.opacity(0.15),
                         ],
                         startPoint: animate ? .trailing : .leading,
                         endPoint: animate ? UnitPoint(x: 2.2, y: 0.5) : UnitPoint(x: -1.2, y: 0.5)
@@ -1055,7 +1077,7 @@ private struct VEventRow: View {
         .overlay(alignment: .top) {
             if showTopBorder {
                 Rectangle()
-                    .fill(VPalette.cardBorder.opacity(0.5))
+                    .fill(VPalette.cardBorder)
                     .frame(height: 1)
             }
         }
@@ -1063,6 +1085,19 @@ private struct VEventRow: View {
 }
 
 // MARK: - Seção de um dia (colapsável)
+
+/// Picks between plain and tinted glass without duplicating the call site.
+private struct VDayCardSurface: ViewModifier {
+    let tint: Color?
+
+    func body(content: Content) -> some View {
+        if let tint {
+            content.glassCard(tint: tint, cornerRadius: 18)
+        } else {
+            content.glassCard(cornerRadius: 18)
+        }
+    }
+}
 
 private struct VDaySection: View {
     let day: VDay
@@ -1089,15 +1124,10 @@ private struct VDaySection: View {
                 .padding(.top, 2)
             }
         }
-        .background(VPalette.cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(
-                    isFocused ? day.tone.accent : VPalette.cardBorder.opacity(0.55),
-                    lineWidth: isFocused ? 2.5 : 1.5
-                )
-        )
+        // The focused day carries the tint so it still stands out from sixteen
+        // siblings; the rest are plain glass.
+        .modifier(VDayCardSurface(tint: isFocused ? day.tone.accent : nil))
         .shadow(color: Color.black.opacity(isFocused ? 0.18 : 0.10), radius: 16, y: 9)
     }
 
@@ -1200,14 +1230,11 @@ struct ViagemView: View {
         .background(VPalette.bg.ignoresSafeArea())
         .navigationTitle("Viagem")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(VPalette.bg, for: .navigationBar)
-        .toolbarColorScheme(.light, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 styledNavTitle
             }
         }
-        .preferredColorScheme(.light)
         .onReceive(tick) { now = $0 }
         .task {
             TripEngine.shared.load(ViagemBridge.makeStops())
@@ -1284,12 +1311,7 @@ struct ViagemView: View {
             }
         }
         .padding(16)
-        .background(VPalette.cardBg)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(VTone.leisure.accent.opacity(0.4), lineWidth: 1.5)
-        )
+        .glassCard(tint: VTone.leisure.accent, cornerRadius: 18)
     }
 
     /// Home and destination clocks side by side. Getting this wrong is how people
@@ -1428,7 +1450,7 @@ struct ViagemView: View {
                 .font(.system(size: 14))
             Text("Viagem")
                 .font(.system(size: 17, weight: .bold, design: .serif))
-                .foregroundColor(VPalette.heroMid)
+                .foregroundColor(VPalette.titleAccent)
         }
     }
 
@@ -1437,18 +1459,18 @@ struct ViagemView: View {
             Text("CRONOLOGIA FINAL · 7–18 SET 2026")
                 .font(.system(size: 11.5, weight: .semibold))
                 .tracking(3)
-                .foregroundColor(VPalette.bg.opacity(0.78))
+                .foregroundColor(VPalette.heroInk.opacity(0.78))
                 .multilineTextAlignment(.center)
 
             Text("O roteiro, hora a hora")
                 .font(.system(size: 38, weight: .semibold, design: .serif))
-                .foregroundColor(VPalette.bg)
+                .foregroundColor(VPalette.heroInk)
                 .multilineTextAlignment(.center)
 
             Text("com todos os endereços no mapa")
                 .font(.system(size: 18, design: .serif))
                 .italic()
-                .foregroundColor(VPalette.bg.opacity(0.9))
+                .foregroundColor(VPalette.heroInk.opacity(0.9))
                 .multilineTextAlignment(.center)
 
             VShimmerBadge()

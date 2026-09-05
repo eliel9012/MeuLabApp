@@ -1275,8 +1275,14 @@ struct IntelligenceViewLegacy: View {
                 VStack(alignment: .leading, spacing: 14) {
                     inputSection
                     quickActions
-                    incidentSection
-                    answerSection
+                    // Incident banner and answer card are the only glass surfaces here and
+                    // they sit next to each other, so they share one container.
+                    GlassSection(spacing: 0) {
+                        VStack(alignment: .leading, spacing: 14) {
+                            incidentSection
+                            answerSection
+                        }
+                    }
                     searchSection
                     playbooksSection
                     timelineSection

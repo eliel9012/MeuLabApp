@@ -23,18 +23,35 @@ private enum RPalette {
         )
     }
 
-    static let bg = hex(0xF7F3EB)
-    static let ink = hex(0x2A2520)
+    /// Two-tone accent: same hue in both appearances, different luminance, so the
+    /// warm sepias of this screen survive on a dark backdrop.
+    static func adaptive(light: UInt32, dark: UInt32) -> Color {
+        Color(uiColor: UIColor { traits in
+            UIColor(hex(traits.userInterfaceStyle == .dark ? dark : light))
+        })
+    }
+
+    // Structure — follows the system appearance.
+    static let bg = Color(uiColor: .systemGroupedBackground)
+    static let ink = Color(uiColor: .label)
+    static let muted = Color(uiColor: .secondaryLabel)
+    static let descColor = Color(uiColor: .secondaryLabel)
+    static let cardBorder = Color(uiColor: .separator)
+
+    // Identity — the hero gradient and the cream printed on it stay fixed, since
+    // the gradient itself is always dark.
     static let heroStart = hex(0x1B2A4A)
     static let heroMid = hex(0x2E4470)
     static let heroEnd = hex(0x6E5A8E)
-    static let cardBg = hex(0xFFFDF8)
-    static let cardBorder = hex(0xD8CDB8)
-    static let muted = hex(0x8A7E6B)
-    static let descColor = hex(0x5A5248)
-    static let mapsLink = hex(0x6E6452)
-    static let mapsDot = hex(0xA89C87)
-    static let refBase = hex(0x2E7D5A)
+    static let heroInk = hex(0xF7F3EB)
+    static let titleAccent = adaptive(light: 0x2E4470, dark: 0x9DB6E4)
+
+    // Accents drawn over the adaptive surface.
+    static let mapsLink = adaptive(light: 0x6E6452, dark: 0xC2B69C)
+    static let mapsDot = adaptive(light: 0xA89C87, dark: 0x9A8F79)
+    static let refBase = adaptive(light: 0x2E7D5A, dark: 0x74D3A6)
+    /// Badge on the hero gradient — fixed for the same reason as `heroInk`.
+    static let heroBadgeBase = hex(0x2E7D5A)
     static let shimmerText = hex(0xCFF3DF)
 }
 
@@ -44,17 +61,19 @@ private enum RPalette {
 private enum RKind {
     case flight, lodging, rail, car, other
 
+    /// Same five hues in both appearances; only the luminance moves, so a locator
+    /// printed in navy on cream is still readable in mid-blue on dark glass.
     var accent: Color {
         switch self {
-        case .flight: return RPalette.hex(0x2E4470)
-        case .lodging: return RPalette.hex(0x6E5A8E)
-        case .rail: return RPalette.hex(0x2E7D5A)
-        case .car: return RPalette.hex(0xB8862D)
-        case .other: return RPalette.hex(0x6E6452)
+        case .flight: return RPalette.adaptive(light: 0x2E4470, dark: 0x8FAAD9)
+        case .lodging: return RPalette.adaptive(light: 0x6E5A8E, dark: 0xB49CD8)
+        case .rail: return RPalette.adaptive(light: 0x2E7D5A, dark: 0x6FCFA0)
+        case .car: return RPalette.adaptive(light: 0xB8862D, dark: 0xE3B860)
+        case .other: return RPalette.adaptive(light: 0x6E6452, dark: 0xC2B69C)
         }
     }
 
-    var chip: Color { accent.opacity(0.10) }
+    var chip: Color { accent.opacity(0.14) }
 
     var symbol: String {
         switch self {
@@ -344,12 +363,9 @@ private struct RBookingCard: View {
         .padding(.horizontal, 14)
         .padding(.vertical, 13)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RPalette.bg.opacity(0.55))
-        .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 14, style: .continuous)
-                .stroke(RPalette.cardBorder.opacity(0.5), lineWidth: 1)
-        )
+        // Nested inside the supplier's glass section, so the lighter material
+        // rather than a second sheet of glass.
+        .materialCard(cornerRadius: 14)
     }
 
     private var noCodeBadge: some View {
@@ -362,7 +378,7 @@ private struct RBookingCard: View {
         .foregroundColor(RPalette.mapsLink)
         .padding(.horizontal, 11)
         .padding(.vertical, 7)
-        .background(RPalette.mapsDot.opacity(0.16))
+        .background(RPalette.mapsDot.opacity(0.22))
         .clipShape(Capsule())
     }
 }
@@ -385,12 +401,8 @@ private struct RGroupSection: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .background(RPalette.cardBg)
         .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(RPalette.cardBorder.opacity(0.55), lineWidth: 1.5)
-        )
+        .glassCard(cornerRadius: 18)
         .shadow(color: Color.black.opacity(0.10), radius: 16, y: 9)
     }
 
@@ -474,14 +486,11 @@ struct ReservasView: View {
         .background(RPalette.bg.ignoresSafeArea())
         .navigationTitle("Reservas")
         .navigationBarTitleDisplayMode(.inline)
-        .toolbarBackground(RPalette.bg, for: .navigationBar)
-        .toolbarColorScheme(.light, for: .navigationBar)
         .toolbar {
             ToolbarItem(placement: .principal) {
                 styledNavTitle
             }
         }
-        .preferredColorScheme(.light)
         .onAppear(perform: reload)
     }
 
@@ -515,7 +524,7 @@ struct ReservasView: View {
                 .font(.system(size: 14))
             Text("Reservas")
                 .font(.system(size: 17, weight: .bold, design: .serif))
-                .foregroundColor(RPalette.heroMid)
+                .foregroundColor(RPalette.titleAccent)
         }
     }
 
@@ -524,18 +533,18 @@ struct ReservasView: View {
             Text("LOCALIZADORES · SET 2026")
                 .font(.system(size: 11.5, weight: .semibold))
                 .tracking(3)
-                .foregroundColor(RPalette.bg.opacity(0.78))
+                .foregroundColor(RPalette.heroInk.opacity(0.78))
                 .multilineTextAlignment(.center)
 
             Text("Todos os códigos")
                 .font(.system(size: 38, weight: .semibold, design: .serif))
-                .foregroundColor(RPalette.bg)
+                .foregroundColor(RPalette.heroInk)
                 .multilineTextAlignment(.center)
 
             Text("no balcão, sem internet")
                 .font(.system(size: 18, design: .serif))
                 .italic()
-                .foregroundColor(RPalette.bg.opacity(0.9))
+                .foregroundColor(RPalette.heroInk.opacity(0.9))
                 .multilineTextAlignment(.center)
 
             if !groups.isEmpty {
@@ -548,7 +557,7 @@ struct ReservasView: View {
                 .foregroundColor(RPalette.shimmerText)
                 .padding(.horizontal, 20)
                 .padding(.vertical, 10)
-                .background(Capsule().fill(RPalette.refBase.opacity(0.28)))
+                .background(Capsule().fill(RPalette.heroBadgeBase.opacity(0.28)))
                 .overlay(Capsule().stroke(RPalette.shimmerText.opacity(0.45), lineWidth: 1))
                 .padding(.top, 6)
             }
@@ -580,12 +589,7 @@ struct ReservasView: View {
         }
         .padding(28)
         .frame(maxWidth: .infinity)
-        .background(RPalette.cardBg)
-        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18, style: .continuous)
-                .stroke(RPalette.cardBorder.opacity(0.55), lineWidth: 1.5)
-        )
+        .glassCard(cornerRadius: 18)
     }
 
     private var footerNote: some View {
