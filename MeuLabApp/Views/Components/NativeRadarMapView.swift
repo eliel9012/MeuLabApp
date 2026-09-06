@@ -1,9 +1,132 @@
 import MapKit
 import SwiftUI
 
+// MARK: - Radar projection
+
+/// Owned by the parent view, so camera/selection/trail changes do not rerun filtering.
+struct RadarAircraftFilter: Equatable {
+    var searchText = ""
+    var minAltitude: Double = 0
+    var maxAltitude: Double = 60_000
+    var showMilitary = true
+    var showEmergency = true
+    var showCivil = true
+
+    func apply(to aircraft: [Aircraft]) -> [Aircraft] {
+        let query = searchText.uppercased()
+        let restrictAltitude = minAltitude > 0 || maxAltitude < 60_000
+        return aircraft.filter { aircraft in
+            guard aircraft.hasPosition else { return false }
+            if !showMilitary && aircraft.isMilitary { return false }
+            if !showEmergency && aircraft.isEmergency { return false }
+            if !showCivil && !aircraft.isMilitary && !aircraft.isEmergency { return false }
+            if restrictAltitude && (Double(aircraft.altitudeFt) < minAltitude
+                || Double(aircraft.altitudeFt) > maxAltitude) { return false }
+            return query.isEmpty
+                || aircraft.displayCallsign.uppercased().contains(query)
+                || (aircraft.hex ?? "").uppercased().contains(query)
+                || (aircraft.model ?? "").uppercased().contains(query)
+                || (aircraft.registration ?? "").uppercased().contains(query)
+                || (aircraft.squawk ?? "").contains(query)
+        }
+    }
+}
+
+struct RadarAircraftSnapshot {
+    let aircraft: [Aircraft]
+    let byID: [Aircraft.ID: Aircraft]
+    let militaryCount: Int
+    let emergencyCount: Int
+    let altitudeDistribution: (ground: CGFloat, low: CGFloat, med: CGFloat, high: CGFloat, cruise: CGFloat)
+
+    init(aircraft: [Aircraft]) {
+        self.aircraft = aircraft
+        var byID: [Aircraft.ID: Aircraft] = [:]
+        var military = 0
+        var emergency = 0
+        var buckets = [CGFloat](repeating: 0, count: 5)
+        for item in aircraft {
+            // Match first(where:) even if a feed repeats an ID.
+            if byID[item.id] == nil { byID[item.id] = item }
+            if item.isMilitary { military += 1 }
+            if item.isEmergency { emergency += 1 }
+            let altitude = item.altitudeFt
+            let bucket = altitude <= 0 ? 0 : altitude < 10_000 ? 1
+                : altitude < 25_000 ? 2 : altitude < 35_000 ? 3 : 4
+            buckets[bucket] += 1
+        }
+        self.byID = byID
+        militaryCount = military
+        emergencyCount = emergency
+        let divisor = CGFloat(max(aircraft.count, 1))
+        altitudeDistribution = (buckets[0] / divisor, buckets[1] / divisor,
+                                buckets[2] / divisor, buckets[3] / divisor, buckets[4] / divisor)
+    }
+}
+
+// MARK: - Trail geometry
+
+struct RadarTrail {
+    let coordinates: [CLLocationCoordinate2D]
+    let polyline: MKPolyline?
+
+    init(coordinates: [CLLocationCoordinate2D]) {
+        self.coordinates = coordinates
+        polyline = coordinates.count >= 2
+            ? MKPolyline(coordinates: coordinates, count: coordinates.count) : nil
+    }
+}
+
+struct RadarTrailHistory {
+    private(set) var trails: [Aircraft.ID: RadarTrail] = [:]
+    private(set) var orderedIDs: [Aircraft.ID] = []
+
+    /// Keep collecting with trails hidden: annotation heading uses the last two points.
+    /// Return false without replacing geometry when aircraft have not moved.
+    mutating func update(aircraft: [Aircraft]) -> Bool {
+        var changed = false
+        var membershipChanged = false
+        var activeIDs = Set<Aircraft.ID>()
+        for aircraft in aircraft {
+            activeIDs.insert(aircraft.id)
+            guard let lat = aircraft.lat, let lon = aircraft.lon else { continue }
+            var coordinates = trails[aircraft.id]?.coordinates ?? []
+            if let last = coordinates.last, last.latitude == lat && last.longitude == lon {
+                continue
+            }
+            if trails[aircraft.id] == nil { membershipChanged = true }
+            coordinates.append(CLLocationCoordinate2D(latitude: lat, longitude: lon))
+            if coordinates.count > 60 { coordinates.removeFirst() }
+            trails[aircraft.id] = RadarTrail(coordinates: coordinates)
+            changed = true
+        }
+        for key in trails.keys where !activeIDs.contains(key) {
+            trails.removeValue(forKey: key)
+            membershipChanged = true
+            changed = true
+        }
+        if membershipChanged { orderedIDs = trails.keys.sorted() }
+        return changed
+    }
+}
+
 // MARK: - Native Radar Map View
 
 struct NativeRadarMapView: View {
+    @Environment(AppState.self) private var appState
+    @State private var filters = RadarAircraftFilter()
+
+    var body: some View {
+        // Only feed/filter changes recompute this projection. Child camera,
+        // selection, sheets and trail state reuse the same filtered snapshot.
+        let snapshot = RadarAircraftSnapshot(aircraft: filters.apply(to: appState.aircraftList))
+        NativeRadarMapContent(snapshot: snapshot, filters: $filters)
+    }
+}
+
+private struct NativeRadarMapContent: View {
+    let snapshot: RadarAircraftSnapshot
+    @Binding var filters: RadarAircraftFilter
     @Environment(AppState.self) private var appState
     @StateObject private var locationManager = LocationManager.shared
     @StateObject private var favoritesManager = FavoritesManager.shared
@@ -18,13 +141,7 @@ struct NativeRadarMapView: View {
     @State private var showTrails = false
     @State private var isFollowing = false
     @State private var showSettings = false
-    @State private var searchText = ""
-    @State private var trailHistory: [String: [CLLocationCoordinate2D]] = [:]
-    @State private var filterMinAlt: Double = 0
-    @State private var filterMaxAlt: Double = 60_000
-    @State private var filterShowMilitary = true
-    @State private var filterShowEmergency = true
-    @State private var filterShowCivil = true
+    @State private var trailHistory = RadarTrailHistory()
 
     let receiverLocation = CLLocationCoordinate2D(latitude: -20.512504, longitude: -47.400830)
 
@@ -62,7 +179,9 @@ struct NativeRadarMapView: View {
         }
     }
 
-    init() {
+    init(snapshot: RadarAircraftSnapshot, filters: Binding<RadarAircraftFilter>) {
+        self.snapshot = snapshot
+        self._filters = filters
         self._position = State(
             initialValue: .region(
                 MKCoordinateRegion(
@@ -73,60 +192,7 @@ struct NativeRadarMapView: View {
 
     // MARK: - Computed Properties
 
-    private var aircraftWithPosition: [Aircraft] {
-        var list = appState.aircraftList.filter { $0.hasPosition }
-
-        // Category filters
-        if !filterShowMilitary { list = list.filter { !$0.isMilitary } }
-        if !filterShowEmergency { list = list.filter { !$0.isEmergency } }
-        if !filterShowCivil { list = list.filter { $0.isMilitary || $0.isEmergency } }
-
-        // Altitude filter
-        if filterMinAlt > 0 || filterMaxAlt < 60_000 {
-            list = list.filter {
-                Double($0.altitudeFt) >= filterMinAlt && Double($0.altitudeFt) <= filterMaxAlt
-            }
-        }
-
-        // Text search
-        guard !searchText.isEmpty else { return list }
-        let query = searchText.uppercased()
-        return list.filter {
-            $0.displayCallsign.uppercased().contains(query)
-                || ($0.hex ?? "").uppercased().contains(query)
-                || ($0.model ?? "").uppercased().contains(query)
-                || ($0.registration ?? "").uppercased().contains(query)
-                || ($0.squawk ?? "").contains(query)
-        }
-    }
-
-    private var altitudeDistribution:
-        (ground: CGFloat, low: CGFloat, med: CGFloat, high: CGFloat, cruise: CGFloat)
-    {
-        let list = aircraftWithPosition
-        guard !list.isEmpty else { return (0, 0, 0, 0, 0) }
-        var g = 0
-        var l = 0
-        var m = 0
-        var h = 0
-        var c = 0
-        for ac in list {
-            let alt = ac.altitudeFt
-            if alt <= 0 {
-                g += 1
-            } else if alt < 10_000 {
-                l += 1
-            } else if alt < 25_000 {
-                m += 1
-            } else if alt < 35_000 {
-                h += 1
-            } else {
-                c += 1
-            }
-        }
-        let t = CGFloat(list.count)
-        return (CGFloat(g) / t, CGFloat(l) / t, CGFloat(m) / t, CGFloat(h) / t, CGFloat(c) / t)
-    }
+    private var aircraftWithPosition: [Aircraft] { snapshot.aircraft }
 
     // MARK: - Body
 
@@ -236,9 +302,9 @@ struct NativeRadarMapView: View {
 
             // Trails
             if showTrails {
-                ForEach(Array(trailHistory.keys), id: \.self) { key in
-                    if let coords = trailHistory[key], coords.count >= 2 {
-                        MapPolyline(coordinates: coords)
+                ForEach(trailHistory.orderedIDs, id: \.self) { key in
+                    if let polyline = trailHistory.trails[key]?.polyline {
+                        MapPolyline(polyline)
                             .stroke(trailColor(for: key), lineWidth: 2)
                     }
                 }
@@ -373,7 +439,7 @@ struct NativeRadarMapView: View {
                 .monospacedDigit()
 
                 // Military count
-                let milCount = aircraftWithPosition.filter(\.isMilitary).count
+                let milCount = snapshot.militaryCount
                 if milCount > 0 {
                     HStack(spacing: 2) {
                         Image(systemName: "shield.fill")
@@ -387,7 +453,7 @@ struct NativeRadarMapView: View {
                 }
 
                 // Emergency count
-                let emgCount = aircraftWithPosition.filter(\.isEmergency).count
+                let emgCount = snapshot.emergencyCount
                 if emgCount > 0 {
                     HStack(spacing: 2) {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -629,7 +695,7 @@ struct NativeRadarMapView: View {
     // MARK: - Altitude Bar
 
     private var altitudeBar: some View {
-        let dist = altitudeDistribution
+        let dist = snapshot.altitudeDistribution
         return HStack(spacing: 6) {
             Text("ALT")
                 .font(.system(size: 9, weight: .bold))
@@ -710,18 +776,18 @@ struct NativeRadarMapView: View {
                 }
 
                 Section("Buscar") {
-                    TextField("Callsign, Hex, Tipo, Squawk...", text: $searchText)
+                    TextField("Callsign, Hex, Tipo, Squawk...", text: $filters.searchText)
                         .textInputAutocapitalization(.characters)
                 }
 
                 Section("Filtros") {
-                    Toggle("Civil", isOn: $filterShowCivil)
-                    Toggle("Militar", isOn: $filterShowMilitary)
-                    Toggle("Emergência", isOn: $filterShowEmergency)
+                    Toggle("Civil", isOn: $filters.showCivil)
+                    Toggle("Militar", isOn: $filters.showMilitary)
+                    Toggle("Emergência", isOn: $filters.showEmergency)
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(
-                            "Altitude: \(Int(filterMinAlt).formatted()) – \(Int(filterMaxAlt).formatted()) ft"
+                            "Altitude: \(Int(filters.minAltitude).formatted()) – \(Int(filters.maxAltitude).formatted()) ft"
                         )
                         .font(.caption)
                         .foregroundStyle(.secondary)
@@ -729,25 +795,25 @@ struct NativeRadarMapView: View {
                             Text("Min")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
-                            Slider(value: $filterMinAlt, in: 0...60_000, step: 1000)
+                            Slider(value: $filters.minAltitude, in: 0...60_000, step: 1000)
                         }
                         HStack(spacing: 12) {
                             Text("Max")
                                 .font(.caption2)
                                 .foregroundStyle(.secondary)
-                            Slider(value: $filterMaxAlt, in: 0...60_000, step: 1000)
+                            Slider(value: $filters.maxAltitude, in: 0...60_000, step: 1000)
                         }
                     }
 
-                    if filterMinAlt > 0 || filterMaxAlt < 60_000 || !filterShowCivil
-                        || !filterShowMilitary || !filterShowEmergency
+                    if filters.minAltitude > 0 || filters.maxAltitude < 60_000 || !filters.showCivil
+                        || !filters.showMilitary || !filters.showEmergency
                     {
                         Button("Limpar Filtros") {
-                            filterMinAlt = 0
-                            filterMaxAlt = 60_000
-                            filterShowCivil = true
-                            filterShowMilitary = true
-                            filterShowEmergency = true
+                            filters.minAltitude = 0
+                            filters.maxAltitude = 60_000
+                            filters.showCivil = true
+                            filters.showMilitary = true
+                            filters.showEmergency = true
                         }
                         .foregroundStyle(.red)
                     }
@@ -834,7 +900,7 @@ struct NativeRadarMapView: View {
     }
 
     private func trailColor(for key: String) -> Color {
-        guard let ac = aircraftWithPosition.first(where: { $0.id == key }) else { return .blue }
+        guard let ac = snapshot.byID[key] else { return .blue }
         return altitudeColor(ac.altitudeFt).opacity(0.6)
     }
 
@@ -846,7 +912,7 @@ struct NativeRadarMapView: View {
     }
 
     private func recentCourse(for aircraft: Aircraft) -> Double? {
-        guard let history = trailHistory[aircraft.id], history.count >= 2 else { return nil }
+        guard let history = trailHistory.trails[aircraft.id]?.coordinates, history.count >= 2 else { return nil }
         return bearing(from: history[history.count - 2], to: history[history.count - 1])
     }
 
@@ -885,25 +951,12 @@ struct NativeRadarMapView: View {
     }
 
     private func updateTrails() {
-        for ac in aircraftWithPosition {
-            guard let lat = ac.lat, let lon = ac.lon else { continue }
-            let coord = CLLocationCoordinate2D(latitude: lat, longitude: lon)
-            var history = trailHistory[ac.id] ?? []
-            if let last = history.last,
-                last.latitude == coord.latitude && last.longitude == coord.longitude
-            {
-                continue
-            }
-            history.append(coord)
-            if history.count > 60 { history.removeFirst() }
-            trailHistory[ac.id] = history
-        }
-        // Clean up stale trails
-        let activeIDs = Set(aircraftWithPosition.map { $0.id })
-        for key in trailHistory.keys where !activeIDs.contains(key) {
-            trailHistory.removeValue(forKey: key)
+        var updated = trailHistory
+        if updated.update(aircraft: aircraftWithPosition) {
+            trailHistory = updated
         }
     }
+
 }
 
 // MARK: - Receiver Pulse

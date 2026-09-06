@@ -43,3 +43,11 @@ python3 scripts/run_observation_tests.py \
   --destination 'platform=iOS Simulator,id=UUID' \
   --work-dir /caminho/para/work/observation-tests
 ```
+
+## Fase 5 — radar
+
+A view externa calcula uma projeção por avaliação de dados/filtros; câmera, seleção, sheets e histórico vivem na view interna e reutilizam a projeção. Uma passagem filtra aeronaves, e outra prepara lookup por ID, contadores e distribuição de altitude. Não há invalidação manual de cache nem lista inicialmente vazia aguardando `onAppear`.
+
+`RadarTrailHistory` acumula mudanças e a view faz uma única atribuição quando necessário. `MKPolyline` é reconstruída somente quando os pontos daquela aeronave mudam. IDs de trilhas permanecem estáveis, em ordem determinística, até mudança de membros. Cor continua vindo da altitude atual; coleta com trilhas ocultas, remoção de aeronaves e teto de 60 pontos preservados.
+
+Nove testes XCTest passaram no simulador: os quatro de Observation e cinco de radar. Equivalência contra algoritmos anteriores cobre 192 combinações de filtros/busca/altitude, 70 atualizações de histórico, remoção/entrada, aeronave parada, altitude alterada sem movimento, geometria por identidade e lote de 500 aeronaves. Isso verifica redução de trabalho redundante; não equivale a medição de CPU/Energy no device.
