@@ -27,3 +27,19 @@ Build iOS em cada marco compilável; teste de isolamento de Observation e bindin
 ## Fase 3 — views e bindings
 
 31 consumidores em 25 arquivos usam `@Environment(AppState.self)`. Instância principal usa `@State`; 9 reinjeções e 21 previews usam `.environment`. Os 6 toggles mantêm bindings com `@Bindable` local em cinco escopos: `ADSBView.body`, `trafficScopeBar`, `MapView.statsOverlay`, `MapSettingsSheet.body` e `radarSettingsSheet`. Build iOS genérico após migração: **BUILD SUCCEEDED**.
+
+## Fase 4 — validação da migração
+
+- Build iOS genérico e build iOS Simulator: **BUILD SUCCEEDED**.
+- Quatro testes XCTest hospedados no app real, iPhone 17 Pro / iOS 26.5: **TEST SUCCEEDED**, zero falhas. Cobrem isolamento rádio/aeronaves, estado operacional ignorado, reconstrução dos caches via `didSet` e bindings OpenSky compartilhados nos dois sentidos.
+- Auditoria estrutural verifica os 123 membros, ausência dos wrappers antigos e presença dos seis bindings.
+- Runner gera cópia temporária do projeto com target XCTest; o projeto de produção não muda.
+- iPhone físico foi listado, mas a conexão de desenvolvimento falhou (`A connection to this device could not be established`, `ddiServicesAvailable: false`). Sem comparação confiável de CPU/Energy no device.
+
+Reproduzir testes (substituir UUID e diretório de trabalho):
+
+```sh
+python3 scripts/run_observation_tests.py \
+  --destination 'platform=iOS Simulator,id=UUID' \
+  --work-dir /caminho/para/work/observation-tests
+```
