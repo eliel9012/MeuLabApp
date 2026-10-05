@@ -74,6 +74,7 @@ struct BibleRandomView: View {
         isLoading = true
         Task {
             try? await Task.sleep(nanoseconds: 150_000_000)
+            await loader.ensureLoaded()
             withAnimation(.spring(response: 0.4, dampingFraction: 0.7)) {
                 verse = loader.randomVerse()
             }

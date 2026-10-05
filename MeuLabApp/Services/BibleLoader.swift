@@ -9,9 +9,16 @@ final class BibleLoader: ObservableObject {
     private nonisolated(unsafe) var rawData: [String: [[String]]] = [:]
     private nonisolated(unsafe) var lowercasedData: [String: [[String]]] = [:]
     private var chapterCache: [String: BibleChapter] = [:]
+    private var loadTask: Task<Void, Never>?
 
     private init() {
-        loadJSON()
+        // bible.json tem ~4 MB: decodifica fora da main para não congelar a abertura da aba.
+        loadTask = Task { await loadJSON() }
+    }
+
+    /// Aguarda o carregamento do bible.json (retorna na hora se já carregou).
+    func ensureLoaded() async {
+        await loadTask?.value
     }
 
     // MARK: - Public API
@@ -79,11 +86,12 @@ final class BibleLoader: ObservableObject {
         let books = BibleCatalogue.books
         guard let book = books.randomElement(),
             let chapters = rawData[book.slug],
-            let verseTexts = chapters.randomElement(),
-            let (vIdx, text) = verseTexts.enumerated().randomElement()
+            let chIdx = chapters.indices.randomElement(),
+            let vIdx = chapters[chIdx].indices.randomElement()
         else { return nil }
 
-        let chNum = (rawData[book.slug]?.firstIndex(where: { $0 == verseTexts }) ?? 0) + 1
+        let chNum = chIdx + 1
+        let text = chapters[chIdx][vIdx]
         return BibleVerse(
             id: "\(book.slug)-\(chNum)-\(vIdx + 1)",
             book: book.slug,
@@ -95,19 +103,27 @@ final class BibleLoader: ObservableObject {
 
     // MARK: - Private
 
-    private func loadJSON() {
-        guard let url = Bundle.main.url(forResource: "bible", withExtension: "json") else {
-            print("[BibleLoader] bible.json not found in bundle")
-            return
-        }
-        do {
-            let data = try Data(contentsOf: url)
-            rawData = try JSONDecoder().decode([String: [[String]]].self, from: data)
-            lowercasedData = rawData.mapValues { chapters in
-                chapters.map { verses in verses.map { $0.lowercased() } }
+    private func loadJSON() async {
+        let loaded = await Task.detached(priority: .userInitiated) {
+            () -> (raw: [String: [[String]]], lower: [String: [[String]]])? in
+            guard let url = Bundle.main.url(forResource: "bible", withExtension: "json") else {
+                print("[BibleLoader] bible.json not found in bundle")
+                return nil
             }
-        } catch {
-            print("[BibleLoader] Failed to load bible.json: \(error)")
-        }
+            do {
+                let data = try Data(contentsOf: url)
+                let raw = try JSONDecoder().decode([String: [[String]]].self, from: data)
+                let lower = raw.mapValues { chapters in
+                    chapters.map { verses in verses.map { $0.lowercased() } }
+                }
+                return (raw, lower)
+            } catch {
+                print("[BibleLoader] Failed to load bible.json: \(error)")
+                return nil
+            }
+        }.value
+        guard let loaded else { return }
+        rawData = loaded.raw
+        lowercasedData = loaded.lower
     }
 }

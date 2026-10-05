@@ -187,6 +187,7 @@ struct BibleChapterView: View {
         .navigationBarTitleDisplayMode(.inline)
         .toolbar { fontToolbar }
         .task {
+            await loader.ensureLoaded()
             chapter = loader.chapter(bookSlug: bookSlug, chapterNumber: chapterNumber)
             if let chapter {
                 let verses = chapter.verses.map { $0.text }

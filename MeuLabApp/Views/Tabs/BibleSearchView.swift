@@ -122,6 +122,7 @@ struct BibleSearchView: View {
             guard !Task.isCancelled else { return }
 
             let q = query
+            await BibleLoader.shared.ensureLoaded()
             let found = await Task.detached(priority: .userInitiated) {
                 await BibleLoader.shared.search(query: q, limit: 60)
             }.value

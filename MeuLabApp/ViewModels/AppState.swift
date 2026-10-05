@@ -43,7 +43,8 @@ class AppState {
 
     // MARK: - ADS-B
     var adsbSummary: ADSBSummary? {
-        didSet { rebuildADSBViewCache() }
+        // O cache só usa o resumo quando ainda não há lista (fallback das companhias).
+        didSet { if aircraftList.isEmpty { rebuildADSBViewCache() } }
     }
     var aircraftList: [Aircraft] = [] {
         didSet { rebuildADSBViewCache() }
@@ -171,9 +172,11 @@ class AppState {
     @ObservationIgnored private var acarsInFlight = false
 
     // Intervalos de cada módulo quando a tab está ativa
-    @ObservationIgnored private let adsbTimerInterval: TimeInterval = 0.75
-    @ObservationIgnored private let adsbSummaryInterval: TimeInterval = 0.75
-    @ObservationIgnored private let adsbAircraftInterval: TimeInterval = 1.5
+    // Resumo traz agregados (24h, companhias, modelos): 5s basta. A lista ao vivo vem do
+    // WebSocket; o polling da lista é só fallback.
+    @ObservationIgnored private let adsbTimerInterval: TimeInterval = 1.0
+    @ObservationIgnored private let adsbSummaryInterval: TimeInterval = 5.0
+    @ObservationIgnored private let adsbAircraftInterval: TimeInterval = 3.0
     @ObservationIgnored private let systemInterval: TimeInterval = 5.0
     @ObservationIgnored private let firestickInterval: TimeInterval = 10.0
     @ObservationIgnored private let radioInterval: TimeInterval = 1.0
@@ -582,10 +585,11 @@ class AppState {
             firstError = error
         }
 
-        if self.adsbSummary != nil || !self.aircraftList.isEmpty {
-            self.adsbError = nil
-        } else {
-            self.adsbError = firstError?.localizedDescription
+        let newError: String? =
+            (self.adsbSummary != nil || !self.aircraftList.isEmpty)
+            ? nil : firstError?.localizedDescription
+        if self.adsbError != newError {
+            self.adsbError = newError
         }
     }
 
@@ -596,7 +600,9 @@ class AppState {
         let localItems = items.map { normalizeAircraftForDisplay($0) }
         let merged = mergeADSBAircraft(localItems: localItems)
 
-        self.localAircraftCount = localItems.count
+        if self.localAircraftCount != localItems.count {
+            self.localAircraftCount = localItems.count
+        }
         if self.aircraftList != merged {
             self.aircraftList = merged
         }
@@ -654,7 +660,7 @@ class AppState {
             }
         }
 
-        if !self.aircraftList.isEmpty {
+        if !self.aircraftList.isEmpty, self.adsbError != nil {
             self.adsbError = nil
         }
     }
@@ -736,22 +742,29 @@ class AppState {
                     await self?.refreshOpenSkyBackground()
                 }
             }
-        } else {
+        } else if self.openskyAircraftCount != 0 {
             self.openskyAircraftCount = 0
         }
 
-        var mergedMap: [String: Aircraft] = [:]
-        for ac in localItems {
-            mergedMap[ac.id] = ac
+        guard !openSkyItems.isEmpty else { return localItems }
+
+        // Ordem estável (local primeiro, depois OpenSky) para `aircraftList != merged`
+        // só disparar quando algo mudou de verdade — dicionário embaralha a ordem.
+        var merged = localItems
+        var indexByID: [String: Int] = [:]
+        indexByID.reserveCapacity(localItems.count + openSkyItems.count)
+        for (i, ac) in localItems.enumerated() where indexByID[ac.id] == nil {
+            indexByID[ac.id] = i
         }
         for ac in openSkyItems {
-            if let existing = mergedMap[ac.id] {
-                mergedMap[ac.id] = existing.with(source: .local, dualTracked: true)
+            if let i = indexByID[ac.id] {
+                merged[i] = merged[i].with(source: .local, dualTracked: true)
             } else {
-                mergedMap[ac.id] = ac
+                indexByID[ac.id] = merged.count
+                merged.append(ac)
             }
         }
-        return Array(mergedMap.values)
+        return merged
     }
 
     private func overlayAircraftMetrics(
@@ -1334,7 +1347,7 @@ class AppState {
                 }
             }
 
-            adsbAirlines = grouped.values
+            let airlines = grouped.values
                 .map { Airline(name: $0.displayName, count: $0.count) }
                 .sorted {
                     if $0.count == $1.count {
@@ -1342,16 +1355,20 @@ class AppState {
                     }
                     return $0.count > $1.count
                 }
+            if adsbAirlines != airlines { adsbAirlines = airlines }
         } else {
-            adsbAirlines = adsbSummary?.airlines ?? []
+            let airlines = adsbSummary?.airlines ?? []
+            if adsbAirlines != airlines { adsbAirlines = airlines }
         }
 
-        adsbNearbyAircraftPreview =
-            aircraftList
-            .filter { $0.computedDistanceNm < 100000 }
-            .sorted { $0.computedDistanceNm < $1.computedDistanceNm }
+        // Distância calculada 1x por aeronave (cria CLLocation), não a cada comparação.
+        let preview = aircraftList
+            .map { ($0, $0.computedDistanceNm) }
+            .filter { $0.1 < 100000 }
+            .sorted { $0.1 < $1.1 }
             .prefix(5)
-            .map { $0 }
+            .map { $0.0 }
+        if adsbNearbyAircraftPreview != preview { adsbNearbyAircraftPreview = preview }
     }
 
     private func normalizedAirlineDisplayName(_ value: String?) -> String? {

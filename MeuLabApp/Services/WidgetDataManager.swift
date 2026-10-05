@@ -38,89 +38,149 @@ struct WidgetSharedData: Codable {
     var lastUpdate: Date
 }
 
-class WidgetDataManager {
+extension WidgetSharedData: Equatable {}
+
+/// Persiste os dados dos widgets no App Group.
+///
+/// Chamado a cada poll (ADS-B, sistema, rádio, ACARS). Para não fazer IO + IPC com o
+/// WidgetKit na main thread a cada segundo:
+/// - mantém o estado em memória e ignora updates sem mudança real;
+/// - grava em fila própria, agrupando updates próximos (`flushDelay`);
+/// - recarrega as timelines no máximo a cada `minReloadInterval`.
+final class WidgetDataManager: @unchecked Sendable {
     static let shared = WidgetDataManager()
     private let appGroup = "group.com.meulab"
     private let dataKey = "widget_shared_data"
-    
+
+    private let flushDelay: TimeInterval = 2
+    private let minReloadInterval: TimeInterval = 60
+
+    // Estado abaixo só é acessado dentro de `queue`.
+    private let queue = DispatchQueue(label: "com.meulab.widget-data", qos: .utility)
+    private lazy var defaults = UserDefaults(suiteName: appGroup)
+    private var current: WidgetSharedData?
+    private var flushScheduled = false
+    private var lastReload: Date = .distantPast
+    private var reloadScheduled = false
+
     // MARK: - Private Helpers
-    private func loadCurrentData() -> WidgetSharedData {
-        if let defaults = UserDefaults(suiteName: appGroup),
-           let data = defaults.data(forKey: dataKey),
-           let decoded = try? JSONDecoder().decode(WidgetSharedData.self, from: data) {
-            return decoded
+
+    private func loadLocked() -> WidgetSharedData {
+        if let current { return current }
+        let loaded: WidgetSharedData
+        if let data = defaults?.data(forKey: dataKey),
+            let decoded = try? JSONDecoder().decode(WidgetSharedData.self, from: data)
+        {
+            loaded = decoded
+        } else {
+            loaded = WidgetSharedData(lastUpdate: Date())
         }
-        return WidgetSharedData(lastUpdate: Date())
+        current = loaded
+        return loaded
     }
-    
-    private func saveData(_ data: WidgetSharedData) {
-        guard let defaults = UserDefaults(suiteName: appGroup) else { return }
-        
-        var updatedData = data
-        updatedData.lastUpdate = Date()
-        
-        if let encoded = try? JSONEncoder().encode(updatedData) {
-            defaults.set(encoded, forKey: dataKey)
-            
-            // Legacy/Backup keys if needed (keeping for backwards compatibility if any)
-            if let cpu = data.cpuUsage { defaults.set(cpu, forKey: "widget_cpu_usage") }
-            if let adsb = data.adsbTotal { defaults.set(adsb, forKey: "widget_adsb_total") }
-            
-            defaults.synchronize()
+
+    /// Aplica `mutate`; só agenda gravação se algo mudou. Retorna se mudou.
+    @discardableResult
+    private func updateLocked(immediate: Bool, _ mutate: (inout WidgetSharedData) -> Void) -> Bool {
+        var data = loadLocked()
+        let before = data
+        mutate(&data)
+        guard data != before else { return false }
+        current = data
+        if immediate {
+            flushLocked(forceReload: true)
+        } else if !flushScheduled {
+            flushScheduled = true
+            queue.asyncAfter(deadline: .now() + flushDelay) { [self] in
+                flushScheduled = false
+                flushLocked(forceReload: false)
+            }
+        }
+        return true
+    }
+
+    private func update(immediate: Bool = false, _ mutate: @escaping (inout WidgetSharedData) -> Void) {
+        queue.async { [self] in updateLocked(immediate: immediate, mutate) }
+    }
+
+    private func flushLocked(forceReload: Bool) {
+        guard var data = current, let defaults else { return }
+        data.lastUpdate = Date()
+        current = data
+        guard let encoded = try? JSONEncoder().encode(data) else { return }
+        defaults.set(encoded, forKey: dataKey)
+        // Chaves legadas (compatibilidade)
+        if let cpu = data.cpuUsage { defaults.set(cpu, forKey: "widget_cpu_usage") }
+        if let adsb = data.adsbTotal { defaults.set(adsb, forKey: "widget_adsb_total") }
+        scheduleReloadLocked(force: forceReload)
+    }
+
+    private func scheduleReloadLocked(force: Bool) {
+        let elapsed = Date().timeIntervalSince(lastReload)
+        if force || elapsed >= minReloadInterval {
+            lastReload = Date()
             WidgetCenter.shared.reloadAllTimelines()
+        } else if !reloadScheduled {
+            reloadScheduled = true
+            queue.asyncAfter(deadline: .now() + (minReloadInterval - elapsed)) { [self] in
+                reloadScheduled = false
+                lastReload = Date()
+                WidgetCenter.shared.reloadAllTimelines()
+            }
         }
     }
-    
+
     // MARK: - Public Updaters
-    
+
     func updateSystem(cpu: Double, memory: Double, disk: Double) {
-        var data = loadCurrentData()
-        data.cpuUsage = cpu
-        data.memoryUsage = memory
-        data.diskUsage = disk
-        saveData(data)
+        update {
+            $0.cpuUsage = cpu
+            $0.memoryUsage = memory
+            $0.diskUsage = disk
+        }
     }
-    
+
     func updateADSB(total: Int, withPos: Int) {
-        var data = loadCurrentData()
-        data.adsbTotal = total
-        data.adsbWithPos = withPos
-        saveData(data)
+        update {
+            $0.adsbTotal = total
+            $0.adsbWithPos = withPos
+        }
     }
-    
+
     func updateRadio(frequency: String, description: String, signal: Int) {
-        var data = loadCurrentData()
-        data.radioFrequency = frequency
-        data.radioDescription = description
-        data.radioSignal = signal
-        saveData(data)
+        update {
+            $0.radioFrequency = frequency
+            $0.radioDescription = description
+            $0.radioSignal = signal
+        }
     }
-    
+
     func updateACARS(lastMessage: String, total: Int, time: String) {
-        var data = loadCurrentData()
-        data.acarsLastMessage = lastMessage
-        data.acarsTotalMessages = total
-        data.acarsLastTime = time
-        saveData(data)
+        update {
+            $0.acarsLastMessage = lastMessage
+            $0.acarsTotalMessages = total
+            $0.acarsLastTime = time
+        }
     }
-    
+
     func updateSatellite(name: String, nextPass: String, elevation: String) {
-        var data = loadCurrentData()
-        data.satName = name
-        data.satNextPass = nextPass
-        data.satElevation = elevation
-        saveData(data)
+        update {
+            $0.satName = name
+            $0.satNextPass = nextPass
+            $0.satElevation = elevation
+        }
     }
 
     /// Publish the next itinerary event to the widgets / complications.
     /// Pass `nil` for every field to clear it (trip finished or no upcoming event).
     func updateTrip(title: String?, time: String?, icon: String?, date: Date?) {
-        var data = loadCurrentData()
-        data.tripNextTitle = title
-        data.tripNextTime = time
-        data.tripNextIcon = icon
-        data.tripNextDate = date
-        saveData(data)
+        // Evento de viagem é raro e o widget deve refletir na hora.
+        update(immediate: true) {
+            $0.tripNextTitle = title
+            $0.tripNextTime = time
+            $0.tripNextIcon = icon
+            $0.tripNextDate = date
+        }
     }
 
     // MARK: - Push Widget Updates
@@ -142,30 +202,19 @@ class WidgetDataManager {
             (userInfo["widget_update"] as? [String: Any])
             ?? ((userInfo["data"] as? [String: Any])?["widget_update"] as? [String: Any])
 
-        guard let update else { return false }
+        guard let update, let system = update["system"] as? [String: Any] else { return false }
+        let cpu = Self.double(system["cpu_usage"])
+        let memory = Self.double(system["memory_usage"])
+        let disk = Self.double(system["disk_usage"])
 
-        var changed = false
-        var data = loadCurrentData()
-
-        if let system = update["system"] as? [String: Any] {
-            if let v = Self.double(system["cpu_usage"]), data.cpuUsage != v {
-                data.cpuUsage = v
-                changed = true
-            }
-            if let v = Self.double(system["memory_usage"]), data.memoryUsage != v {
-                data.memoryUsage = v
-                changed = true
-            }
-            if let v = Self.double(system["disk_usage"]), data.diskUsage != v {
-                data.diskUsage = v
-                changed = true
+        // Síncrono e imediato: o app pode ser suspenso logo após o completionHandler.
+        return queue.sync {
+            updateLocked(immediate: true) {
+                if let cpu { $0.cpuUsage = cpu }
+                if let memory { $0.memoryUsage = memory }
+                if let disk { $0.diskUsage = disk }
             }
         }
-
-        if changed {
-            saveData(data)
-        }
-        return changed
     }
 
     private static func double(_ any: Any?) -> Double? {
