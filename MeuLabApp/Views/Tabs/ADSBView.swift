@@ -114,8 +114,8 @@ private struct ADSBPanelBackground: View {
                         lineWidth: 1.1
                     )
             }
-            .shadow(color: ADSBTheme.shadow.opacity(0.10), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.08), radius: 14, x: 0, y: 6)
+            // Uma sombra só (eram duas de raio 22+14 por card — blur offscreen caro no scroll).
+            .shadow(color: ADSBTheme.shadow.opacity(0.12), radius: 12, x: 0, y: 8)
     }
 }
 

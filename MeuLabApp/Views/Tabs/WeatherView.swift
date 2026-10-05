@@ -244,6 +244,7 @@ private enum WeatherAtmosphere: Equatable {
 private struct WeatherAtmosphereBackground: View {
     let style: WeatherAtmosphere
     @State private var animate = false
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     var body: some View {
         GeometryReader { geometry in
@@ -313,9 +314,14 @@ private struct WeatherAtmosphereBackground: View {
                 }
             }
             .ignoresSafeArea()
+            // Achata nuvens com blur + gotas animadas numa camada só (Metal), em vez de
+            // ~22 camadas animando e borrando separadamente atrás do conteúdo.
+            .drawingGroup()
             .onAppear {
-                animate = true
+                // Animação infinita de fundo: respeita Reduzir Movimento e Modo Pouca Energia.
+                animate = !reduceMotion && !ProcessInfo.processInfo.isLowPowerModeEnabled
             }
+            .onDisappear { animate = false }
         }
         .allowsHitTesting(false)
     }

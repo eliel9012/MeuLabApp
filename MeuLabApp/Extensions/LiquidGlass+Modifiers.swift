@@ -91,11 +91,15 @@ private struct ContentCardModifier: ViewModifier {
             if let tint { return tint.opacity(increased ? 0.85 : 0.30) }
             return increased ? Color(uiColor: .label).opacity(0.45) : Color(uiColor: .separator).opacity(0.55)
         }()
+        // Sombra na forma do fundo, não no conteúdo: mesmo visual (fundo é opaco),
+        // sem forçar render offscreen de todo o texto/ícones do card.
         content
-            .background(shape.fill(Color(uiColor: .secondarySystemGroupedBackground)))
+            .background(
+                shape.fill(Color(uiColor: .secondarySystemGroupedBackground))
+                    .shadow(color: .black.opacity(colorScheme == .light ? 0.06 : 0), radius: 8, y: 2)
+            )
             .background(shape.fill((tint ?? .clear).opacity(tint == nil ? 0 : 0.10)))
             .overlay(shape.stroke(edge, lineWidth: increased ? 1.5 : (tint == nil ? 0.5 : 1)))
-            .shadow(color: .black.opacity(colorScheme == .light ? 0.06 : 0), radius: 8, y: 2)
     }
 }
 

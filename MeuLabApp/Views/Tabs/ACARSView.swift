@@ -89,8 +89,8 @@ private struct ACARSPanelBackground: View {
                         lineWidth: 1.1
                     )
             }
-            .shadow(color: ACARSTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.07), radius: 14, x: 0, y: 6)
+            // Uma sombra só (eram duas de raio 22+14 por card — blur offscreen caro no scroll).
+            .shadow(color: ACARSTheme.shadow.opacity(0.10), radius: 12, x: 0, y: 8)
     }
 }
 
@@ -235,6 +235,8 @@ struct ACARSView: View {
                     .blur(radius: 40)
                     .offset(x: isWide ? 220 : 120, y: 280)
             }
+            // Rasteriza os 3 círculos borrados numa camada só (Metal) em vez de 3 blurs.
+            .drawingGroup()
             .ignoresSafeArea()
         }
         .navigationBarTitleDisplayMode(.inline)

@@ -1076,7 +1076,8 @@ struct RadarAircraftPin: View {
                     .font(.system(size: isSelected ? 24 : 18, weight: .semibold))
                     .foregroundStyle(markerColor)
                     .rotationEffect(.degrees(aircraft.isMilitary ? 0 : rotationDegrees))
-                    .shadow(color: markerColor.opacity(0.5), radius: isSelected ? 6 : 3)
+                    // Glow só no selecionado: sombra em 100+ pinos pesa no pan/zoom do mapa.
+                    .shadow(color: markerColor.opacity(isSelected ? 0.5 : 0), radius: isSelected ? 6 : 0)
 
                 // Favorite star
                 if isFavorite {
