@@ -1017,16 +1017,7 @@ struct ADSBView: View {
     // MARK: - Helpers
 
     private func filteredAircraft(for filter: MovementFilter) -> [Aircraft] {
-        print("[ADSBView] 🔍 Filtering aircraft for: \(filter.title)")
-        print("[ADSBView]   Total aircraft in list: \(appState.aircraftList.count)")
-
         let filtered = appState.aircraftList.filter { filter.matches($0) }
-        print("[ADSBView]   Filtered count: \(filtered.count)")
-
-        if filtered.count > 0, let first = filtered.first {
-            print(
-                "[ADSBView]   First aircraft: \(first.callsign) - VR: \(first.verticalRateFpm) fpm")
-        }
 
         switch filter {
         case .climbing:
@@ -1039,11 +1030,8 @@ struct ADSBView: View {
     }
 
     private func formatDay(_ day: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        if let date = formatter.date(from: day) {
-            formatter.dateFormat = "dd/MM"
-            return formatter.string(from: date)
+        if let date = Formatters.apiDate.date(from: day) {
+            return ADSBFormat.dayMonth.string(from: date)
         }
         return day
     }
@@ -1127,7 +1115,7 @@ private struct MovementAircraftSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(.top, 36)
                     } else {
-                        VStack(spacing: 10) {
+                        LazyVStack(spacing: 10) {
                             ForEach(sortedAircraft) { ac in
                                 NavigationLink(destination: AircraftDetailView(ac: ac)) {
                                     MovementAircraftRow(
@@ -1909,16 +1897,17 @@ struct ADSBAirlineFullscreenView: View {
     }
 
     private var sortedAircraft: [Aircraft] {
-        aircraft.sorted { lhs, rhs in
-            let left =
-                lhs.computedDistanceNm < 900000
-                ? lhs.computedDistanceNm : Double.greatestFiniteMagnitude
-            let right =
-                rhs.computedDistanceNm < 900000
-                ? rhs.computedDistanceNm : Double.greatestFiniteMagnitude
-            if left != right { return left < right }
-            return lhs.displayCallsign < rhs.displayCallsign
-        }
+        // Distância calculada 1x por aeronave (cria CLLocation), não a cada comparação.
+        aircraft
+            .map { ac -> (Aircraft, Double) in
+                let d = ac.computedDistanceNm
+                return (ac, d < 900000 ? d : Double.greatestFiniteMagnitude)
+            }
+            .sorted { lhs, rhs in
+                if lhs.1 != rhs.1 { return lhs.1 < rhs.1 }
+                return lhs.0.displayCallsign < rhs.0.displayCallsign
+            }
+            .map { $0.0 }
     }
 
     var body: some View {
@@ -2017,8 +2006,9 @@ struct ADSBAirlineFullscreenView: View {
                             .padding(.vertical, 40)
                             .adsbPanel(cornerRadius: 20, highlight: ADSBTheme.radarBlue)
                         } else {
+                            let rows = sortedAircraft
                             VStack(spacing: 0) {
-                                ForEach(Array(sortedAircraft.enumerated()), id: \.element.id) {
+                                ForEach(Array(rows.enumerated()), id: \.element.id) {
                                     index, aircraft in
                                     Button {
                                         selectedAircraft = aircraft
@@ -2028,7 +2018,7 @@ struct ADSBAirlineFullscreenView: View {
                                     }
                                     .buttonStyle(.plain)
 
-                                    if index < sortedAircraft.count - 1 {
+                                    if index < rows.count - 1 {
                                         Divider().padding(.leading, 56)
                                     }
                                 }
@@ -3457,4 +3447,12 @@ struct DetailRow_Legacy: View {
                 .bold()
         }
     }
+}
+
+private enum ADSBFormat {
+    static let dayMonth: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM"
+        return formatter
+    }()
 }

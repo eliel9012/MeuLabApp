@@ -56,6 +56,30 @@ struct Formatters {
         return formatter
     }()
     
+    /// Formatos sem fuso que a API às vezes manda (interpretados como UTC).
+    private static let looseAPIFormatters: [DateFormatter] = [
+        "yyyy-MM-dd'T'HH:mm:ss",
+        "yyyy-MM-dd HH:mm:ss",
+        "yyyy-MM-dd'T'HH:mm:ssZ",
+    ].map { format in
+        let formatter = DateFormatter()
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone(secondsFromGMT: 0)
+        formatter.dateFormat = format
+        return formatter
+    }
+
+    /// Parse de timestamp da API (ISO8601 com/sem fração, ou formatos soltos).
+    /// Usa formatters cacheados — criar formatter por chamada é caro em listas/gráficos.
+    static func parseAPITimestamp(_ timestamp: String) -> Date? {
+        if let date = isoDate.date(from: timestamp) { return date }
+        if let date = isoDateNoFrac.date(from: timestamp) { return date }
+        for formatter in looseAPIFormatters {
+            if let date = formatter.date(from: timestamp) { return date }
+        }
+        return nil
+    }
+
     static func formatDuration(seconds: Int) -> String {
         let formatter = DateComponentsFormatter()
         formatter.allowedUnits = [.day, .hour, .minute]

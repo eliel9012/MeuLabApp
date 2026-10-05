@@ -1093,9 +1093,7 @@ struct ViagemView: View {
     }
 
     private func clockCell(place: String, zone: TimeZone, highlighted: Bool = false) -> some View {
-        let df = DateFormatter()
-        df.dateFormat = "HH:mm"
-        df.timeZone = zone
+        let df = ViagemClockFormat.formatter(for: zone)
         return VStack(alignment: .leading, spacing: 1) {
             Text(place.uppercased())
                 .scaledFont(size: 9.5, weight: .bold)
@@ -1320,5 +1318,19 @@ enum ViagemBridge {
         return keyed
             .sorted { ($0.date, $0.index) < ($1.date, $1.index) }
             .map(\.stop)
+    }
+}
+
+/// Cache de formatters "HH:mm" por fuso (usado só a partir do body da view, @MainActor).
+private enum ViagemClockFormat {
+    private static var cache: [String: DateFormatter] = [:]
+
+    static func formatter(for zone: TimeZone) -> DateFormatter {
+        if let cached = cache[zone.identifier] { return cached }
+        let df = DateFormatter()
+        df.dateFormat = "HH:mm"
+        df.timeZone = zone
+        cache[zone.identifier] = df
+        return df
     }
 }

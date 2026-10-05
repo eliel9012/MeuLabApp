@@ -889,14 +889,10 @@ struct RadioView: View {
 
     private func relativeTimestamp(_ iso: String?) -> String? {
         guard let iso else { return nil }
-        let df = ISO8601DateFormatter()
-        df.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let d1 = df.date(from: iso) ?? ISO8601DateFormatter().date(from: iso)
+        let d1 = Formatters.isoDate.date(from: iso) ?? Formatters.isoDateNoFrac.date(from: iso)
         guard let date = d1 else { return nil }
 
-        let fmt = RelativeDateTimeFormatter()
-        fmt.unitsStyle = .abbreviated
-        return fmt.localizedString(for: date, relativeTo: Date())
+        return RadioFormat.relative.localizedString(for: date, relativeTo: Date())
     }
 
     @MainActor
@@ -1422,14 +1418,10 @@ struct RadioSongsView: View {
     }
 
     private func relativeTimestamp(_ iso: String) -> String? {
-        let df = ISO8601DateFormatter()
-        df.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-        let d1 = df.date(from: iso) ?? ISO8601DateFormatter().date(from: iso)
+        let d1 = Formatters.isoDate.date(from: iso) ?? Formatters.isoDateNoFrac.date(from: iso)
         guard let date = d1 else { return nil }
 
-        let fmt = RelativeDateTimeFormatter()
-        fmt.unitsStyle = .abbreviated
-        return fmt.localizedString(for: date, relativeTo: Date())
+        return RadioFormat.relative.localizedString(for: date, relativeTo: Date())
     }
 
     private func load() async {
@@ -1448,4 +1440,12 @@ struct RadioSongsView: View {
             }
         }
     }
+}
+
+private enum RadioFormat {
+    static let relative: RelativeDateTimeFormatter = {
+        let fmt = RelativeDateTimeFormatter()
+        fmt.unitsStyle = .abbreviated
+        return fmt
+    }()
 }

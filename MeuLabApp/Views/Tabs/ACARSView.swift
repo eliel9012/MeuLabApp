@@ -674,17 +674,14 @@ struct ACARSView: View {
     }
 
     private func formatDay(_ day: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd"
-        if let date = formatter.date(from: day) {
-            formatter.dateFormat = "dd/MM"
-            return formatter.string(from: date)
+        if let date = Formatters.apiDate.date(from: day) {
+            return ACARSFormat.dayMonth.string(from: date)
         }
         return day
     }
 
     private func formatAlertTime(_ timeString: String) -> String {
-        if let date = ISO8601DateFormatter().date(from: timeString) {
+        if let date = Formatters.isoDateNoFrac.date(from: timeString) {
             return Formatters.time.string(from: date)
         }
         return formatTime(timeString)
@@ -999,4 +996,12 @@ struct ACARSDetailedMessageRow: View {
 #Preview {
     ACARSView()
         .environment(AppState())
+}
+
+private enum ACARSFormat {
+    static let dayMonth: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "dd/MM"
+        return formatter
+    }()
 }

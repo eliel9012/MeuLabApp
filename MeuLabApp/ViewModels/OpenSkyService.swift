@@ -146,9 +146,6 @@ actor OpenSkyService {
         // Add Bearer Token if we have one
         if let token = token {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            print("[OpenSky] 🔐 Using Bearer Token auth")
-        } else {
-            print("[OpenSky] 👤 Using anonymous request")
         }
 
         let (data, response) = try await session.data(for: request)

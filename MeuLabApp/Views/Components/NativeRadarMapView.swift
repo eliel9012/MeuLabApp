@@ -497,9 +497,7 @@ private struct NativeRadarMapContent: View {
     }
 
     private var timeString: String {
-        let f = DateFormatter()
-        f.dateFormat = "HH:mm:ss"
-        return f.string(from: Date())
+        RadarClockFormat.hms.string(from: Date())
     }
 
     private func headerButton(icon: String, label: String, isActive: Bool, action: @escaping () -> Void)
@@ -1150,4 +1148,12 @@ private struct RadarStatCell: View {
         )
         .clipShape(RoundedRectangle(cornerRadius: 10, style: .continuous))
     }
+}
+
+private enum RadarClockFormat {
+    static let hms: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "HH:mm:ss"
+        return f
+    }()
 }

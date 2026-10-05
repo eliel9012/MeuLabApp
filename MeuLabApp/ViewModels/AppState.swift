@@ -692,6 +692,8 @@ class AppState {
     /// OpenSky roda em background separado — nunca bloqueia o refresh rápido do ADSB local.
     @ObservationIgnored private var cachedOpenSkyItems: [Aircraft] = []
 
+    private static let openSkyMaxAircraft = 300
+
     private func refreshOpenSkyBackground() async {
         var box: (minLat: Double, maxLat: Double, minLon: Double, maxLon: Double)? = nil
 
@@ -715,8 +717,29 @@ class AppState {
 
         do {
             let states = try await openSkyService.fetchStates(boundingBox: box)
-            self.cachedOpenSkyItems = states
-            self.openskyAircraftCount = states.count
+            // Caixa de ±5° pode trazer milhares de aviões; cada um vira pino no mapa e
+            // entra em filtros/sorts. Mantém só os mais próximos do centro.
+            let capped: [Aircraft]
+            if states.count > Self.openSkyMaxAircraft, let box {
+                let cLat = (box.minLat + box.maxLat) / 2
+                let cLon = (box.minLon + box.maxLon) / 2
+                capped = states
+                    .map { ac -> (Aircraft, Double) in
+                        guard let lat = ac.lat, let lon = ac.lon else { return (ac, .infinity) }
+                        let dLat = lat - cLat
+                        let dLon = (lon - cLon) * cos(cLat * .pi / 180)
+                        return (ac, dLat * dLat + dLon * dLon)
+                    }
+                    .sorted { $0.1 < $1.1 }
+                    .prefix(Self.openSkyMaxAircraft)
+                    .map { $0.0 }
+            } else {
+                capped = states
+            }
+            self.cachedOpenSkyItems = capped
+            if self.openskyAircraftCount != capped.count {
+                self.openskyAircraftCount = capped.count
+            }
         } catch {
             // Mantém o cache anterior em caso de erro
         }
@@ -1143,7 +1166,7 @@ class AppState {
             }
 
             return WeatherData(
-                timestamp: ISO8601DateFormatter().string(from: Date()),
+                timestamp: Formatters.isoDateNoFrac.string(from: Date()),
                 location: String(
                     format: "%.4f, %.4f", location.coordinate.latitude,
                     location.coordinate.longitude),
@@ -1178,13 +1201,17 @@ class AppState {
         }
     #endif
 
-    private func isoDay(_ date: Date) -> String {
+    private static let isoDayFormatter: DateFormatter = {
         let f = DateFormatter()
         f.calendar = Calendar(identifier: .gregorian)
         f.locale = Locale(identifier: "en_US_POSIX")
         f.timeZone = TimeZone(secondsFromGMT: 0)
         f.dateFormat = "yyyy-MM-dd"
-        return f.string(from: date)
+        return f
+    }()
+
+    private func isoDay(_ date: Date) -> String {
+        Self.isoDayFormatter.string(from: date)
     }
 
     // MARK: - Satellite
@@ -1386,59 +1413,33 @@ class AppState {
     // MARK: - ACARS
 
     func refreshACARS() async {
-        guard !acarsLoading else {
-            print("[ACARS] ⏭️ Skipping refresh - already loading")
-            return
-        }
+        guard !acarsLoading else { return }
         acarsLoading = true
         defer { acarsLoading = false }
 
-        print("[ACARS] 🔄 Starting refresh...")
-
         do {
-            print("[ACARS] 📡 Fetching summary...")
-            let summary = try await api.fetchACARSSummary()
-            print("[ACARS] ✅ Summary received: \(summary.today.messages) messages today")
-
-            print("[ACARS] 📡 Fetching messages...")
-            let messageList = try await api.fetchACARSMessages(limit: 20)
-            print("[ACARS] ✅ Messages received: \(messageList.messages.count) messages")
+            // Três endpoints independentes: em paralelo (antes era 3x a latência do túnel).
+            async let summaryReq = api.fetchACARSSummary()
+            async let messagesReq = api.fetchACARSMessages(limit: 20)
+            async let hourlyReq = api.fetchACARSHourly()
+            let (summary, messageList, hourly) = try await (summaryReq, messagesReq, hourlyReq)
 
             // Populate registration cache from ACARS
-            var newRegistrations = 0
             for msg in messageList.messages {
                 if let flight = msg.flight, !flight.isEmpty,
-                    let tail = msg.tail, !tail.isEmpty
+                    let tail = msg.tail, !tail.isEmpty,
+                    registrationCache[flight] == nil
                 {
-                    if registrationCache[flight] == nil {
-                        registrationCache[flight] = tail
-                        newRegistrations += 1
-                    }
+                    registrationCache[flight] = tail
                 }
             }
-            if newRegistrations > 0 {
-                print("[ACARS] 💾 Cached \(newRegistrations) new registrations from ACARS")
-            }
-
-            print("[ACARS] 📡 Fetching hourly stats...")
-            let hourly = try await api.fetchACARSHourly()
-            print("[ACARS] ✅ Hourly stats received: \(hourly.hours.count) hours")
 
             if self.acarsSummary != summary {
-                print("[ACARS] 📝 Updating summary (changed)")
                 self.acarsSummary = summary
-            } else {
-                print("[ACARS] ⏭️ Summary unchanged, skipping update")
             }
 
             let newMessages = messageList.messages
             if self.acarsMessages != newMessages {
-                print("[ACARS] 📝 Updating messages: \(newMessages.count) messages")
-                if let first = newMessages.first {
-                    print(
-                        "[ACARS]   First message: \(first.flight ?? "N/A") - \(first.label ?? "N/A")"
-                    )
-                }
                 self.acarsMessages = newMessages
 
                 if let msg = newMessages.first {
@@ -1448,30 +1449,23 @@ class AppState {
                         time: msg.time
                     )
                 }
-            } else {
-                print("[ACARS] ⏭️ Messages unchanged, skipping update")
             }
 
             let newHourly = hourly.hours
             if self.acarsHourly != newHourly {
-                print("[ACARS] 📝 Updating hourly stats: \(newHourly.count) hours")
                 self.acarsHourly = newHourly
-            } else {
-                print("[ACARS] ⏭️ Hourly stats unchanged, skipping update")
             }
 
-            self.acarsError = nil
-            print("[ACARS] ✅ Refresh completed successfully")
-        } catch {
-            print("[ACARS] ❌ Error during refresh: \(error.localizedDescription)")
-            if let apiError = error as? APIError {
-                print("[ACARS]   API Error details: \(apiError)")
+            if self.acarsError != nil {
+                self.acarsError = nil
             }
+        } catch {
+            #if DEBUG
+                print("[ACARS] refresh falhou: \(error)")
+            #endif
+            // Mantém dados anteriores; só mostra erro se não há nada para exibir.
             if acarsSummary == nil {
-                print("[ACARS] 📝 Setting error message (no previous data)")
                 self.acarsError = error.localizedDescription
-            } else {
-                print("[ACARS] ⏭️ Keeping previous data despite error")
             }
         }
     }

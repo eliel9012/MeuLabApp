@@ -1091,14 +1091,11 @@ struct AnalyticsView: View {
     }
 
     private func parseDate(_ timestamp: String) -> Date {
-        let formatter = ISO8601DateFormatter()
-        if let date = formatter.date(from: timestamp) {
+        if let date = Formatters.isoDateNoFrac.date(from: timestamp) {
             return date
         }
         // Fallback
-        let dateFormatter = DateFormatter()
-        dateFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        return dateFormatter.date(from: timestamp) ?? Date()
+        return AnalyticsFormat.apiLocal.date(from: timestamp) ?? Date()
     }
 
     @ViewBuilder
@@ -1947,4 +1944,12 @@ extension MetricTrend {
 #Preview {
     AnalyticsView()
         .environment(AppState())
+}
+
+private enum AnalyticsFormat {
+    static let apiLocal: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        return formatter
+    }()
 }

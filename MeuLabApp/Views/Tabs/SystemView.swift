@@ -17,33 +17,7 @@ private func systemRGBA(_ red: CGFloat, _ green: CGFloat, _ blue: CGFloat, _ alp
 }
 
 private func systemParseDate(_ timestamp: String) -> Date? {
-    let isoWithFractional = ISO8601DateFormatter()
-    isoWithFractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-    if let date = isoWithFractional.date(from: timestamp) {
-        return date
-    }
-
-    let iso = ISO8601DateFormatter()
-    iso.formatOptions = [.withInternetDateTime]
-    if let date = iso.date(from: timestamp) {
-        return date
-    }
-
-    let dateFormatter = DateFormatter()
-    dateFormatter.locale = Locale(identifier: "en_US_POSIX")
-    dateFormatter.timeZone = TimeZone(secondsFromGMT: 0)
-    for format in [
-        "yyyy-MM-dd'T'HH:mm:ss",
-        "yyyy-MM-dd HH:mm:ss",
-        "yyyy-MM-dd'T'HH:mm:ssZ",
-    ] {
-        dateFormatter.dateFormat = format
-        if let date = dateFormatter.date(from: timestamp) {
-            return date
-        }
-    }
-
-    return nil
+    Formatters.parseAPITimestamp(timestamp)
 }
 
 private enum SystemTheme {

@@ -321,14 +321,9 @@ struct CommandRow: View {
     }
 
     private func formatDate(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        guard let date = formatter.date(from: dateString) else { return dateString }
+        guard let date = RemoteControlFormat.apiLocal.date(from: dateString) else { return dateString }
 
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .short
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        return RemoteControlFormat.shortDateTime.string(from: date)
     }
 }
 
@@ -534,14 +529,9 @@ struct CommandDetailView: View {
     }
 
     private func formatFullDate(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        guard let date = formatter.date(from: dateString) else { return dateString }
+        guard let date = RemoteControlFormat.apiLocal.date(from: dateString) else { return dateString }
 
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .medium
-        displayFormatter.timeStyle = .medium
-        return displayFormatter.string(from: date)
+        return RemoteControlFormat.mediumDateTime.string(from: date)
     }
 
     private func refreshCommand() {
@@ -622,4 +612,26 @@ extension CommandStatus {
 #Preview {
     RemoteControlView()
         .environment(AppState())
+}
+
+private enum RemoteControlFormat {
+    static let apiLocal: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        return formatter
+    }()
+
+    static let shortDateTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    static let mediumDateTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .medium
+        formatter.timeStyle = .medium
+        return formatter
+    }()
 }

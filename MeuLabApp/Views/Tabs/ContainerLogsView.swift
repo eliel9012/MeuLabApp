@@ -183,17 +183,10 @@ struct ContainerLogsView: View {
 
     private func extractTimestamp(from line: String) -> Date? {
         // Try to extract timestamp from common formats
-        let patterns = [
-            #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"#,
-            #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"#,
-            #"\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}"#,
-        ]
-
-        for pattern in patterns {
-            let regex = try? NSRegularExpression(pattern: pattern)
+        for regex in ContainerLogsFormat.timestamps {
             let range = NSRange(location: 0, length: line.utf16.count)
 
-            if let match = regex?.firstMatch(in: line, options: [], range: range) {
+            if let match = regex.firstMatch(in: line, options: [], range: range) {
                 let timestampString = (line as NSString).substring(with: match.range)
                 return parseTimestamp(timestampString)
             }
@@ -204,8 +197,7 @@ struct ContainerLogsView: View {
 
     private func parseTimestamp(_ string: String) -> Date? {
         // Try ISO8601 first
-        let iso8601Formatter = ISO8601DateFormatter()
-        if let date = iso8601Formatter.date(from: string) {
+        if let date = Formatters.isoDateNoFrac.date(from: string) {
             return date
         }
 
@@ -224,21 +216,12 @@ struct ContainerLogsView: View {
 
     private func extractMessage(from line: String) -> String {
         // Remove timestamp and log level prefixes
-        let patterns = [
-            #"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+"#,
-            #"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\s+"#,
-            #"^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\s+"#,
-            #"^(ERROR|WARN|INFO|DEBUG)\s+"#,
-        ]
-
         var result = line
 
-        for pattern in patterns {
-            if let regex = try? NSRegularExpression(pattern: pattern) {
-                let range = NSRange(location: 0, length: result.utf16.count)
-                result = regex.stringByReplacingMatches(
-                    in: result, options: [], range: range, withTemplate: "")
-            }
+        for regex in ContainerLogsFormat.messagePrefixes {
+            let range = NSRange(location: 0, length: result.utf16.count)
+            result = regex.stringByReplacingMatches(
+                in: result, options: [], range: range, withTemplate: "")
         }
 
         return result.trimmingCharacters(in: .whitespaces)
@@ -527,9 +510,7 @@ struct LogEntryRow: View {
     }
 
     private func formatTime(_ date: Date) -> String {
-        let formatter = DateFormatter()
-        formatter.timeStyle = .medium
-        return formatter.string(from: date)
+        ContainerLogsFormat.mediumTime.string(from: date)
     }
 }
 
@@ -618,4 +599,25 @@ extension DateFormatter {
 #Preview {
     ContainerLogsView()
         .environment(AppState())
+}
+
+private enum ContainerLogsFormat {
+    static let timestamps: [NSRegularExpression] = [
+        #"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}"#,
+        #"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}"#,
+        #"\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}"#,
+    ].compactMap { try? NSRegularExpression(pattern: $0) }
+
+    static let messagePrefixes: [NSRegularExpression] = [
+        #"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d+Z\s+"#,
+        #"^\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}\s+"#,
+        #"^\d{2}/\d{2}/\d{4} \d{2}:\d{2}:\d{2}\s+"#,
+        #"^(ERROR|WARN|INFO|DEBUG)\s+"#,
+    ].compactMap { try? NSRegularExpression(pattern: $0) }
+
+    static let mediumTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .medium
+        return formatter
+    }()
 }

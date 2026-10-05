@@ -422,13 +422,9 @@ struct HealthCheckView: View {
     }
 
     private func formatTime(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        guard let date = formatter.date(from: dateString) else { return dateString }
+        guard let date = HealthCheckFormat.apiLocal.date(from: dateString) else { return dateString }
 
-        let displayFormatter = DateFormatter()
-        displayFormatter.timeStyle = .short
-        return displayFormatter.string(from: date)
+        return HealthCheckFormat.shortTime.string(from: date)
     }
 }
 
@@ -549,19 +545,13 @@ struct HealthHistoryRow: View {
     }
 
     private func formatDate(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        guard let date = formatter.date(from: dateString) else { return dateString }
+        guard let date = HealthCheckFormat.apiLocal.date(from: dateString) else { return dateString }
 
-        let displayFormatter = DateFormatter()
-        displayFormatter.dateStyle = .short
-        return displayFormatter.string(from: date)
+        return HealthCheckFormat.shortDate.string(from: date)
     }
 
     private func formatTimeAgo(_ dateString: String) -> String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-        guard let date = formatter.date(from: dateString) else { return dateString }
+        guard let date = HealthCheckFormat.apiLocal.date(from: dateString) else { return dateString }
 
         return Formatters.relativeDate.localizedString(for: date, relativeTo: Date())
     }
@@ -632,4 +622,24 @@ extension HealthStatus {
 #Preview {
     HealthCheckView()
         .environment(AppState())
+}
+
+private enum HealthCheckFormat {
+    static let apiLocal: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        return formatter
+    }()
+
+    static let shortTime: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.timeStyle = .short
+        return formatter
+    }()
+
+    static let shortDate: DateFormatter = {
+        let formatter = DateFormatter()
+        formatter.dateStyle = .short
+        return formatter
+    }()
 }
