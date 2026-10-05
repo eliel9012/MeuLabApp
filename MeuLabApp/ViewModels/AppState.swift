@@ -47,8 +47,14 @@ class AppState {
         didSet { if aircraftList.isEmpty { rebuildADSBViewCache() } }
     }
     var aircraftList: [Aircraft] = [] {
-        didSet { rebuildADSBViewCache() }
+        didSet {
+            if aircraftCount != aircraftList.count { aircraftCount = aircraftList.count }
+            rebuildADSBViewCache()
+        }
     }
+    /// Contagem separada: telas que só precisam do número não são invalidadas
+    /// a cada snapshot (posições mudam sempre, a contagem raramente).
+    private(set) var aircraftCount: Int = 0
     var localAircraftCount: Int = 0  // Aeronaves do radar local
     var openskyAircraftCount: Int = 0  // Aeronaves da OpenSky
     var adsbError: String?

@@ -233,7 +233,7 @@ struct ADSBView: View {
                                 liveStatsHeader(
                                     summary,
                                     countOverride: appState.isOpenSkyEnabled
-                                        ? appState.aircraftList.count : nil)
+                                        ? appState.aircraftCount : nil)
 
                                 // Quick Stats Grid
                                 statsGridSection(summary)
@@ -253,7 +253,7 @@ struct ADSBView: View {
                         }
                     } else if let error = appState.adsbError {
                         ErrorCard(message: error)
-                    } else if !appState.aircraftList.isEmpty {
+                    } else if appState.aircraftCount > 0 {
                         ErrorCard(message: "Resumo indisponivel. Mostrando aeronaves da rede.")
                     } else {
                         LoadingCard()
@@ -271,8 +271,8 @@ struct ADSBView: View {
                             }
 
                             // Aircraft List Preview
-                            if !appState.aircraftList.isEmpty {
-                                aircraftPreviewSection
+                            if appState.aircraftCount > 0 {
+                                ADSBNearbyAircraftSection(showAircraftList: $showAircraftList)
                             }
                     }
 
@@ -858,68 +858,6 @@ struct ADSBView: View {
     // MARK: - Aircraft Preview
 
     // MARK: - Aircraft Preview
-
-    @State private var selectedNearbyAircraft: Aircraft?
-
-    private var aircraftPreviewSection: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                SectionHeader(title: "Aeronaves Próximas", icon: "airplane")
-
-                Spacer()
-
-                Button {
-                    showAircraftList = true
-                } label: {
-                    Text("Ver Todas")
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(ADSBTheme.radarBlue)
-                }
-            }
-
-            VStack(spacing: 0) {
-                let nearbyAircraft = appState.adsbNearbyAircraftPreview
-
-                ForEach(Array(nearbyAircraft.enumerated()), id: \.element.id) { index, aircraft in
-                    Button {
-                        selectedNearbyAircraft = aircraft
-                    } label: {
-                        AircraftRowApple(aircraft: aircraft)
-                            .contentShape(Rectangle())  // Ensure tap area covers the row
-                    }
-                    .buttonStyle(.plain)
-
-                    if index < nearbyAircraft.count - 1 {
-                        Divider().padding(.leading, 56)
-                    }
-                }
-
-                if nearbyAircraft.isEmpty {
-                    ContentUnavailableView(
-                        "Nenhuma aeronave próxima", systemImage: "location.slash"
-                    )
-                    .padding()
-                }
-            }
-            .padding(16)
-            .contentCard(cornerRadius: 16)
-        }
-        .sheet(item: $selectedNearbyAircraft) { aircraft in
-            NavigationStack {
-                AircraftDetailView(ac: aircraft)
-                    .navigationTitle(aircraft.displayCallsign)
-                    .navigationBarTitleDisplayMode(NavigationBarItem.TitleDisplayMode.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .cancellationAction) {
-                            Button("Fechar") {
-                                selectedNearbyAircraft = nil
-                            }
-                        }
-                    }
-            }
-            .presentationDetents([.medium, .large])
-        }
-    }
 
     // MARK: - Tuya Sensor
 
@@ -3455,4 +3393,72 @@ private enum ADSBFormat {
         formatter.dateFormat = "dd/MM"
         return formatter
     }()
+}
+
+/// "Aeronaves Próximas" isolada: só esta seção re-renderiza quando o top-5 muda
+/// (a cada snapshot), não o ADSBView inteiro.
+private struct ADSBNearbyAircraftSection: View {
+    @Environment(AppState.self) private var appState
+    @Binding var showAircraftList: Bool
+    @State private var selectedNearbyAircraft: Aircraft?
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack {
+                SectionHeader(title: "Aeronaves Próximas", icon: "airplane")
+
+                Spacer()
+
+                Button {
+                    showAircraftList = true
+                } label: {
+                    Text("Ver Todas")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(ADSBTheme.radarBlue)
+                }
+            }
+
+            VStack(spacing: 0) {
+                let nearbyAircraft = appState.adsbNearbyAircraftPreview
+
+                ForEach(Array(nearbyAircraft.enumerated()), id: \.element.id) { index, aircraft in
+                    Button {
+                        selectedNearbyAircraft = aircraft
+                    } label: {
+                        AircraftRowApple(aircraft: aircraft)
+                            .contentShape(Rectangle())  // Ensure tap area covers the row
+                    }
+                    .buttonStyle(.plain)
+
+                    if index < nearbyAircraft.count - 1 {
+                        Divider().padding(.leading, 56)
+                    }
+                }
+
+                if nearbyAircraft.isEmpty {
+                    ContentUnavailableView(
+                        "Nenhuma aeronave próxima", systemImage: "location.slash"
+                    )
+                    .padding()
+                }
+            }
+            .padding(16)
+            .contentCard(cornerRadius: 16)
+        }
+        .sheet(item: $selectedNearbyAircraft) { aircraft in
+            NavigationStack {
+                AircraftDetailView(ac: aircraft)
+                    .navigationTitle(aircraft.displayCallsign)
+                    .navigationBarTitleDisplayMode(NavigationBarItem.TitleDisplayMode.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .cancellationAction) {
+                            Button("Fechar") {
+                                selectedNearbyAircraft = nil
+                            }
+                        }
+                    }
+            }
+            .presentationDetents([.medium, .large])
+        }
+    }
 }
