@@ -142,7 +142,12 @@ final class AircraftStream {
             @unknown default: data = nil
             }
             guard let data else { continue }
-            handle(data)
+            // Snapshot de ~100 aeronaves: decodifica fora da main.
+            let envelope = await Task.detached(priority: .userInitiated) {
+                try? JSONDecoder().decode(StreamMessage.self, from: data)
+            }.value
+            guard gen == generation, let envelope else { continue }
+            handle(envelope)
         }
     }
 
@@ -165,13 +170,7 @@ final class AircraftStream {
         }
     }
 
-    private func handle(_ data: Data) {
-        let envelope: StreamMessage
-        do {
-            envelope = try JSONDecoder().decode(StreamMessage.self, from: data)
-        } catch {
-            return
-        }
+    private func handle(_ envelope: StreamMessage) {
         isConnected = true
         lastMessageAt = Date()
         backoff = 1
@@ -200,7 +199,7 @@ final class AircraftStream {
     }
 }
 
-private struct StreamMessage: Decodable {
+private struct StreamMessage: Decodable, Sendable {
     let type: String
     let count: Int?
     let items: [Aircraft]?

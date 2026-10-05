@@ -179,7 +179,7 @@ class AppState {
     @ObservationIgnored private let adsbAircraftInterval: TimeInterval = 3.0
     @ObservationIgnored private let systemInterval: TimeInterval = 5.0
     @ObservationIgnored private let firestickInterval: TimeInterval = 10.0
-    @ObservationIgnored private let radioInterval: TimeInterval = 1.0
+    @ObservationIgnored private let radioInterval: TimeInterval = 3.0
     @ObservationIgnored private let radioBackgroundInterval: TimeInterval = 5.0
     @ObservationIgnored private let weatherInterval: TimeInterval = 60.0
     @ObservationIgnored private let satelliteInterval: TimeInterval = 120.0
@@ -293,6 +293,8 @@ class AppState {
             withTimeInterval: radioBackgroundInterval, repeats: true
         ) { [weak self] _ in
             Task { @MainActor [weak self] in
+                // Em background só interessa se estiver tocando (now-playing da tela bloqueada).
+                guard AudioPlayer.shared.isPlaying else { return }
                 await self?.tickRadio(Date(), background: true)
             }
         }
@@ -338,8 +340,10 @@ class AppState {
         let active = activeTabRawValue
         let now = Date()
 
-        // Rádio sempre atualiza em background (intervalo maior quando não é a tab ativa)
-        await tickRadio(now, background: active != "radio")
+        // Rádio: aba aberta, ou tocando (mantém now-playing/lock screen). Senão não gasta rede.
+        if active == "radio" || AudioPlayer.shared.isPlaying {
+            await tickRadio(now, background: active != "radio")
+        }
 
         switch active {
         case "adsb", "map":
