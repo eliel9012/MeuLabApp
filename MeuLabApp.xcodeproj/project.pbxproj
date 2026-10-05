@@ -21,8 +21,6 @@
 		012 /* SystemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 112 /* SystemView.swift */; };
 		013 /* RadioView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 113 /* RadioView.swift */; };
 		014 /* WeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 114 /* WeatherView.swift */; };
-		015 /* SatelliteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 115 /* SatelliteView.swift */; };
-		017 /* AircraftMapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 118 /* AircraftMapView.swift */; };
 		018 /* ACARSModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 119 /* ACARSModels.swift */; };
 		019 /* ACARSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 120 /* ACARSView.swift */; };
 		020 /* MapView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 121 /* MapView.swift */; };
@@ -42,8 +40,6 @@
 		036 /* AviationStackModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 137 /* AviationStackModels.swift */; };
 		037 /* WidgetDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 138 /* WidgetDataManager.swift */; };
 		038 /* AnalyticsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 139 /* AnalyticsModels.swift */; };
-		039 /* iPadSplitView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 140 /* iPadSplitView.swift */; };
-		040 /* EnhancedContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 141 /* EnhancedContentView.swift */; };
 		041 /* ThemeManagerView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 142 /* ThemeManagerView.swift */; };
 		043 /* AnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 144 /* AnalyticsView.swift */; };
 		045 /* FlightSearchView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 146 /* FlightSearchView.swift */; };
@@ -199,10 +195,8 @@
 		112 /* SystemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemView.swift; sourceTree = "<group>"; };
 		113 /* RadioView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioView.swift; sourceTree = "<group>"; };
 		114 /* WeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherView.swift; sourceTree = "<group>"; };
-		115 /* SatelliteView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SatelliteView.swift; sourceTree = "<group>"; };
 		116 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		117 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
-		118 /* AircraftMapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftMapView.swift; sourceTree = "<group>"; };
 		119 /* ACARSModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ACARSModels.swift; sourceTree = "<group>"; };
 		120 /* ACARSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ACARSView.swift; sourceTree = "<group>"; };
 		121 /* MapView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MapView.swift; sourceTree = "<group>"; };
@@ -222,8 +216,6 @@
 		137 /* AviationStackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationStackModels.swift; sourceTree = "<group>"; };
 		138 /* WidgetDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetDataManager.swift; sourceTree = "<group>"; };
 		139 /* AnalyticsModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsModels.swift; sourceTree = "<group>"; };
-		140 /* iPadSplitView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = iPadSplitView.swift; sourceTree = "<group>"; };
-		141 /* EnhancedContentView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EnhancedContentView.swift; sourceTree = "<group>"; };
 		142 /* ThemeManagerView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThemeManagerView.swift; sourceTree = "<group>"; };
 		144 /* AnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsView.swift; sourceTree = "<group>"; };
 		146 /* FlightSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightSearchView.swift; sourceTree = "<group>"; };
@@ -388,8 +380,6 @@
 				F71E1C3F2F11A10C00728C53 /* MeuLabApp.entitlements */,
 				101 /* MeuLabApp.swift */,
 				102 /* ContentView.swift */,
-				140 /* iPadSplitView.swift */,
-				141 /* EnhancedContentView.swift */,
 				117 /* Info.plist */,
 				303 /* Models */,
 				304 /* Services */,
@@ -489,7 +479,6 @@
 				127 /* InfraView.swift */,
 				113 /* RadioView.swift */,
 				114 /* WeatherView.swift */,
-				115 /* SatelliteView.swift */,
 				144 /* AnalyticsView.swift */,
 				146 /* FlightSearchView.swift */,
 				148 /* DataExportView.swift */,
@@ -512,7 +501,6 @@
 		309 /* Components */ = {
 			isa = PBXGroup;
 			children = (
-				118 /* AircraftMapView.swift */,
 				121 /* MapView.swift */,
 				128 /* RadarSplashOverlay.swift */,
 				129 /* RadarSplashSwiftUI.swift */,
@@ -887,8 +875,6 @@
 				BIBS02 /* BibleSearchView.swift in Sources */,
 				BIBR02 /* BibleRandomView.swift in Sources */,
 				014 /* WeatherView.swift in Sources */,
-				015 /* SatelliteView.swift in Sources */,
-				017 /* AircraftMapView.swift in Sources */,
 				F7CE39022F14BDBA00EF7A25 /* SatellitePassPredictor.swift in Sources */,
 				018 /* ACARSModels.swift in Sources */,
 				019 /* ACARSView.swift in Sources */,
@@ -909,8 +895,6 @@
 				036 /* AviationStackModels.swift in Sources */,
 				037 /* WidgetDataManager.swift in Sources */,
 				038 /* AnalyticsModels.swift in Sources */,
-				039 /* iPadSplitView.swift in Sources */,
-				040 /* EnhancedContentView.swift in Sources */,
 				041 /* ThemeManagerView.swift in Sources */,
 				043 /* AnalyticsView.swift in Sources */,
 				045 /* FlightSearchView.swift in Sources */,

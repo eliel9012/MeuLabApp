@@ -877,3 +877,15 @@ struct AirlineClassificationUpsertResponse: Codable {
     let classification: AirlineClassificationRecord?
     let message: String?
 }
+
+// MARK: - Coordenadas (usadas pela MapView)
+extension Aircraft {
+    var coordinate: CLLocationCoordinate2D? {
+        guard let lat = lat, let lon = lon else { return nil }
+        return CLLocationCoordinate2D(latitude: lat, longitude: lon)
+    }
+
+    // Aliases para compatibilidade
+    var latitude: Double? { lat }
+    var longitude: Double? { lon }
+}

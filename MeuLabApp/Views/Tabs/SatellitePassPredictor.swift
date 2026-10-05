@@ -226,10 +226,6 @@ public class SatellitePassPredictor: ObservableObject {
     }
 }
 
-extension SatelliteView {
-    // just to silence possible unknown type error if SatelliteView is referenced in the same module
-}
-
 private enum SatellitePassFormatters {
     static let dateFormatter: DateFormatter = {
         let df = DateFormatter()

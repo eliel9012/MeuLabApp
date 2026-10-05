@@ -25,10 +25,8 @@ let package = Package(
 
                 // Extra files present on disk but not wired into the iOS Xcode target.
                 // They cause redeclarations/missing generated types when building via SwiftPM.
-                "Services/HexLookupService.swift",
                 "Views/Components/PlaneSpottersView.swift",
                 "Views/Settings/SiriShortcutsView.swift",
-                "Views/Tabs/AircraftDetailView.swift",
             ]),
     ]
 )
