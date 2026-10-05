@@ -48,13 +48,6 @@ import SwiftUI
         let toolTrace: [IntelligenceToolTrace]
     }
 
-    private func compactPassLabel(_ text: String) -> String {
-        text
-            .replacingOccurrences(of: "_", with: " ")
-            .replacingOccurrences(of: "NOAA", with: "NOAA ")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-    }
-
     private func normalizedPreview(_ text: String, maxLength: Int = 140) -> String {
         let compact = text
             .replacingOccurrences(of: "\n", with: " • ")
@@ -177,47 +170,6 @@ import SwiftUI
             if let metrics = snap.metrics {
                 lines.append("Latência API média: \(Int(metrics.avgResponseMs)) ms")
             }
-            return lines.joined(separator: "\n")
-        }
-    }
-
-    struct SatelliteTool: Tool {
-        let name = "getSatelliteData"
-        let description =
-            "Retorna dados de satélites: passes recentes, imagens capturadas, previsões e status do pipeline."
-
-        @Generable
-        struct Arguments {
-            @Guide(description: "Filtro: 'ultimo_passe', 'previsoes', 'status', ou vazio para tudo")
-            var filtro: String?
-        }
-
-        let snapshotProvider: @Sendable () -> LabIntelligenceSnapshot
-
-        func call(arguments: Arguments) async throws -> String {
-            let snap = snapshotProvider()
-            var lines: [String] = []
-
-            if let last = snap.lastImages {
-                lines.append("Último passe: \(compactPassLabel(last.passName))")
-                lines.append("Imagens capturadas: \(last.images.count)")
-                lines.append("Horário: \(last.timestamp)")
-            } else {
-                lines.append("Nenhum passe recente capturado.")
-            }
-
-            if !snap.passes.isEmpty {
-                let upcoming = snap.passes.prefix(5).map {
-                    "\($0.satelliteName) • \(compactPassLabel($0.name)) • \($0.imageCount) imagens"
-                }
-                lines.append("Próximos/registrados: \(upcoming.joined(separator: " | "))")
-            }
-
-            if let satDump = snap.satDumpStatus {
-                lines.append("Último artefato SatDump: \(compactPassLabel(satDump.passName))")
-                lines.append("Imagens: \(satDump.imageCount) • recente: \(satDump.isRecent ? "sim" : "não")")
-            }
-
             return lines.joined(separator: "\n")
         }
     }
@@ -557,7 +509,6 @@ import SwiftUI
             [
                 ADSBRadarTool(snapshotProvider: snapshotProvider),
                 SystemStatusTool(snapshotProvider: snapshotProvider),
-                SatelliteTool(snapshotProvider: snapshotProvider),
                 ACARSTool(snapshotProvider: snapshotProvider),
                 RadioTool(nowPlayingProvider: nowPlayingProvider),
                 AlertsTool(snapshotProvider: snapshotProvider),
@@ -611,7 +562,7 @@ import SwiftUI
             - Não invente dados.
             - Consulte as tools antes de responder quando a pergunta depender de estado atual.
             - Estruture a resposta para UI: título curto, resumo, destaques, evidências e próximas ações.
-            - Próximas ações devem usar apenas tabs válidas: adsb, map, acars, satellite, system, infra, radio, weather, analytics, alerts, flightSearch, export, remote, remoteRadio, intelligence, bible.
+            - Próximas ações devem usar apenas tabs válidas: adsb, map, acars, system, infra, radio, weather, analytics, alerts, flightSearch, export, remote, remoteRadio, intelligence, bible.
             - Quando sugerir abrir ACARS com contexto, use tab 'acars' e contextIdentifier com voo, matrícula ou id da mensagem.
             - Quando sugerir abrir Clima com contexto, use tab 'weather' e contextIdentifier no formato YYYY-MM-DD para o dia previsto.
             - Ações que impliquem risco operacional devem preferir abrir a tela certa em vez de executar algo diretamente.
@@ -632,7 +583,7 @@ import SwiftUI
         }
 
         private func toolTrace(from entries: ArraySlice<Transcript.Entry>) -> [IntelligenceToolTrace] {
-            entries.compactMap { entry in
+            entries.compactMap { entry -> IntelligenceToolTrace? in
                 guard case .toolOutput(let output) = entry else { return nil }
                 let joined = output.segments.compactMap { segment -> String? in
                     switch segment {
@@ -640,7 +591,7 @@ import SwiftUI
                         return text.content
                     case .structure(let structured):
                         return structured.source
-                    @unknown default:
+                    default:
                         return nil
                     }
                 }.joined(separator: "\n")

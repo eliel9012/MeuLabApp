@@ -249,7 +249,7 @@ private struct FlightProgressBoard: View {
             footer
         }
         .padding(16)
-        .glassCard(tint: FPPalette.route, cornerRadius: 18)
+        .contentCard(tint: FPPalette.route, cornerRadius: 18)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(accessibilitySummary)
     }
@@ -259,14 +259,14 @@ private struct FlightProgressBoard: View {
     private var header: some View {
         HStack(spacing: 8) {
             Image(systemName: "airplane")
-                .font(.system(size: 12, weight: .bold))
+                .scaledFont(size: 12, weight: .bold)
                 .foregroundColor(FPPalette.route)
             Text(leg.code)
-                .font(.system(size: 15, weight: .bold, design: .rounded))
+                .scaledFont(size: 15, weight: .bold, design: .rounded)
                 .foregroundColor(FPPalette.ink)
             Spacer(minLength: 8)
             Text(phaseLabel)
-                .font(.system(size: 10.5, weight: .bold))
+                .scaledFont(size: 10.5, weight: .bold)
                 .tracking(1.4)
                 .foregroundColor(FPPalette.muted)
         }
@@ -285,10 +285,10 @@ private struct FlightProgressBoard: View {
     private func airportColumn(_ raw: String, alignment: HorizontalAlignment) -> some View {
         VStack(alignment: alignment, spacing: 1) {
             Text(FPAirport.code(for: raw))
-                .font(.system(size: 30, weight: .semibold, design: .rounded))
+                .scaledFont(size: 30, weight: .semibold, design: .rounded)
                 .foregroundColor(FPPalette.ink)
             Text(FPAirport.name(for: raw))
-                .font(.system(size: 11.5))
+                .scaledFont(size: 11.5)
                 .foregroundColor(FPPalette.muted)
                 .lineLimit(1)
                 .minimumScaleFactor(0.8)
@@ -303,7 +303,7 @@ private struct FlightProgressBoard: View {
         HStack(alignment: .top, spacing: 12) {
             VStack(alignment: .leading, spacing: 2) {
                 Text(FPClock.time(leg.departure, in: leg.departureTimeZone))
-                    .font(.system(size: 21, weight: .semibold, design: .rounded))
+                    .scaledFont(size: 21, weight: .semibold, design: .rounded)
                     .foregroundColor(FPPalette.ink)
                 caption("PARTIDA", zone: FPClock.zoneTag(leg.departureTimeZone, at: leg.departure), tint: FPPalette.muted)
             }
@@ -318,11 +318,11 @@ private struct FlightProgressBoard: View {
                             .frame(width: 6, height: 6)
                     }
                     Text(FPClock.time(progress.effectiveArrival, in: leg.arrivalTimeZone))
-                        .font(.system(size: 21, weight: .semibold, design: .rounded))
+                        .scaledFont(size: 21, weight: .semibold, design: .rounded)
                         .foregroundColor(progress.isEstimateLive ? FPPalette.live : FPPalette.ink)
                     if dayShift > 0 {
                         Text("+\(dayShift)")
-                            .font(.system(size: 11, weight: .bold, design: .rounded))
+                            .scaledFont(size: 11, weight: .bold, design: .rounded)
                             .foregroundColor(FPPalette.muted)
                             .baselineOffset(7)
                     }
@@ -346,12 +346,12 @@ private struct FlightProgressBoard: View {
     private func caption(_ label: String, zone: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 1) {
             Text(label)
-                .font(.system(size: 9.5, weight: .bold))
+                .scaledFont(size: 9.5, weight: .bold)
                 .tracking(1.0)
                 .foregroundColor(tint)
             if !zone.isEmpty {
                 Text(zone)
-                    .font(.system(size: 9.5, weight: .medium))
+                    .scaledFont(size: 9.5, weight: .medium)
                     .foregroundColor(FPPalette.muted)
             }
         }
@@ -397,9 +397,9 @@ private struct FlightProgressBoard: View {
     private func footerItem(icon: String, text: String, tint: Color = FPPalette.muted) -> some View {
         HStack(spacing: 5) {
             Image(systemName: icon)
-                .font(.system(size: 11, weight: .semibold))
+                .scaledFont(size: 11, weight: .semibold)
             Text(text)
-                .font(.system(size: 12.5, weight: .medium))
+                .scaledFont(size: 12.5, weight: .medium)
         }
         .foregroundColor(tint)
     }
@@ -476,7 +476,7 @@ private struct FlightProgressTrack: View {
 
 // MARK: - Previews
 
-/// Synthetic legs only. The real itinerary starts on 06 Sep 2026, so nothing here
+/// Synthetic legs only. The real itinerary starts on 22 Oct 2026, so nothing here
 /// touches it — the previews build their own flights relative to "now".
 private func fpPreviewLeg(
     code: String = "IB 268",

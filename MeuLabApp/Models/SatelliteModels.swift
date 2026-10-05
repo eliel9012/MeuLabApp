@@ -2,6 +2,30 @@ import Foundation
 
 // MARK: - Satellite Pass
 
+private enum SatelliteModelFormatters {
+    static let inputDay: DateFormatter = {
+        let f = DateFormatter()
+        f.dateFormat = "yyyy-MM-dd"
+        return f
+    }()
+
+    static let outputDayBR: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "pt_BR")
+        f.dateFormat = "dd/MM/yyyy"
+        return f
+    }()
+
+    static let iso8601 = ISO8601DateFormatter()
+
+    static let isoNoZone: DateFormatter = {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
+        return f
+    }()
+}
+
 struct SatellitePass: Codable, Identifiable, Equatable {
     let name: String
     let imageFolder: String
@@ -23,18 +47,11 @@ struct SatellitePass: Codable, Identifiable, Equatable {
         let dateStr = String(components[0])
         let timeStr = String(components[1]).replacingOccurrences(of: "-", with: ":")
 
-        let inputFormatter = DateFormatter()
-        inputFormatter.dateFormat = "yyyy-MM-dd"
-
-        guard let date = inputFormatter.date(from: dateStr) else {
+        guard let date = SatelliteModelFormatters.inputDay.date(from: dateStr) else {
             return "\(dateStr) \(timeStr)"
         }
 
-        let outputFormatter = DateFormatter()
-        outputFormatter.locale = Locale(identifier: "pt_BR")
-        outputFormatter.dateFormat = "dd/MM/yyyy"
-
-        return "\(outputFormatter.string(from: date)) \(timeStr)"
+        return "\(SatelliteModelFormatters.outputDayBR.string(from: date)) \(timeStr)"
     }
 
     var satelliteName: String {
@@ -212,18 +229,11 @@ struct SatellitePassExtended: Codable, Identifiable, Equatable {
         let dateStr = String(components[0])
         let timeStr = String(components[1]).replacingOccurrences(of: "-", with: ":")
 
-        let inputFormatter = DateFormatter()
-        inputFormatter.dateFormat = "yyyy-MM-dd"
-
-        guard let date = inputFormatter.date(from: dateStr) else {
+        guard let date = SatelliteModelFormatters.inputDay.date(from: dateStr) else {
             return "\(dateStr) \(timeStr)"
         }
 
-        let outputFormatter = DateFormatter()
-        outputFormatter.locale = Locale(identifier: "pt_BR")
-        outputFormatter.dateFormat = "dd/MM/yyyy"
-
-        return "\(outputFormatter.string(from: date)) \(timeStr)"
+        return "\(SatelliteModelFormatters.outputDayBR.string(from: date)) \(timeStr)"
     }
 
     var satelliteName: String {
@@ -329,13 +339,8 @@ struct SatDumpStatusResponse: Codable, Equatable {
         // Calculate age from lastPass.timestamp (ISO 8601) to now
         let ageMinutes: Double
         if let ts = lastPass?.timestamp,
-            let date = ISO8601DateFormatter().date(from: ts)
-                ?? {
-                    let f = DateFormatter()
-                    f.locale = Locale(identifier: "en_US_POSIX")
-                    f.dateFormat = "yyyy-MM-dd'T'HH:mm:ss"
-                    return f.date(from: ts)
-                }()
+            let date = SatelliteModelFormatters.iso8601.date(from: ts)
+                ?? SatelliteModelFormatters.isoNoZone.date(from: ts)
         {
             ageMinutes = Date().timeIntervalSince(date) / 60.0
         } else {

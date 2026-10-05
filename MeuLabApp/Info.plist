@@ -12,13 +12,6 @@
 		<true/>
 		<key>NSExceptionDomains</key>
 		<dict>
-			<key>10.0.1.50</key>
-			<dict>
-				<key>NSExceptionAllowsInsecureHTTPLoads</key>
-				<true/>
-				<key>NSIncludesSubdomains</key>
-				<true/>
-			</dict>
 			<key>apple-mapkit.com</key>
 			<dict>
 				<key>NSExceptionAllowsInsecureHTTPLoads</key>

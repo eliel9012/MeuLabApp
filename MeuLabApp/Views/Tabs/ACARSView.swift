@@ -120,7 +120,7 @@ private struct ACARSToolbarTitle: View {
             }
 
             Text("ACARS")
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .scaledFont(size: 23, weight: .black, design: .rounded)
                 .tracking(0.5)
                 .foregroundStyle(
                     LinearGradient(
@@ -252,14 +252,9 @@ struct ACARSView: View {
                     }
                 } label: {
                     Image(systemName: "arrow.clockwise")
-                        .font(.system(size: 18, weight: .semibold))
                         .foregroundStyle(ACARSTheme.violet)
-                        .padding(8)
-                        .background(
-                            Circle()
-                                .fill(ACARSTheme.toolbarBubble)
-                        )
                 }
+                .accessibilityLabel("Atualizar ACARS")
             }
         }
         .task {
@@ -334,7 +329,7 @@ struct ACARSView: View {
                             .foregroundStyle(ACARSTheme.ink.opacity(0.82))
 
                         Text("ATIVO")
-                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .scaledFont(size: 10, weight: .black, design: .rounded)
                             .tracking(1)
                             .foregroundStyle(ACARSTheme.green)
                             .padding(.horizontal, 10)

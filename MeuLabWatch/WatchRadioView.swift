@@ -42,7 +42,7 @@ struct WatchRadioView: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(WatchLabTheme.ink)
                             Text("Franca, SP")
-                                .font(.system(size: 10))
+                                .scaledFont(size: 10)
                                 .foregroundStyle(WatchLabTheme.secondary)
                         }
                         Spacer()
@@ -89,9 +89,10 @@ struct WatchRadioView: View {
 
                         if let album = np.album, !album.isEmpty {
                             Text(album)
-                                .font(.system(size: 9))
+                                .scaledFont(size: 9)
                                 .foregroundStyle(WatchLabTheme.tertiary)
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.7)
                         }
                     }
                 }
@@ -146,7 +147,7 @@ struct WatchRadioView: View {
 
                     if let playerError = audioPlayer.error {
                         Text(playerError)
-                            .font(.system(size: 9))
+                            .scaledFont(size: 9)
                             .foregroundStyle(WatchLabTheme.red)
                             .lineLimit(2)
                     }
@@ -155,6 +156,7 @@ struct WatchRadioView: View {
         }
         .task {
             await loadData()
+            guard !Task.isCancelled else { return }
             startAutoRefresh()
         }
         .refreshable { await loadData() }
@@ -175,6 +177,7 @@ struct WatchRadioView: View {
     }
 
     private func startAutoRefresh() {
+        refreshTimer?.invalidate()
         refreshTimer = Timer.scheduledTimer(withTimeInterval: 30, repeats: true) { _ in
             Task { await loadData() }
         }

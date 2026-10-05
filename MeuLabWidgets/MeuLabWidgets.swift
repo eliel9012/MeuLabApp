@@ -166,6 +166,9 @@ struct WidgetSurface<Content: View>: View {
 }
 
 struct WidgetCanvas<Content: View>: View {
+    // Em accented/vibrant (iOS 26 clear/tinted) o fundo decorativo sai: o sistema remove o containerBackground
+    // e aplica vidro/tint, então o conteúdo não pode depender de um fundo opaco desenhado por nós.
+    @Environment(\.widgetRenderingMode) private var renderingMode
     @ViewBuilder let content: Content
 
     init(@ViewBuilder content: () -> Content) {
@@ -173,6 +176,15 @@ struct WidgetCanvas<Content: View>: View {
     }
 
     var body: some View {
+        ZStack {
+            if renderingMode == .fullColor {
+                decoration
+            }
+            content
+        }
+    }
+
+    private var decoration: some View {
         ZStack {
             WidgetGradients.background
 
@@ -193,8 +205,6 @@ struct WidgetCanvas<Content: View>: View {
                 .frame(width: 150, height: 150)
                 .blur(radius: 30)
                 .offset(x: 70, y: 90)
-
-            content
         }
     }
 }
@@ -233,6 +243,7 @@ struct CircularGaugeView: View {
                     .stroke(gradient, style: StrokeStyle(lineWidth: size * 0.08, lineCap: .round))
                     .rotationEffect(.degrees(-90))
                     .frame(width: size, height: size)
+                    .widgetAccentable()
                 VStack(spacing: 2) {
                     Text("\(Int(value))").font(.system(size: size * 0.28, weight: .bold, design: .rounded)).foregroundStyle(.white)
                     Text("%").font(.system(size: size * 0.14)).foregroundStyle(.white.opacity(0.6))
@@ -240,7 +251,7 @@ struct CircularGaugeView: View {
             }
             .frame(width: size, height: size)
             HStack(spacing: 3) {
-                Image(systemName: icon).font(.system(size: 9))
+                Image(systemName: icon).font(.system(size: 9)).widgetAccentable()
                 Text(label).font(.system(size: 10, weight: .medium))
             }.foregroundStyle(.white.opacity(0.8))
         }
@@ -258,6 +269,7 @@ struct StatRow: View {
             Image(systemName: icon)
                 .foregroundStyle(color)
                 .frame(width: 20)
+                .widgetAccentable()
             Text(title)
                 .font(.caption)
                 .foregroundStyle(.white.opacity(0.7))
@@ -284,6 +296,7 @@ struct WidgetHeaderChip: View {
                 Image(systemName: icon)
                     .font(.system(size: 10, weight: .semibold))
                     .foregroundStyle(tint)
+                    .widgetAccentable()
             }
             Text(title)
                 .font(.caption.weight(.bold))
@@ -304,6 +317,7 @@ struct WidgetKeyValuePill: View {
                 Image(systemName: icon)
                     .font(.system(size: 8, weight: .bold))
                     .foregroundStyle(tint)
+                    .widgetAccentable()
                 Text(title)
                     .font(.system(size: 9, weight: .semibold))
                     .foregroundStyle(.white.opacity(0.58))
@@ -345,6 +359,7 @@ struct AircraftStatsView: View {
                     .font(.title2)
                     .fontWeight(.bold)
                     .foregroundStyle(Color(hex: "10B981"))
+                    .widgetAccentable()
                 Text("No Mapa")
                     .font(.caption2)
                     .foregroundStyle(.white.opacity(0.6))
@@ -466,6 +481,7 @@ struct RadioWidgetView: View {
                                     RoundedRectangle(cornerRadius: 1.5)
                                         .fill(signal > (i * 25) ? WidgetGradients.green : Color.white.opacity(0.2))
                                         .frame(width: 3, height: 6 + CGFloat(i * 3))
+                                        .widgetAccentable(signal > (i * 25))
                                 }
                             }
                         }
@@ -618,7 +634,7 @@ struct SatelliteWidgetView: View {
                             }
                             Spacer()
                             VStack(alignment: .trailing, spacing: 2) {
-                                Text(entry.data.satNextPass ?? "--:--").font(.title3).bold().foregroundStyle(Color(hex: "C084FC"))
+                                Text(entry.data.satNextPass ?? "--:--").font(.title3).bold().foregroundStyle(Color(hex: "C084FC")).widgetAccentable()
                                 HStack(spacing: 2) {
                                     Image(systemName: "arrow.up.forward").font(.caption2)
                                     Text(entry.data.satElevation ?? "0°").font(.caption2)

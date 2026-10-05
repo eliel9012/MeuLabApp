@@ -194,8 +194,6 @@ final class NotificationFeedManager: ObservableObject {
             return "acars_alert"
         case "weather", "weather_alert":
             return "weather_alert"
-        case "satdump", "satdump_pass":
-            return "satellite"
         default:
             return "general"
         }

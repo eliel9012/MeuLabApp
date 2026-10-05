@@ -121,7 +121,7 @@ private struct RadioToolbarTitle: View {
             }
 
             Text("Rádio")
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .scaledFont(size: 23, weight: .black, design: .rounded)
                 .tracking(0.5)
                 .foregroundStyle(
                     LinearGradient(
@@ -222,14 +222,9 @@ struct RadioView: View {
                             .environment(appState)
                     } label: {
                         Image(systemName: "music.note.list")
-                            .font(.system(size: 18, weight: .semibold))
                             .foregroundStyle(RadioTheme.blue)
-                            .padding(8)
-                            .background(
-                                Circle()
-                                    .fill(RadioTheme.toolbarBubble)
-                            )
                     }
+                    .accessibilityLabel("Músicas recentes")
                 }
             }
             .task {
@@ -358,7 +353,7 @@ struct RadioView: View {
 
                 VStack(spacing: 8) {
                     Text(effectiveTitle)
-                        .font(.system(size: 17, weight: .bold, design: .rounded))
+                        .scaledFont(size: 17, weight: .bold, design: .rounded)
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .lineLimit(3)
@@ -418,7 +413,7 @@ struct RadioView: View {
 
                 VStack(spacing: 8) {
                     Text(effectiveTitle)
-                        .font(.system(size: 32, weight: .bold, design: .rounded))
+                        .scaledFont(size: 32, weight: .bold, design: .rounded)
                         .foregroundStyle(.white)
                         .multilineTextAlignment(.center)
                         .lineLimit(2)
@@ -768,7 +763,7 @@ struct RadioView: View {
         }
         .padding(sectionPadding)
         .background(
-            .ultraThinMaterial,
+            Color.white.opacity(0.10),
             in: RoundedRectangle(cornerRadius: sectionRadius, style: .continuous)
         )
         .overlay(
@@ -814,16 +809,18 @@ struct RadioView: View {
     }
 
     private func playbackControlsRow(compact: Bool, contentWidth: CGFloat) -> some View {
-        HStack {
-            Spacer()
-            playbackIconButton(systemName: "backward.fill", action: {})
-                .opacity(0.55)
-            Spacer()
-            playbackMainButton
-            Spacer()
-            playbackIconButton(systemName: "forward.fill", action: {})
-                .opacity(0.55)
-            Spacer()
+        GlassSection(spacing: 16) {
+            HStack {
+                Spacer()
+                playbackIconButton(systemName: "backward.fill", label: "Anterior", action: {})
+                    .opacity(0.55)
+                Spacer()
+                playbackMainButton
+                Spacer()
+                playbackIconButton(systemName: "forward.fill", label: "Próxima", action: {})
+                    .opacity(0.55)
+                Spacer()
+            }
         }
         .foregroundStyle(.white)
         .frame(width: compact ? min(214, contentWidth - 44) : min(420, contentWidth))
@@ -834,13 +831,9 @@ struct RadioView: View {
             player.togglePlayPause()
         } label: {
             ZStack {
-                Circle()
-                    .fill(.ultraThinMaterial)
+                Color.clear
                     .frame(width: isWide ? 88 : 78, height: isWide ? 88 : 78)
-                    .overlay(
-                        Circle()
-                            .stroke(Color.white.opacity(0.16), lineWidth: 1)
-                    )
+                    .glassControl()
 
                 if player.isLoading {
                     ProgressView()
@@ -855,15 +848,18 @@ struct RadioView: View {
             }
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(player.isPlaying ? "Pausar" : "Tocar")
     }
 
-    private func playbackIconButton(systemName: String, action: @escaping () -> Void) -> some View {
+    private func playbackIconButton(systemName: String, label: String, action: @escaping () -> Void) -> some View {
         Button(action: action) {
             Image(systemName: systemName)
-                .font(.system(size: isWide ? 32 : 26, weight: .semibold))
+                .font(.system(size: isWide ? 28 : 22, weight: .semibold))
                 .frame(width: isWide ? 54 : 46, height: isWide ? 54 : 46)
+                .glassControl()
         }
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     private func immersiveInfoPill(title: String, value: String, icon: String, tint: Color) -> some View {
@@ -888,11 +884,7 @@ struct RadioView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
         .padding(.vertical, 10)
-        .background(.ultraThinMaterial, in: Capsule())
-        .overlay(
-            Capsule()
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
-        )
+        .background(Color.white.opacity(0.10), in: Capsule())
     }
 
     private func relativeTimestamp(_ iso: String?) -> String? {

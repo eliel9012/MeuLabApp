@@ -90,7 +90,18 @@
 		TESB01 /* TesouroReservaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = TESV01 /* TesouroReservaView.swift */; };
 		TRIPEB /* MeuLabApp/Services/TripEngine.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRIPEF /* MeuLabApp/Services/TripEngine.swift */; };
 		TFLTB /* MeuLabApp/Services/TripFlights.swift in Sources */ = {isa = PBXBuildFile; fileRef = TFLTF /* MeuLabApp/Services/TripFlights.swift */; };
-		RESVB /* MeuLabApp/Views/Tabs/ReservasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = RESVF /* MeuLabApp/Views/Tabs/ReservasView.swift */; };
+		CL4D0BBF39365FA77E2C8650 /* MeuLabApp/Services/DiskHealthAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL5FA77E2C8650313100D644 /* MeuLabApp/Services/DiskHealthAPI.swift */; };
+		CL92CF7842E36B65A113B938 /* MeuLabApp/Services/SlidesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL70CE5A3839FFCF44FDE49C /* MeuLabApp/Services/SlidesAPI.swift */; };
+		CLAE3CC801F44AA2D2A9F8BF /* MeuLabApp/Services/NotesAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL4AA2D2A9F8BF8C85FC4E02 /* MeuLabApp/Services/NotesAPI.swift */; };
+		CLDEF8E6AAA1966B8ABEA711 /* MeuLabApp/Views/Tabs/NotesView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL966B8ABEA711BEC3E571D3 /* MeuLabApp/Views/Tabs/NotesView.swift */; };
+		CL5CF599FCBDD02BC004C355 /* MeuLabApp/Services/RAGAPI.swift in Sources */ = {isa = PBXBuildFile; fileRef = CLD02BC004C35579F35375C0 /* MeuLabApp/Services/RAGAPI.swift */; };
+		CLE87839204156386630330C /* MeuLabApp/Views/Components/LabAskCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL56386630330CB04425EFDD /* MeuLabApp/Views/Components/LabAskCard.swift */; };
+		CL285A3DEAD181CAD2F97935 /* MeuLabApp/Services/AircraftStream.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL81CAD2F9793528FBBF6FBF /* MeuLabApp/Services/AircraftStream.swift */; };
+		CL296099959A0F900EDC4DD0 /* MeuLabApp/Models/ApuracaoModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL0F900EDC4DD0FC0298D62B /* MeuLabApp/Models/ApuracaoModels.swift */; };
+		CLFDBEF90DB07D4A315F7EFB /* MeuLabApp/Services/ApuracaoService.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL7D4A315F7EFBAF82AD8176 /* MeuLabApp/Services/ApuracaoService.swift */; };
+		CLCDD45924E355CBFD540F02 /* MeuLabApp/ViewModels/ApuracaoViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL55CBFD540F0224D0E398A5 /* MeuLabApp/ViewModels/ApuracaoViewModel.swift */; };
+		CL54E4F4EBCD66F08E08F0DE /* MeuLabApp/Views/Tabs/ApuracaoView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL66F08E08F0DE1CE752AE99 /* MeuLabApp/Views/Tabs/ApuracaoView.swift */; };
+		CL471854257E14B42A7F3F84 /* MeuLabApp/Views/Tabs/SlidesControlView.swift in Sources */ = {isa = PBXBuildFile; fileRef = CL3A2A7AC6DEB41EA38DC1C7 /* MeuLabApp/Views/Tabs/SlidesControlView.swift */; };
 		TRIPLB /* MeuLabApp/Services/TripLocator.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRIPLF /* MeuLabApp/Services/TripLocator.swift */; };
 		TRIPNB /* MeuLabApp/Services/TripNotifications.swift in Sources */ = {isa = PBXBuildFile; fileRef = TRIPNF /* MeuLabApp/Services/TripNotifications.swift */; };
 		VIAB01 /* ViagemView.swift in Sources */ = {isa = PBXBuildFile; fileRef = VIAV01 /* ViagemView.swift */; };
@@ -257,7 +268,18 @@
 		TESV01 /* TesouroReservaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TesouroReservaView.swift; sourceTree = "<group>"; };
 		TRIPEF /* MeuLabApp/Services/TripEngine.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripEngine.swift; sourceTree = SOURCE_ROOT; };
 		TFLTF /* MeuLabApp/Services/TripFlights.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripFlights.swift; sourceTree = SOURCE_ROOT; };
-		RESVF /* MeuLabApp/Views/Tabs/ReservasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Views/Tabs/ReservasView.swift; sourceTree = SOURCE_ROOT; };
+		CL5FA77E2C8650313100D644 /* MeuLabApp/Services/DiskHealthAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/DiskHealthAPI.swift; sourceTree = SOURCE_ROOT; };
+		CL70CE5A3839FFCF44FDE49C /* MeuLabApp/Services/SlidesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/SlidesAPI.swift; sourceTree = SOURCE_ROOT; };
+		CL4AA2D2A9F8BF8C85FC4E02 /* MeuLabApp/Services/NotesAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/NotesAPI.swift; sourceTree = SOURCE_ROOT; };
+		CL966B8ABEA711BEC3E571D3 /* MeuLabApp/Views/Tabs/NotesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Views/Tabs/NotesView.swift; sourceTree = SOURCE_ROOT; };
+		CLD02BC004C35579F35375C0 /* MeuLabApp/Services/RAGAPI.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/RAGAPI.swift; sourceTree = SOURCE_ROOT; };
+		CL56386630330CB04425EFDD /* MeuLabApp/Views/Components/LabAskCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Views/Components/LabAskCard.swift; sourceTree = SOURCE_ROOT; };
+		CL81CAD2F9793528FBBF6FBF /* MeuLabApp/Services/AircraftStream.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/AircraftStream.swift; sourceTree = SOURCE_ROOT; };
+		CL0F900EDC4DD0FC0298D62B /* MeuLabApp/Models/ApuracaoModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Models/ApuracaoModels.swift; sourceTree = SOURCE_ROOT; };
+		CL7D4A315F7EFBAF82AD8176 /* MeuLabApp/Services/ApuracaoService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/ApuracaoService.swift; sourceTree = SOURCE_ROOT; };
+		CL55CBFD540F0224D0E398A5 /* MeuLabApp/ViewModels/ApuracaoViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/ViewModels/ApuracaoViewModel.swift; sourceTree = SOURCE_ROOT; };
+		CL66F08E08F0DE1CE752AE99 /* MeuLabApp/Views/Tabs/ApuracaoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Views/Tabs/ApuracaoView.swift; sourceTree = SOURCE_ROOT; };
+		CL3A2A7AC6DEB41EA38DC1C7 /* MeuLabApp/Views/Tabs/SlidesControlView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Views/Tabs/SlidesControlView.swift; sourceTree = SOURCE_ROOT; };
 		TRIPLF /* MeuLabApp/Services/TripLocator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripLocator.swift; sourceTree = SOURCE_ROOT; };
 		TRIPNF /* MeuLabApp/Services/TripNotifications.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabApp/Services/TripNotifications.swift; sourceTree = SOURCE_ROOT; };
 		VIAV01 /* ViagemView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViagemView.swift; sourceTree = "<group>"; };
@@ -529,6 +551,18 @@
 				LGM01 /* MeuLabApp/Extensions/LiquidGlass+Modifiers.swift */,
 				E181A3D935D7491286930152 /* MeuLabWatch/Services/WatchSecrets.swift */,
 				TRIPEF /* MeuLabApp/Services/TripEngine.swift */,
+				CL66F08E08F0DE1CE752AE99 /* MeuLabApp/Views/Tabs/ApuracaoView.swift */,
+				CL3A2A7AC6DEB41EA38DC1C7 /* MeuLabApp/Views/Tabs/SlidesControlView.swift */,
+				CL55CBFD540F0224D0E398A5 /* MeuLabApp/ViewModels/ApuracaoViewModel.swift */,
+				CL7D4A315F7EFBAF82AD8176 /* MeuLabApp/Services/ApuracaoService.swift */,
+				CL0F900EDC4DD0FC0298D62B /* MeuLabApp/Models/ApuracaoModels.swift */,
+				CL81CAD2F9793528FBBF6FBF /* MeuLabApp/Services/AircraftStream.swift */,
+				CL56386630330CB04425EFDD /* MeuLabApp/Views/Components/LabAskCard.swift */,
+				CLD02BC004C35579F35375C0 /* MeuLabApp/Services/RAGAPI.swift */,
+				CL966B8ABEA711BEC3E571D3 /* MeuLabApp/Views/Tabs/NotesView.swift */,
+				CL4AA2D2A9F8BF8C85FC4E02 /* MeuLabApp/Services/NotesAPI.swift */,
+				CL5FA77E2C8650313100D644 /* MeuLabApp/Services/DiskHealthAPI.swift */,
+				CL70CE5A3839FFCF44FDE49C /* MeuLabApp/Services/SlidesAPI.swift */,
 				TRIPNF /* MeuLabApp/Services/TripNotifications.swift */,
 				TRIPLF /* MeuLabApp/Services/TripLocator.swift */,
 			);
@@ -825,7 +859,18 @@
 				FPRGB /* MeuLabApp/Services/FlightProgress.swift in Sources */,
 				FASVB /* MeuLabApp/Services/FlightAwareService.swift in Sources */,
 				TFLTB /* MeuLabApp/Services/TripFlights.swift in Sources */,
-				RESVB /* MeuLabApp/Views/Tabs/ReservasView.swift in Sources */,
+				CL54E4F4EBCD66F08E08F0DE /* MeuLabApp/Views/Tabs/ApuracaoView.swift in Sources */,
+				CL471854257E14B42A7F3F84 /* MeuLabApp/Views/Tabs/SlidesControlView.swift in Sources */,
+				CLCDD45924E355CBFD540F02 /* MeuLabApp/ViewModels/ApuracaoViewModel.swift in Sources */,
+				CLFDBEF90DB07D4A315F7EFB /* MeuLabApp/Services/ApuracaoService.swift in Sources */,
+				CL296099959A0F900EDC4DD0 /* MeuLabApp/Models/ApuracaoModels.swift in Sources */,
+				CL285A3DEAD181CAD2F97935 /* MeuLabApp/Services/AircraftStream.swift in Sources */,
+				CLE87839204156386630330C /* MeuLabApp/Views/Components/LabAskCard.swift in Sources */,
+				CL5CF599FCBDD02BC004C355 /* MeuLabApp/Services/RAGAPI.swift in Sources */,
+				CLDEF8E6AAA1966B8ABEA711 /* MeuLabApp/Views/Tabs/NotesView.swift in Sources */,
+				CLAE3CC801F44AA2D2A9F8BF /* MeuLabApp/Services/NotesAPI.swift in Sources */,
+				CL4D0BBF39365FA77E2C8650 /* MeuLabApp/Services/DiskHealthAPI.swift in Sources */,
+				CL92CF7842E36B65A113B938 /* MeuLabApp/Services/SlidesAPI.swift in Sources */,
 				TRIPEB /* MeuLabApp/Services/TripEngine.swift in Sources */,
 				TRIPNB /* MeuLabApp/Services/TripNotifications.swift in Sources */,
 				TRIPLB /* MeuLabApp/Services/TripLocator.swift in Sources */,

@@ -80,7 +80,7 @@ actor APIService {
 
     // MARK: - Request Helpers
 
-    private func makeRequest(path: String, requiresAuth: Bool = true) throws -> URLRequest {
+    func makeRequest(path: String, requiresAuth: Bool = true) throws -> URLRequest {
         guard let url = URL(string: "\(baseURL)\(path)") else {
             throw APIError.invalidURL
         }
@@ -98,7 +98,7 @@ actor APIService {
         return request
     }
 
-    private func performRequest(_ request: URLRequest, retries: Int = 1) async throws -> (
+    func performRequest(_ request: URLRequest, retries: Int = 1) async throws -> (
         Data, HTTPURLResponse
     ) {
         var attempt = 0
@@ -138,7 +138,7 @@ actor APIService {
         throw APIError.networkError(lastError ?? APIError.unknown)
     }
 
-    private func fetch<T: Decodable>(_ path: String, requiresAuth: Bool = true) async throws -> T {
+    func fetch<T: Decodable>(_ path: String, requiresAuth: Bool = true) async throws -> T {
         let request = try makeRequest(path: path, requiresAuth: requiresAuth)
         let (data, _) = try await performRequest(request)
         do {
@@ -318,11 +318,11 @@ actor APIService {
     func fetchTuyaTemperatureHumidity(historyLimit: Int = 12) async throws
         -> TuyaTemperatureHumidityResponse
     {
-        try await fetchAPI2("/api/tuya/temperature-humidity?history_limit=\(historyLimit)")
+        try await fetch("/api/tuya/temperature-humidity?history_limit=\(historyLimit)")
     }
 
     func fetchTuyaStatus() async throws -> TuyaStatusResponse {
-        try await fetchAPI2("/api/tuya/status")
+        try await fetch("/api/tuya/status")
     }
 
     func fetchADSBLolResponse() async throws -> ADSBLolResponse {
@@ -477,23 +477,23 @@ actor APIService {
         try await fetch("/api/weather/current?lat=\(lat)&lon=\(lon)")
     }
 
-    // MARK: - Radio (via API2)
+    // MARK: - Radio
 
     func fetchNowPlaying() async throws -> NowPlaying {
-        try await fetchAPI2("/api/radio/now-playing")
+        try await fetch("/api/radio/now-playing")
     }
 
     func fetchRadioHistory(limit: Int = 50) async throws -> RadioHistoryResponse {
         let clamped = max(1, min(200, limit))
-        return try await fetchAPI2("/api/radio/history?limit=\(clamped)")
+        return try await fetch("/api/radio/history?limit=\(clamped)")
     }
 
     func fetchRadioStatus() async throws -> RadioStatusResponse {
-        try await fetchAPI2("/api/radio/status")
+        try await fetch("/api/radio/status")
     }
 
     func fetchRadioStats() async throws -> RadioStatsResponse {
-        try await fetchAPI2("/api/radio/stats")
+        try await fetch("/api/radio/stats")
     }
 
     // MARK: - ACARS
@@ -594,7 +594,7 @@ actor APIService {
     }
 
     func fetchSatDumpFFT() async throws -> Data {
-        if let cached = BinaryCache.shared.cachedData(forPath: "/api/satdump/fft") { return cached }
+        if let cached = await BinaryCache.shared.cachedData(forPath: "/api/satdump/fft") { return cached }
         do {
             let data = try await fetchData("/api/satdump/fft")
             BinaryCache.shared.store(data, forPath: "/api/satdump/fft")
@@ -617,7 +617,7 @@ actor APIService {
     }
 
     func fetchSatDumpSchedule() async throws -> Data {
-        if let cached = BinaryCache.shared.cachedData(forPath: "/api/satdump/schedule") {
+        if let cached = await BinaryCache.shared.cachedData(forPath: "/api/satdump/schedule") {
             return cached
         }
         let data = try await fetchData("/api/satdump/schedule")
@@ -809,7 +809,7 @@ actor APIService {
             imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
         let path =
             "/api/satdump/image?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)"
-        if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
+        if let cached = await BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
@@ -826,7 +826,7 @@ actor APIService {
             imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
         let path =
             "/api/satdump/image_light?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&max=\(max)"
-        if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
+        if let cached = await BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
@@ -843,7 +843,7 @@ actor APIService {
             imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
         let path =
             "/api/satdump/image_lossless?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)"
-        if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
+        if let cached = await BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
@@ -860,7 +860,7 @@ actor APIService {
             imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
         let path =
             "/api/satdump/image_light?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&max=\(max)&format=jpeg&quality=\(quality)"
-        if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
+        if let cached = await BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
@@ -878,7 +878,7 @@ actor APIService {
             imageName.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? imageName
         let path =
             "/api/satdump/image_legend?pass=\(passEncoded)&folder=\(folderEncoded)&image=\(imageEncoded)&format=\(format)&quality=\(quality)"
-        if let cached = BinaryCache.shared.cachedData(forPath: path) { return cached }
+        if let cached = await BinaryCache.shared.cachedData(forPath: path) { return cached }
         let data = try await fetchData(path)
         BinaryCache.shared.store(data, forPath: path)
         return data
@@ -900,13 +900,7 @@ actor APIService {
         ]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await session.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-            httpResponse.statusCode == 200
-        else {
-            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
-        }
+        let (data, _) = try await performRequest(request)
 
         return try JSONDecoder().decode(NotificationRegisterResponse.self, from: data)
     }
@@ -920,13 +914,7 @@ actor APIService {
         let body = ["device_token": token]
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-        let (data, response) = try await session.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse,
-            httpResponse.statusCode == 200
-        else {
-            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
-        }
+        let (data, _) = try await performRequest(request)
 
         return try JSONDecoder().decode(NotificationUnregisterResponse.self, from: data)
     }
@@ -948,12 +936,7 @@ actor APIService {
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONSerialization.data(withJSONObject: ["ids": ids])
 
-        let (data, response) = try await session.data(for: request)
-        guard let httpResponse = response as? HTTPURLResponse,
-            (200...299).contains(httpResponse.statusCode)
-        else {
-            throw APIError.serverError((response as? HTTPURLResponse)?.statusCode ?? 0)
-        }
+        let (data, _) = try await performRequest(request)
 
         return try JSONDecoder().decode(NotificationAckResponse.self, from: data)
     }
@@ -961,11 +944,11 @@ actor APIService {
     // MARK: - Alerts (no auth)
 
     func fetchAlertRules() async throws -> [AlertRule] {
-        try await fetch("/api/alerts/rules", requiresAuth: false)
+        try await fetch("/api/alerts/rules")
     }
 
     func createAlertRule(_ rule: AlertRule) async throws -> AlertRule {
-        var request = try makeRequest(path: "/api/alerts/rules", requiresAuth: false)
+        var request = try makeRequest(path: "/api/alerts/rules")
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(rule)
@@ -981,7 +964,7 @@ actor APIService {
     }
 
     func updateAlertRule(_ rule: AlertRule) async throws -> AlertRule {
-        var request = try makeRequest(path: "/api/alerts/rules/\(rule.id)", requiresAuth: false)
+        var request = try makeRequest(path: "/api/alerts/rules/\(rule.id)")
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(rule)
@@ -997,7 +980,7 @@ actor APIService {
     }
 
     func deleteAlertRule(id: String) async throws {
-        var request = try makeRequest(path: "/api/alerts/rules/\(id)", requiresAuth: false)
+        var request = try makeRequest(path: "/api/alerts/rules/\(id)")
         request.httpMethod = "DELETE"
 
         let (_, response) = try await session.data(for: request)
@@ -1009,11 +992,11 @@ actor APIService {
     }
 
     func fetchAlertTriggers(limit: Int = 20) async throws -> [AlertTrigger] {
-        try await fetch("/api/alerts/triggers?limit=\(limit)", requiresAuth: false)
+        try await fetch("/api/alerts/triggers?limit=\(limit)")
     }
 
     func acknowledgeAlertTrigger(id: String) async throws -> AlertTrigger {
-        var request = try makeRequest(path: "/api/alerts/triggers/\(id)/ack", requiresAuth: false)
+        var request = try makeRequest(path: "/api/alerts/triggers/\(id)/ack")
         request.httpMethod = "POST"
 
         let (data, response) = try await session.data(for: request)
@@ -1037,15 +1020,15 @@ actor APIService {
         -> SystemAnalytics
     {
         try await fetch(
-            "/api/analytics/system?period=\(period)&interval=\(interval)", requiresAuth: false)
+            "/api/analytics/system?period=\(period)&interval=\(interval)")
     }
 
     func fetchADSBAnalytics(period: String = "24h") async throws -> ADSBAnalytics {
-        try await fetch("/api/analytics/adsb?period=\(period)", requiresAuth: false)
+        try await fetch("/api/analytics/adsb?period=\(period)")
     }
 
     func fetchSatelliteAnalytics(period: String = "7d") async throws -> SatelliteAnalytics {
-        try await fetch("/api/analytics/satellite?period=\(period)", requiresAuth: false)
+        try await fetch("/api/analytics/satellite?period=\(period)")
     }
 
     // MARK: - Flights (no auth, mock data)
@@ -1116,7 +1099,7 @@ actor APIService {
     func executeRemoteCommand(command: CommandType, target: String, parameters: Any? = nil)
         async throws -> RemoteCommand
     {
-        var request = try makeRequest(path: "/api/remote/execute", requiresAuth: false)
+        var request = try makeRequest(path: "/api/remote/execute")
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
@@ -1140,16 +1123,16 @@ actor APIService {
     }
 
     func fetchRemoteCommands(limit: Int = 20) async throws -> [RemoteCommand] {
-        try await fetch("/api/remote/commands?limit=\(limit)", requiresAuth: false)
+        try await fetch("/api/remote/commands?limit=\(limit)")
     }
 
     func fetchRemoteCommand(id: String) async throws -> RemoteCommand {
-        try await fetch("/api/remote/commands/\(id)", requiresAuth: false)
+        try await fetch("/api/remote/commands/\(id)")
     }
 
     func cancelRemoteCommand(id: String) async throws -> RemoteCommand {
         var request = try makeRequest(
-            path: "/api/remote/commands/\(id)/cancel", requiresAuth: false)
+            path: "/api/remote/commands/\(id)/cancel")
         request.httpMethod = "POST"
 
         let (data, response) = try await session.data(for: request)
@@ -1165,11 +1148,11 @@ actor APIService {
     // MARK: - Theme (no auth)
 
     func fetchThemeSettings() async throws -> ThemeSettings {
-        try await fetch("/api/user/theme", requiresAuth: false)
+        try await fetch("/api/user/theme")
     }
 
     func updateThemeSettings(_ settings: ThemeSettings) async throws -> ThemeSettings {
-        var request = try makeRequest(path: "/api/user/theme", requiresAuth: false)
+        var request = try makeRequest(path: "/api/user/theme")
         request.httpMethod = "PUT"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(settings)
@@ -1185,7 +1168,7 @@ actor APIService {
     }
 
     func postThemeSettings(_ settings: ThemeSettings) async throws -> ThemeSettings {
-        var request = try makeRequest(path: "/api/user/theme", requiresAuth: false)
+        var request = try makeRequest(path: "/api/user/theme")
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         request.httpBody = try JSONEncoder().encode(settings)
@@ -1257,7 +1240,16 @@ actor APIService {
 
         var forecastDays: [ForecastDay] = []
         let count = min(daily.time.count, 11)
-        for i in 1..<count {
+        let dailyCount = min(
+            count,
+            daily.temperature_2m_max.count,
+            daily.temperature_2m_min.count,
+            daily.precipitation_probability_max.count,
+            daily.precipitation_sum.count,
+            daily.uv_index_max.count,
+            daily.weather_code.count
+        )
+        for i in 1..<max(dailyCount, 1) {
             let day = ForecastDay(
                 date: daily.time[i],
                 maxTempC: Int(round(daily.temperature_2m_max[i])),

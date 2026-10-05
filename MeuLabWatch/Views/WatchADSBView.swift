@@ -40,7 +40,7 @@ struct WatchADSBView: View {
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(WatchLabTheme.ink)
                                 Text("\(summary.totalNow)")
-                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .scaledFont(size: 28, weight: .black, design: .rounded)
                                     .foregroundStyle(WatchLabTheme.ink)
                                 Text("aeronaves no ar")
                                     .font(.caption2)
@@ -81,7 +81,7 @@ struct WatchADSBView: View {
                             Spacer()
                             if let mil = highlights.militaryCount, mil > 0 {
                                 Text("\(mil) militar")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .scaledFont(size: 9, weight: .bold)
                                     .foregroundStyle(WatchLabTheme.red)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
@@ -107,9 +107,10 @@ struct WatchADSBView: View {
                                         .lineLimit(1)
                                     if let reason = hl.reason {
                                         Text(reason)
-                                            .font(.system(size: 9))
+                                            .scaledFont(size: 9)
                                             .foregroundStyle(WatchLabTheme.secondary)
                                             .lineLimit(1)
+                                            .minimumScaleFactor(0.7)
                                     }
                                 }
 
@@ -117,7 +118,7 @@ struct WatchADSBView: View {
 
                                 if let dist = hl.distanceNm {
                                     Text(String(format: "%.0f nm", dist))
-                                        .font(.system(size: 10, weight: .bold, design: .rounded))
+                                        .scaledFont(size: 10, weight: .bold, design: .rounded)
                                         .foregroundStyle(WatchLabTheme.secondary)
                                 }
                             }
@@ -217,19 +218,20 @@ struct WatchAircraftRow: View {
                     .lineLimit(1)
 
                 Text(aircraft.model ?? aircraft.airline ?? "Sem modelo")
-                    .font(.system(size: 10, weight: .medium))
+                    .scaledFont(size: 10, weight: .medium)
                     .foregroundStyle(WatchLabTheme.secondary)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
 
             Spacer()
 
             VStack(alignment: .trailing, spacing: 1) {
                 Text("\(aircraft.altitudeFt) ft")
-                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                    .scaledFont(size: 10, weight: .bold, design: .rounded)
                     .foregroundStyle(WatchLabTheme.ink)
                 Text(aircraft.distanceNm.map { String(format: "%.0f nm", $0) } ?? "--")
-                    .font(.system(size: 10, weight: .medium))
+                    .scaledFont(size: 10, weight: .medium)
                     .foregroundStyle(WatchLabTheme.secondary)
             }
         }

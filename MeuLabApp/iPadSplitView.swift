@@ -10,28 +10,24 @@ struct iPadSidebarRow: View {
         HStack(spacing: 12) {
             Image(systemName: tab.icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
+                .foregroundStyle(.primary)
                 .frame(width: 20)
             
             Text(tab.title)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
+                .scaledFont(size: 15, weight: .medium)
+                .foregroundStyle(.primary)
             
             Spacer()
             
             // Status indicators
             if hasActiveAlerts(for: tab) {
                 Image(systemName: "bell.badge.fill")
-                    .font(.system(size: 10))
+                    .scaledFont(size: 10)
                     .foregroundStyle(.red)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isSelected ? .blue : Color.clear)
-        )
         .contentShape(Rectangle())
     }
     
@@ -53,12 +49,12 @@ struct iPadQuickMetric: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 14, weight: .bold))
+                .scaledFont(size: 14, weight: .bold)
                 .monospacedDigit()
                 .foregroundStyle(color)
             
             Text(title)
-                .font(.system(size: 10))
+                .scaledFont(size: 10)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
@@ -79,10 +75,11 @@ struct DetailView: View {
             .navigationTitle(detail.title)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Fechar") {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(role: .close) {
                         dismiss()
                     }
+                    .accessibilityLabel("Fechar")
                 }
             }
         }
@@ -235,7 +232,7 @@ struct CPUDetailsView: View {
                             }
                         }
                         .padding()
-                        .glassCard(cornerRadius: 12)
+                        .contentCard(cornerRadius: 12)
                     }
                 }
             }
@@ -285,9 +282,7 @@ struct DetailMetricCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+        .contentCard(cornerRadius: 12)
     }
 }
 
@@ -336,8 +331,7 @@ struct StatItem: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color(.systemBackground))
-        .cornerRadius(8)
+        .contentCard(cornerRadius: 8)
     }
 }
 

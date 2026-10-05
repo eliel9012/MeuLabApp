@@ -18,7 +18,7 @@ struct HealthCheckView: View {
                 LazyVStack(spacing: 20) {
                     // Status + automatic-check settings: two adjacent glass cards with no
                     // opaque surface between them, so they share a container.
-                    GlassSection(spacing: 0) {
+                    Group {
                         VStack(spacing: 20) {
                             // Current Status
                             if let report = currentReport {
@@ -35,7 +35,7 @@ struct HealthCheckView: View {
                     quickActionsSection
 
                     // Notes + history: the second run of adjacent glass cards.
-                    GlassSection(spacing: 0) {
+                    Group {
                         VStack(spacing: 20) {
                             // Incident Notes (Writing Tools works here)
                             incidentNotesSection
@@ -77,6 +77,7 @@ struct HealthCheckView: View {
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
+                    .accessibilityLabel("Mais opções")
                 }
             }
             .refreshable {
@@ -114,7 +115,7 @@ struct HealthCheckView: View {
                 .textInputAutocapitalization(.sentences)
                 .frame(minHeight: 140)
                 .padding(10)
-                .glassCard(cornerRadius: 12)
+                .contentCard(cornerRadius: 12)
         }
     }
 
@@ -155,7 +156,7 @@ struct HealthCheckView: View {
                 }
             }
             .padding()
-            .glassCard(cornerRadius: 12)
+            .contentCard(cornerRadius: 12)
 
             // Individual Checks
             VStack(alignment: .leading, spacing: 12) {
@@ -184,6 +185,7 @@ struct HealthCheckView: View {
                                 startAutoCheck()
                             } else {
                                 stopAutoCheck()
+                                UserDefaults.standard.set(false, forKey: "autoHealthCheck")
                             }
                         }
 
@@ -209,7 +211,7 @@ struct HealthCheckView: View {
                 }
             }
             .padding()
-            .glassCard(cornerRadius: 12)
+            .contentCard(cornerRadius: 12)
         }
     }
 
@@ -280,7 +282,7 @@ struct HealthCheckView: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .glassCard(cornerRadius: 12)
+                    .contentCard(cornerRadius: 12)
                 }
             }
         }
@@ -362,7 +364,6 @@ struct HealthCheckView: View {
     private func stopAutoCheck() {
         autoCheckTimer?.invalidate()
         autoCheckTimer = nil
-        UserDefaults.standard.set(false, forKey: "autoHealthCheck")
     }
 
     private func restartAutoCheck() {
@@ -490,7 +491,7 @@ struct HealthActionButton: View {
         Button(action: action) {
             VStack(spacing: 12) {
                 Image(systemName: icon)
-                    .font(.system(size: 24))
+                    .scaledFont(size: 24)
                     .foregroundStyle(color)
 
                 VStack(spacing: 4) {

@@ -636,6 +636,8 @@ struct TuyaSensorHistoryEntry: Codable, Equatable, Identifiable {
     let timestamp: String
     let temperatureC: Double?
     let humidityPct: Double?
+    let pressureHpa: Double?
+    let gasResistanceOhms: Double?
     let batteryPct: Int?
     let source: String?
     let deviceID: String?
@@ -647,6 +649,8 @@ struct TuyaSensorHistoryEntry: Codable, Equatable, Identifiable {
         case timestamp, source
         case temperatureC = "temperature_c"
         case humidityPct = "humidity_pct"
+        case pressureHpa = "pressure_hpa"
+        case gasResistanceOhms = "gas_resistance_ohms"
         case batteryPct = "battery_pct"
         case deviceID = "device_id"
         case deviceName = "device_name"
@@ -658,7 +662,7 @@ struct TuyaSensorHistoryEntry: Codable, Equatable, Identifiable {
 }
 
 struct TuyaSensorDevice: Codable, Equatable {
-    let id: String
+    let id: String?
     let name: String
     let localIP: String?
     let productID: String?
@@ -674,6 +678,8 @@ struct TuyaSensorDevice: Codable, Equatable {
 struct TuyaSensorCurrent: Codable, Equatable {
     let temperatureC: Double?
     let humidityPct: Double?
+    let pressureHpa: Double?
+    let gasResistanceOhms: Double?
     let batteryPct: Int?
     let temperatureUnit: String?
     let temperatureAlarm: String?
@@ -682,6 +688,8 @@ struct TuyaSensorCurrent: Codable, Equatable {
     enum CodingKeys: String, CodingKey {
         case temperatureC = "temperature_c"
         case humidityPct = "humidity_pct"
+        case pressureHpa = "pressure_hpa"
+        case gasResistanceOhms = "gas_resistance_ohms"
         case batteryPct = "battery_pct"
         case temperatureUnit = "temperature_unit"
         case temperatureAlarm = "temperature_alarm"

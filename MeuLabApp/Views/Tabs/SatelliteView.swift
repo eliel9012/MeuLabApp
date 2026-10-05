@@ -138,7 +138,7 @@ struct SatelliteView: View {
                 guard
                     let context,
                     context["kind"] == "satellite_pass",
-                    context["tab"] == ContentView.Tab.satellite.rawValue,
+                    context["tab"] == "satellite",
                     let identifier = context["identifier"]
                 else { return }
 
@@ -357,7 +357,7 @@ struct SatelliteView: View {
             // Satellite info card
             HStack(spacing: 12) {
                 Image(systemName: lastImages.iconName)
-                    .font(.system(size: 32))
+                    .scaledFont(size: 32)
                     .foregroundStyle(.blue.gradient)
 
                 VStack(alignment: .leading, spacing: 2) {
@@ -932,7 +932,7 @@ struct SatelliteZoomableImage: View {
                                     .tint(.white)
                             } else {
                                 Image(systemName: "text.below.photo.fill")
-                                    .font(.system(size: 24))
+                                    .scaledFont(size: 24)
                             }
                             Text("Legenda")
                                 .font(.caption2)
@@ -955,7 +955,7 @@ struct SatelliteZoomableImage: View {
                                     .tint(.white)
                             } else {
                                 Image(systemName: "arrow.down.circle.fill")
-                                    .font(.system(size: 24))
+                                    .scaledFont(size: 24)
                             }
                             Text("Salvar")
                                 .font(.caption2)
@@ -1169,7 +1169,7 @@ struct SatellitePassImagesSheet: View {
                                 }
                                 Spacer()
                                 Image(systemName: "satellite")
-                                    .font(.system(size: 24))
+                                    .scaledFont(size: 24)
                                     .foregroundStyle(.purple.opacity(0.8))
                             }
                             .padding(.horizontal)
@@ -5019,7 +5019,7 @@ struct SatelliteFullscreenMapView: View {
                 dismiss()
             } label: {
                 Image(systemName: "xmark.circle.fill")
-                    .font(.system(size: 32))
+                    .scaledFont(size: 32)
                     .foregroundStyle(.white.opacity(0.8), .black.opacity(0.6))
                     .padding(20)
             }

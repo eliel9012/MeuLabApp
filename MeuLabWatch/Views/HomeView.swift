@@ -9,7 +9,6 @@ struct HomeView: View {
     @State private var system: WatchSystemData?
     @State private var weather: WatchWeatherData?
     @State private var infra: WatchInfraData?
-    @State private var satdump: WatchSatDumpData?
 
     var body: some View {
         ScrollView {
@@ -29,6 +28,7 @@ struct HomeView: View {
                             Task { await loadData() }
                         }
                         .font(.caption)
+                        .watchActionButtonStyle(fallbackBordered: false)
                     }
                     .padding()
                 } else {
@@ -91,17 +91,6 @@ struct HomeView: View {
                             lines: ["\(Int(current.temperature))°C"]
                         )
                     }
-
-                    // SatDump Card
-                    if let satdump, let status = satdump.status {
-                        let lastSat = status.lastPass?.satellite ?? "N/A"
-                        SummaryCard(
-                            title: "SatDump",
-                            icon: "antenna.radiowaves.left.and.right",
-                            color: .pink,
-                            lines: ["Último: \(lastSat)"]
-                        )
-                    }
                 }
             }
             .padding(.horizontal, 4)
@@ -126,7 +115,6 @@ struct HomeView: View {
             async let systemTask = WatchAPIService.shared.fetchSystemStatus()
             async let weatherTask = WatchAPIService.shared.fetchWeather()
             async let infraTask = WatchAPIService.shared.fetchInfraSummary()
-            async let satdumpTask = WatchAPIService.shared.fetchSatDumpStatus()
 
             // Usar resultados individuais para não falhar tudo se um endpoint falhar
             adsb = try? await adsbTask
@@ -134,7 +122,6 @@ struct HomeView: View {
             system = try? await systemTask
             weather = try? await weatherTask
             infra = try? await infraTask
-            satdump = try? await satdumpTask
 
             // Se nenhum dado foi carregado, mostra erro
             if adsb == nil && acars == nil && system == nil {

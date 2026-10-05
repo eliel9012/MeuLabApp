@@ -10,7 +10,6 @@ struct ContentView: View {
         case adsb
         case map
         case acars
-        case satellite
         case system
         case infra
         case radio
@@ -23,15 +22,16 @@ struct ContentView: View {
         case bible
         case tesouroReserva
         case viagem
-        case reservas
         case series
+        case notes
+        case apuracao
+        case slides
 
         var title: String {
             switch self {
             case .adsb: return "ADS-B"
             case .map: return "Radar"
             case .acars: return "ACARS"
-            case .satellite: return "Satélite"
             case .system: return "Sistema"
             case .infra: return "Infra"
             case .radio: return "Rádio"
@@ -44,8 +44,10 @@ struct ContentView: View {
             case .bible: return "Bíblia"
             case .tesouroReserva: return "Tesouro Reserva"
             case .viagem: return "Viagem"
-            case .reservas: return "Reservas"
             case .series: return "Séries"
+            case .notes: return "Notas"
+            case .apuracao: return "Apuração"
+            case .slides: return "Slides FDF"
             }
         }
 
@@ -54,7 +56,6 @@ struct ContentView: View {
             case .adsb: return "airplane"
             case .map: return "map"
             case .acars: return "envelope.badge"
-            case .satellite: return "antenna.radiowaves.left.and.right"
             case .system: return "cpu"
             case .infra: return "server.rack"
             case .radio: return "radio"
@@ -67,8 +68,10 @@ struct ContentView: View {
             case .bible: return "book.closed"
             case .tesouroReserva: return "banknote"
             case .viagem: return "airplane.circle"
-            case .reservas: return "ticket"
             case .series: return "film.stack"
+            case .notes: return "note.text"
+            case .apuracao: return "checkmark.seal"
+            case .slides: return "rectangle.on.rectangle.angled"
             }
         }
 
@@ -77,7 +80,6 @@ struct ContentView: View {
             case .adsb: return "airplane"
             case .map: return "map.fill"
             case .acars: return "envelope.badge.fill"
-            case .satellite: return "antenna.radiowaves.left.and.right"
             case .system: return "cpu.fill"
             case .infra: return "server.rack"
             case .radio: return "radio.fill"
@@ -90,8 +92,10 @@ struct ContentView: View {
             case .bible: return "book.closed.fill"
             case .tesouroReserva: return "banknote.fill"
             case .viagem: return "airplane.circle.fill"
-            case .reservas: return "ticket.fill"
             case .series: return "film.stack.fill"
+            case .notes: return "note.text"
+            case .apuracao: return "checkmark.seal"
+            case .slides: return "rectangle.on.rectangle.angled"
             }
         }
 
@@ -104,7 +108,7 @@ struct ContentView: View {
         static var secondaryTabs: [Tab] {
             [
                 .map, .acars, .infra, .weather, .flightSearch, .export,
-                .remote, .intelligence, .bible, .tesouroReserva, .viagem, .reservas, .series,
+                .apuracao, .remote, .slides, .intelligence, .bible, .tesouroReserva, .viagem, .series, .notes,
             ]
         }
 
@@ -206,16 +210,30 @@ struct ContentView: View {
                         Label(Tab.viagem.title, systemImage: Tab.viagem.icon)
                     }
 
-                    SwiftUI.Tab(value: Tab.reservas) {
-                        tabView(for: .reservas)
-                    } label: {
-                        Label(Tab.reservas.title, systemImage: Tab.reservas.icon)
-                    }
-
                     SwiftUI.Tab(value: Tab.series) {
                         tabView(for: .series)
                     } label: {
                         Label(Tab.series.title, systemImage: Tab.series.icon)
+                    }
+                }
+
+                Group {
+                    SwiftUI.Tab(value: Tab.notes) {
+                        tabView(for: .notes)
+                    } label: {
+                        Label(Tab.notes.title, systemImage: Tab.notes.icon)
+                    }
+
+                    SwiftUI.Tab(value: Tab.apuracao) {
+                        tabView(for: .apuracao)
+                    } label: {
+                        Label(Tab.apuracao.title, systemImage: Tab.apuracao.icon)
+                    }
+
+                    SwiftUI.Tab(value: Tab.slides) {
+                        tabView(for: .slides)
+                    } label: {
+                        Label(Tab.slides.title, systemImage: Tab.slides.icon)
                     }
                 }
             }
@@ -279,31 +297,34 @@ struct ContentView: View {
         else {
             return nil
         }
-        return Tab(rawValue: raw.lowercased())
+        return Tab.allCases.first { $0.rawValue.lowercased() == raw.lowercased() }
     }
 
     // Renderiza a view de uma tab específica.
     @ViewBuilder
+    // Dense dashboards (card grids with side-by-side metrics) are capped at AX1:
+    // beyond it their rows break word by word. Lists and text screens scale fully.
     private func tabView(for tab: Tab) -> some View {
         switch tab {
-        case .adsb: ADSBView()
+        case .adsb: ADSBView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
         case .map: MapView()
         case .acars: ACARSView()
-        case .satellite: SatelliteView()
-        case .system: SystemView()
-        case .infra: InfraView()
+        case .system: SystemView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
+        case .infra: InfraView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
         case .radio: RadioView()
         case .weather: WeatherView()
-        case .analytics: SystemView()
+        case .analytics: SystemView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
         case .flightSearch: FlightSearchView()
         case .export: DataExportView()
         case .remote: RemoteControlView()
-        case .intelligence: IntelligenceView()
+        case .intelligence: IntelligenceView().dynamicTypeSize(...DynamicTypeSize.xxxLarge)
         case .bible: BibleView()
         case .tesouroReserva: TesouroReservaView()
         case .viagem: ViagemView()
-        case .reservas: ReservasView()
         case .series: SeriesView()
+        case .notes: NotesView()
+        case .apuracao: ApuracaoView()
+        case .slides: SlidesControlView()
         }
     }
 

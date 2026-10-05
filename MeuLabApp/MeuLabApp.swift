@@ -101,8 +101,6 @@ struct MeuLabApp: App {
             NotificationCenter.default.post(name: .navigateToTab, object: nil, userInfo: ["tab": "acars"])
         case "weather_alert":
             NotificationCenter.default.post(name: .navigateToTab, object: nil, userInfo: ["tab": "weather"])
-        case "satellite":
-            NotificationCenter.default.post(name: .navigateToTab, object: nil, userInfo: ["tab": "satellite"])
         default:
             break
         }

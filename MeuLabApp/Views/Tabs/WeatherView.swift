@@ -378,7 +378,7 @@ private struct WeatherToolbarTitle: View {
             }
 
             Text("Clima")
-                .font(.system(size: compact ? 20 : 23, weight: .black, design: .rounded))
+                .scaledFont(size: compact ? 20 : 23, weight: .black, design: .rounded)
                 .tracking(0.4)
                 .foregroundStyle(
                     LinearGradient(
@@ -518,7 +518,7 @@ private struct WeatherInsightCard: View {
             }
 
             Text(highlight)
-                .font(.system(size: 30, weight: .bold, design: .rounded))
+                .scaledFont(size: 30, weight: .bold, design: .rounded)
                 .foregroundStyle(tint)
                 .monospacedDigit()
 
@@ -788,6 +788,7 @@ struct WeatherView: View {
             WeatherAtmosphereBackground(
                 style: appState.weather.map { WeatherAtmosphere(current: $0.current) } ?? .clearDay
             )
+            .backgroundExtensionEffect()
         }
         .navigationTitle("Clima")
         .navigationBarTitleDisplayMode(.inline)
@@ -805,25 +806,15 @@ struct WeatherView: View {
                 if appState.weatherLoading {
                     ProgressView()
                         .controlSize(.small)
-                        .padding(8)
-                        .background(
-                            Circle()
-                                .fill(WeatherTheme.toolbarBubble)
-                        )
+                        .accessibilityLabel("Carregando clima")
                 } else {
                     Button {
                         Task { await appState.refreshWeather() }
                     } label: {
                         Image(systemName: "arrow.clockwise")
-                            .font(.system(size: 17, weight: .semibold))
                             .foregroundStyle(WeatherTheme.skyBlue)
-                            .padding(8)
-                            .background(
-                                Circle()
-                                    .fill(WeatherTheme.toolbarBubble)
-                            )
                     }
-                    .buttonStyle(.plain)
+                    .accessibilityLabel("Atualizar clima")
                 }
             }
         }
@@ -866,7 +857,7 @@ struct WeatherView: View {
                     .foregroundStyle(WeatherTheme.ink.opacity(0.72))
             } else {
                 Image(systemName: "cloud.sun")
-                    .font(.system(size: 24, weight: .semibold))
+                    .scaledFont(size: 24, weight: .semibold)
                     .foregroundStyle(WeatherTheme.skyBlue)
 
                 Text("Atualize a previsão")
@@ -883,12 +874,9 @@ struct WeatherView: View {
                 } label: {
                     Label("Buscar agora", systemImage: "arrow.clockwise")
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(WeatherTheme.skyBlue)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(WeatherTheme.toolbarBubble, in: Capsule())
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glass)
+                .tint(WeatherTheme.skyBlue)
             }
         }
         .frame(maxWidth: .infinity)
@@ -948,7 +936,7 @@ struct WeatherView: View {
                             .foregroundStyle(WeatherTheme.ink.opacity(0.82))
 
                         Text(styleBadgeTitle(for: style))
-                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .scaledFont(size: 10, weight: .black, design: .rounded)
                             .tracking(1)
                             .foregroundStyle(style.accent)
                             .padding(.horizontal, 10)
@@ -982,11 +970,8 @@ struct WeatherView: View {
                         LocationManager.shared.requestPermission()
                     }
                     .font(.caption.weight(.semibold))
-                    .foregroundStyle(WeatherTheme.skyBlue)
-                    .padding(.horizontal, 14)
-                    .padding(.vertical, 10)
-                    .background(WeatherTheme.toolbarBubble, in: Capsule())
-                    .buttonStyle(.plain)
+                    .buttonStyle(.glass)
+                    .tint(WeatherTheme.skyBlue)
                 }
             }
 
@@ -1147,7 +1132,7 @@ struct WeatherView: View {
                         .foregroundStyle(WeatherTheme.ink.opacity(0.56))
 
                     Text(day.title)
-                        .font(.system(size: 34, weight: .black, design: .rounded))
+                        .scaledFont(size: 34, weight: .black, design: .rounded)
                         .foregroundStyle(WeatherTheme.ink)
 
                     Text(day.description)

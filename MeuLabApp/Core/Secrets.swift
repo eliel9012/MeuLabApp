@@ -35,8 +35,7 @@ enum Secrets {
     static var mapKitJWT: String {
         loadSecret(
             key: "MAPKIT_JWT",
-            fallback:
-                "eyJhbGciOiJFUzI1NiIsImtpZCI6IjlRTDNWWFkyNEIiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiI3S0dOTUQ2UkJZIiwiaWF0IjoxNzcxNTQxODkxLCJleHAiOjE3ODcwOTM4OTF9.MEYCIQCU4_dRN9NfvrUTdbSfwZJrZQPdt-lziGnpXYJWT_MeEAIhAJgInfCIEh60PZvFT9YnKy_t83PeSeHW8UMfWgBb8iRK"
+            fallback: ""
         )
     }
 

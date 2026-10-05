@@ -101,15 +101,20 @@ struct ThemeManagerView: View {
             .navigationTitle("Aparência")
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
+                ToolbarItem(placement: .primaryAction) {
                     Button("Restaurar") {
                         restoreDefaults()
                     }
+                    .accessibilityLabel("Restaurar aparência padrão")
                 }
             }
             .onAppear {
                 loadThemeSettings()
-                setupThemeObserver()
+            }
+            .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
+                if themeSettings.autoSwitch {
+                    applyTheme()
+                }
             }
         }
     }
@@ -280,14 +285,6 @@ struct ThemeManagerView: View {
         saveThemeSettings()
     }
     
-    private func setupThemeObserver() {
-        // Set up timer for automatic theme switching
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
-            if themeSettings.autoSwitch {
-                applyTheme()
-            }
-        }
-    }
 }
 
 // MARK: - Theme Preview Cards
@@ -316,7 +313,7 @@ struct ThemePreviewCards: View {
                     .frame(width: 12, height: 12)
             }
             .padding()
-            .glassCard(cornerRadius: 12)
+            .contentCard(cornerRadius: 12)
             
             // Analytics Chart Preview
             VStack(alignment: .leading, spacing: 8) {
@@ -333,7 +330,7 @@ struct ThemePreviewCards: View {
                 }
             }
             .padding()
-            .glassCard(cornerRadius: 12)
+            .contentCard(cornerRadius: 12)
             
             // Alert Card Preview
             HStack {
@@ -357,7 +354,7 @@ struct ThemePreviewCards: View {
                 .controlSize(.small)
             }
             .padding()
-            .glassCard(cornerRadius: 12)
+            .contentCard(cornerRadius: 12)
         }
     }
 }
@@ -379,9 +376,6 @@ struct AdaptiveThemeModifier: ViewModifier {
     func body(content: Content) -> some View {
         content
             .preferredColorScheme(preferredColorScheme)
-            .onAppear {
-                setupThemeTimer()
-            }
     }
     
     private var preferredColorScheme: ColorScheme? {
@@ -410,14 +404,6 @@ struct AdaptiveThemeModifier: ViewModifier {
         return currentTime >= darkModeTime || currentTime < lightModeTime
     }
     
-    private func setupThemeTimer() {
-        Timer.scheduledTimer(withTimeInterval: 60, repeats: true) { _ in
-            // Force view update when theme changes
-            DispatchQueue.main.async {
-                // This will trigger the preferredColorScheme update
-            }
-        }
-    }
 }
 
 #Preview {

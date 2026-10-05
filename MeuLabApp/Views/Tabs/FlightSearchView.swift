@@ -60,7 +60,6 @@ struct FlightSearchView: View {
 
             switch mode {
             case .flights:
-                searchBar
                 quickFilters
 
                 if let results = searchResults {
@@ -113,9 +112,19 @@ struct FlightSearchView: View {
                     } label: {
                         Image(systemName: "slider.horizontal.3")
                     }
+                    .accessibilityLabel("Filtros")
                 }
             }
         }
+        .modifier(FlightSearchField(
+            isActive: mode == .flights,
+            text: $searchQuery,
+            onSubmit: {
+                searchRequest.query = searchQuery.isEmpty ? nil : searchQuery
+                performSearch()
+            },
+            onClear: { searchRequest.query = nil }
+        ))
         .sheet(isPresented: $showingFilters) {
             FlightFiltersView(
                 searchRequest: $searchRequest,
@@ -144,35 +153,25 @@ struct FlightSearchView: View {
         }
     }
     
-    @ViewBuilder
-    private var searchBar: some View {
-        VStack(spacing: 12) {
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-                
-                TextField("Buscar voo, número, registro...", text: $searchQuery)
-                    .textFieldStyle(.plain)
-                    .onSubmit {
-                        searchRequest.query = searchQuery.isEmpty ? nil : searchQuery
-                        performSearch()
+    /// Busca padrão do sistema (`.searchable`) — só no modo Voos.
+    private struct FlightSearchField: ViewModifier {
+        let isActive: Bool
+        @Binding var text: String
+        let onSubmit: () -> Void
+        let onClear: () -> Void
+
+        func body(content: Content) -> some View {
+            if isActive {
+                content
+                    .searchable(text: $text, placement: .navigationBarDrawer(displayMode: .always), prompt: "Buscar voo, número, registro...")
+                    .onSubmit(of: .search, onSubmit)
+                    .onChange(of: text) { _, newValue in
+                        if newValue.isEmpty { onClear() }
                     }
-                
-                if !searchQuery.isEmpty {
-                    Button {
-                        searchQuery = ""
-                        searchRequest.query = nil
-                    } label: {
-                        Image(systemName: "xmark.circle.fill")
-                            .foregroundStyle(.secondary)
-                    }
-                }
+            } else {
+                content
             }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .glassCard(cornerRadius: 12)
         }
-        .padding()
     }
     
     @ViewBuilder
@@ -225,14 +224,15 @@ struct FlightSearchView: View {
                 
                 // Load More Button
                 if results.hasMore {
-                    Button("Carregar mais") {
+                    Button {
                         loadMoreResults()
+                    } label: {
+                        Text("Carregar mais")
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 6)
                     }
-                    .frame(maxWidth: .infinity)
-                    .padding()
-                    .background(Color.blue)
-                    .foregroundStyle(.white)
-                    .cornerRadius(12)
+                    .buttonStyle(.glassProminent)
+                    .tint(.blue)
                     .padding(.horizontal)
                     .disabled(isLoading)
                 }
@@ -493,7 +493,7 @@ private struct AirportBoardCard: View {
             }
         }
         .padding(14)
-        .glassCard(cornerRadius: 14)
+        .contentCard(cornerRadius: 14)
     }
 }
 

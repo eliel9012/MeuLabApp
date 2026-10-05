@@ -61,7 +61,7 @@ enum TripFlightParser {
         "TP": ["TAP"],
         "AD": ["AZU"],
         "AF": ["AFR"],
-        "BA": ["BAW"],
+        "BA": ["BAW", "CFE"],
         "UX": ["AEA"],
         "VY": ["VLG"],
         "U2": ["EZY", "EJU"],
@@ -241,7 +241,7 @@ final class TripFlights: ObservableObject {
     /// The itinerary flight this aircraft is broadcasting, if any.
     /// The receiver in Franca-SP, and the box the global source is queried with,
     /// both reach roughly five degrees. A São Paulo leg is inside that; a
-    /// Marseille-Madrid leg is not, and listing it would only ever render
+    /// London–Madrid leg is not, and listing it would only ever render
     /// "sem sinal" — noise dressed as information.
     static let coverageRadius: CLLocationDistance = 550_000
 

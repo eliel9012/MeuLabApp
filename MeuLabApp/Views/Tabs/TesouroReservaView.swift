@@ -737,7 +737,7 @@ private struct TRCard<Content: View>: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard(cornerRadius: 10)
+        .contentCard(cornerRadius: 10)
     }
 }
 
@@ -748,7 +748,7 @@ private struct TRField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label.uppercased())
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .scaledFont(size: 11, weight: .medium, design: .monospaced)
                 .foregroundColor(TRPalette.inkDim)
             TextField("", value: $value, format: .number)
                 .keyboardType(.decimalPad)
@@ -770,7 +770,7 @@ private struct TRDateField: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 5) {
             Text(label.uppercased())
-                .font(.system(size: 11, weight: .medium, design: .monospaced))
+                .scaledFont(size: 11, weight: .medium, design: .monospaced)
                 .foregroundColor(TRPalette.inkDim)
             Group {
                 if let range {
@@ -813,7 +813,7 @@ private struct TRReceiptRow: View {
     var body: some View {
         HStack(alignment: .firstTextBaseline) {
             Text(key)
-                .font(.system(size: 13.5))
+                .scaledFont(size: 13.5)
                 .foregroundColor(TRPalette.paperInkDim)
             Spacer()
             Text(value)
@@ -944,10 +944,10 @@ struct TesouroReservaView: View {
                 .fill(TRPalette.goldFill)
                 .frame(width: 6, height: 6)
             Text("Tesouro")
-                .font(.system(size: 17, weight: .regular, design: .serif))
+                .scaledFont(size: 17, weight: .regular, design: .serif)
                 .foregroundColor(TRPalette.inkDim)
             Text("Reserva")
-                .font(.system(size: 17, weight: .bold, design: .serif))
+                .scaledFont(size: 17, weight: .bold, design: .serif)
                 .foregroundColor(TRPalette.gold)
         }
     }
@@ -968,16 +968,16 @@ struct TesouroReservaView: View {
     private func header(result: ResgateResult) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             Text("TÍTULO PÚBLICO FEDERAL · 100% SELIC · SEM MARCAÇÃO A MERCADO")
-                .font(.system(size: 10.5, weight: .semibold, design: .monospaced))
+                .scaledFont(size: 10.5, weight: .semibold, design: .monospaced)
                 .foregroundColor(TRPalette.gold)
                 .tracking(1.1)
 
             HStack(spacing: 0) {
                 Text("Tesouro Reserva ")
-                    .font(.system(size: 28, weight: .bold, design: .serif))
+                    .scaledFont(size: 28, weight: .bold, design: .serif)
                     .foregroundColor(TRPalette.ink)
                 Text("— livro de rendimentos")
-                    .font(.system(size: 28, weight: .medium, design: .serif))
+                    .scaledFont(size: 28, weight: .medium, design: .serif)
                     .italic()
                     .foregroundColor(TRPalette.gold)
             }
@@ -990,7 +990,7 @@ struct TesouroReservaView: View {
                         .fontWeight(.semibold)
                         .foregroundColor(TRPalette.mint)
                     Text("SELIC VIGENTE NA DATA DE RESGATE")
-                        .font(.system(size: 9.5, weight: .medium))
+                        .scaledFont(size: 9.5, weight: .medium)
                         .foregroundColor(TRPalette.inkDim)
                     selicStatusBadge
                 }
@@ -1010,14 +1010,14 @@ struct TesouroReservaView: View {
                 ProgressView().scaleEffect(0.5)
                 Text("verificando no Banco Central…")
             case .ok:
-                Image(systemName: "checkmark.seal.fill").font(.system(size: 8))
+                Image(systemName: "checkmark.seal.fill").scaledFont(size: 8)
                 Text("confirmado no BCB · Copom \(selicLoader.decisionDateBR ?? "")")
             case .error:
-                Image(systemName: "exclamationmark.triangle.fill").font(.system(size: 8))
+                Image(systemName: "exclamationmark.triangle.fill").scaledFont(size: 8)
                 Text("BCB indisponível · usando projeção local")
             }
         }
-        .font(.system(size: 9))
+        .scaledFont(size: 9)
         .foregroundColor(selicLoader.status == .ok ? TRPalette.mint : TRPalette.inkDim)
     }
 
@@ -1068,7 +1068,7 @@ struct TesouroReservaView: View {
             VStack(alignment: .leading, spacing: 12) {
                 if extraAportes.isEmpty {
                     Text("Fez novas compras do título depois do aporte inicial? Adicione as datas e valores abaixo — cada aporte passa a render a partir do dia seguinte à sua própria data.")
-                        .font(.system(size: 11.5))
+                        .scaledFont(size: 11.5)
                         .foregroundColor(TRPalette.inkDim)
                 } else {
                     ForEach($extraAportes) { $item in
@@ -1105,7 +1105,7 @@ struct TesouroReservaView: View {
                     extraAportes.append(ExtraAporte(dateISO: TRDate.iso(clamped), valor: 1000))
                 } label: {
                     Label("Adicionar aporte", systemImage: "plus.circle.fill")
-                        .font(.system(size: 13, weight: .medium))
+                        .scaledFont(size: 13, weight: .medium)
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .contentShape(Rectangle())
                 }
@@ -1127,7 +1127,7 @@ struct TesouroReservaView: View {
                     copomField("08–09/dez/2026", value: $projDec)
                 }
                 Text("Histórico real embutido: 14,50% a.a. em maio e corte para 14,25% a.a. no Copom de 17/06/2026 (vigente desde 18/06). As taxas acima são projeções editáveis (padrão ≈ Focus, Selic a 13,50% no fim de 2026), valendo do 1º dia útil após cada reunião.")
-                    .font(.system(size: 11.5))
+                    .scaledFont(size: 11.5)
                     .foregroundColor(TRPalette.inkDim)
             }
         }
@@ -1136,7 +1136,7 @@ struct TesouroReservaView: View {
     private func copomField(_ label: String, value: Binding<Double>) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             Text(label)
-                .font(.system(size: 10.5, weight: .medium))
+                .scaledFont(size: 10.5, weight: .medium)
                 .foregroundColor(TRPalette.inkDim)
             TextField("", value: value, format: .number)
                 .keyboardType(.decimalPad)
@@ -1162,10 +1162,10 @@ struct TesouroReservaView: View {
                 .fontWeight(.semibold)
                 .foregroundColor(TRPalette.paperInk)
             Text("\(TRDate.dateBR(aporte)) → \(TRDate.dateBR(resgate)) · \(result.days) dias corridos")
-                .font(.system(size: 11, design: .monospaced))
+                .scaledFont(size: 11, design: .monospaced)
                 .foregroundColor(TRPalette.paperSub)
             Text(selicHistoryNote)
-                .font(.system(size: 10, design: .monospaced))
+                .scaledFont(size: 10, design: .monospaced)
                 .foregroundColor(TRPalette.paperSub)
                 .padding(.bottom, 8)
 
@@ -1209,7 +1209,7 @@ struct TesouroReservaView: View {
 
             HStack(alignment: .firstTextBaseline) {
                 Text("Ganho líquido no período")
-                    .font(.system(size: 13.5))
+                    .scaledFont(size: 13.5)
                     .foregroundColor(TRPalette.paperInkDim)
                 Spacer()
                 Text("+\(brl(result.netYield))")
@@ -1224,7 +1224,7 @@ struct TesouroReservaView: View {
                     ? "Faltam \(result.ir.next) dias para a próxima faixa de IR."
                     : "Alíquota mínima de IR (15%) já alcançada."
             )
-            .font(.system(size: 10.5, design: .monospaced))
+            .scaledFont(size: 10.5, design: .monospaced)
             .foregroundColor(TRPalette.paperSub)
             .frame(maxWidth: .infinity, alignment: .trailing)
             .padding(.top, 10)
@@ -1263,7 +1263,7 @@ struct TesouroReservaView: View {
                         HStack(spacing: 4) {
                             if isBest {
                                 Image(systemName: "star.fill")
-                                    .font(.system(size: 9))
+                                    .scaledFont(size: 9)
                             }
                             Text(row.name)
                                 .lineLimit(1)
@@ -1289,7 +1289,7 @@ struct TesouroReservaView: View {
                     compare.map { "\($0.name): \($0.obs)" }.joined(separator: ". ")
                         + ". A poupança sobe em degraus: entre aniversários o dinheiro não rende nada — por isso ela costuma perder mesmo isenta de IR."
                 )
-                .font(.system(size: 11.5))
+                .scaledFont(size: 11.5)
                 .foregroundColor(TRPalette.inkDim)
                 .padding(.top, 10)
             }
@@ -1370,7 +1370,7 @@ struct TesouroReservaView: View {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 5), count: 7), spacing: 5) {
                     ForEach(trWeekdays.indices, id: \.self) { i in
                         Text(trWeekdays[i])
-                            .font(.system(size: 11, design: .monospaced))
+                            .scaledFont(size: 11, design: .monospaced)
                             .foregroundColor(TRPalette.inkDim)
                             .frame(maxWidth: .infinity)
                     }
@@ -1387,7 +1387,7 @@ struct TesouroReservaView: View {
                 }
 
                 Text("mês: +\(brl(monthYield(curve: curve, month: viewMonth))) · saldo fim do mês: \(brl(monthEndBalance(curve: curve, month: viewMonth)))")
-                    .font(.system(size: 11.5, design: .monospaced))
+                    .scaledFont(size: 11.5, design: .monospaced)
                     .foregroundColor(TRPalette.mint)
             }
         }
@@ -1407,11 +1407,11 @@ struct TesouroReservaView: View {
 
             VStack(alignment: .leading, spacing: 2) {
                 Text("\(day)")
-                    .font(.system(size: 12.5, design: .monospaced))
+                    .scaledFont(size: 12.5, design: .monospaced)
                     .foregroundColor(isResgate ? TRPalette.paperInk : TRPalette.inkDim)
                 if let info, biz, !before, info.dailyYield > 0 {
                     Text("+\(brl4NoSymbol(info.dailyYield))")
-                        .font(.system(size: 9, design: .monospaced))
+                        .scaledFont(size: 9, design: .monospaced)
                         .foregroundColor(isResgate ? TRPalette.paperInk : TRPalette.mint)
                         .lineLimit(1)
                         .minimumScaleFactor(0.6)
@@ -1489,7 +1489,7 @@ struct TesouroReservaView: View {
                 .frame(height: 230)
 
                 Text("Valores brutos, do aporte até o resgate. A escada vermelha é a poupança creditando só nos aniversários mensais.")
-                    .font(.system(size: 11.5))
+                    .scaledFont(size: 11.5)
                     .foregroundColor(TRPalette.inkDim)
             }
         }
@@ -1554,7 +1554,7 @@ struct TesouroReservaView: View {
                 }
 
                 Text("Horizonte fixo de 365 dias a partir do aporte, independente da data de resgate escolhida no calendário, seguindo a trajetória de Selic projetada. No líquido do Reserva já entra a custódia B3 sobre o excedente de R$ 10 mil (\(brl(projection.custody)) no período). Aos 365 dias, a alíquota de IR é 17,5% — a faixa de 15% só chega após 720 dias.")
-                    .font(.system(size: 11.5))
+                    .scaledFont(size: 11.5)
                     .foregroundColor(TRPalette.inkDim)
             }
         }
@@ -1564,9 +1564,9 @@ struct TesouroReservaView: View {
         VStack(alignment: .leading, spacing: 2) {
             HStack(spacing: 4) {
                 if win {
-                    Image(systemName: "star.fill").font(.system(size: 9))
+                    Image(systemName: "star.fill").scaledFont(size: 9)
                 }
-                Text(name).font(.system(size: 11.5)).lineLimit(1)
+                Text(name).scaledFont(size: 11.5).lineLimit(1).minimumScaleFactor(0.8)
             }
             HStack {
                 Text(" ").frame(maxWidth: .infinity, alignment: .leading)
@@ -1627,7 +1627,7 @@ struct TesouroReservaView: View {
             switch fx.status {
             case .loading:
                 Text("Buscando série do ano na BrasilAPI…")
-                    .font(.system(size: 12))
+                    .scaledFont(size: 12)
                     .foregroundColor(TRPalette.inkDim)
 
             case .ok:
@@ -1672,7 +1672,7 @@ struct TesouroReservaView: View {
                     .frame(height: 210)
 
                     Text("Variação % acumulada desde 02/01/2026 (cotação de venda PTAX, BrasilAPI/Banco Central). Linha caindo = real se valorizando frente à moeda.")
-                        .font(.system(size: 11.5))
+                        .scaledFont(size: 11.5)
                         .foregroundColor(TRPalette.inkDim)
                 }
 
@@ -1682,7 +1682,7 @@ struct TesouroReservaView: View {
                         VStack(alignment: .leading, spacing: 2) {
                             HStack {
                                 Text("\(f.name) (\(f.code))")
-                                    .font(.system(size: 13))
+                                    .scaledFont(size: 13)
                                     .fontWeight(.medium)
                                     .foregroundColor(TRPalette.ink)
                                 Spacer()
@@ -1691,7 +1691,7 @@ struct TesouroReservaView: View {
                                     .foregroundColor(TRPalette.ink)
                             }
                             Text(f.note)
-                                .font(.system(size: 11))
+                                .scaledFont(size: 11)
                                 .foregroundColor(TRPalette.inkDim)
                         }
                         .padding(.vertical, 4)
@@ -1700,7 +1700,7 @@ struct TesouroReservaView: View {
                         }
                     }
                     Text("Não foi possível carregar a série do ano na BrasilAPI agora. Os valores acima são checkpoints verificados em 02/07/2026, usados como referência quando a chamada externa falha.")
-                        .font(.system(size: 11.5))
+                        .scaledFont(size: 11.5)
                         .foregroundColor(TRPalette.inkDim)
                         .padding(.top, 4)
                 }
@@ -1729,7 +1729,7 @@ struct TesouroReservaView: View {
             Text(k).frame(maxWidth: .infinity, alignment: .leading)
             Text(v).font(.system(.body, design: .monospaced))
         }
-        .font(.system(size: 13))
+        .scaledFont(size: 13)
         .foregroundColor(TRPalette.ink)
         .padding(.vertical, 6)
         .overlay(alignment: .bottom) {
@@ -1741,7 +1741,7 @@ struct TesouroReservaView: View {
 
     private var footerNote: some View {
         Text("Capitalização composta por dia útil (base 252) a partir do 1º dia útil após o aporte, sem marcação a mercado — o resgate vale sempre o aplicado + rendimentos acumulados. Feriados nacionais/B3 de 2026–2027 descontados. Custódia B3 de 0,20% a.a. pro-rata apenas sobre o que exceder R$ 10.000,00. CDB modelado com CDI ≈ Selic − 0,10 p.p. e mesma tributação; poupança com 0,5% a.m. + TR, crédito no aniversário, isenta de IR. Câmbio via BrasilAPI (PTAX/Banco Central) quando disponível. Simulação educativa com taxas futuras projetadas — não é recomendação de investimento.")
-            .font(.system(size: 11))
+            .scaledFont(size: 11)
             .foregroundColor(TRPalette.inkDim)
             .padding(.top, 6)
     }

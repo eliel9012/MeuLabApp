@@ -42,10 +42,24 @@ struct TripStop: Identifiable, Equatable, Sendable {
 }
 
 enum TripParser {
-    /// The itinerary is a single September. Kept explicit so a stale build never
-    /// silently schedules against the wrong year.
+    /// Kept explicit so a stale build never silently schedules against the wrong year.
     static let year = 2026
-    static let month = 9
+
+    /// Portuguese month abbreviations, as written in the itinerary ("23 out").
+    private static let months: [String: Int] = [
+        "jan": 1, "fev": 2, "mar": 3, "abr": 4, "mai": 5, "jun": 6,
+        "jul": 7, "ago": 8, "set": 9, "out": 10, "nov": 11, "dez": 12,
+    ]
+
+    /// "23 out" -> 10. Nil when the text names no month, so a typo surfaces as a
+    /// missing date instead of landing on the wrong one.
+    static func month(from dateText: String) -> Int? {
+        let lower = dateText.lowercased()
+        for word in lower.split(whereSeparator: { !$0.isLetter }) {
+            if let m = months[String(word.prefix(3))] { return m }
+        }
+        return nil
+    }
 
     /// "06 set" -> 6. "19–20 set" -> 19 (ranges take their first day).
     static func day(from dateText: String) -> Int? {
@@ -64,10 +78,12 @@ enum TripParser {
     }
 
     static func date(dateText: String, timeText: String, timeZone: TimeZone?) -> Date? {
-        guard let d = day(from: dateText), let c = clock(from: timeText) else { return nil }
+        guard let d = day(from: dateText), let m = month(from: dateText),
+            let c = clock(from: timeText)
+        else { return nil }
         var comps = DateComponents()
         comps.year = year
-        comps.month = month
+        comps.month = m
         comps.day = d
         comps.hour = c.hour
         comps.minute = c.minute
@@ -119,8 +135,16 @@ final class TripEngine: ObservableObject {
     }
 
     /// Time zone in force at `now`, taken from the entry the trip is currently on.
+    /// Once a flight has landed the traveller is in the destination's zone, even
+    /// though the flight stop itself carries the origin's.
     func activeTimeZone(now: Date = Date()) -> TimeZone? {
-        currentStop(now: now)?.timeZone ?? stops.first?.timeZone
+        guard let current = currentStop(now: now) else { return stops.first?.timeZone }
+        if let leg = FlightLegBuilder.legs(from: stops).first(where: { $0.stopID == current.id }),
+            leg.scheduledArrival <= now,
+            let arrivalZone = leg.arrivalTimeZone {
+            return arrivalZone
+        }
+        return current.timeZone ?? stops.first?.timeZone
     }
 
     // MARK: - Onde estamos, pelo GPS

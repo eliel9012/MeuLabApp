@@ -40,21 +40,41 @@ final class TripNotifications: ObservableObject {
 
     /// Entries that warrant an alarm. Hotel check-ins and meals do not — waking
     /// someone for every one of 70 entries would train them to ignore all of them.
+    /// Title only, as whole words: descriptions mention flights and trains in
+    /// passing, and substrings misfire ("ter " inside "pôster ").
     private func isAlertWorthy(_ stop: TripStop) -> Bool {
-        guard stop.date != nil else { return false }
-        let text = (stop.title + " " + stop.detail).lowercased()
+        guard stop.date != nil, !isLodging(stop) else { return false }
+        let title = Self.wordLine(stop.title)
         let keywords = [
-            "voo", "flight", "trem", "tgv", "ter ", "frecciarossa", "shuttle",
-            "check-in", "embarque", "retirar carro", "devolver carro", "sair para",
-            "conexão", "casamento", "cerimônia", "cocktail",
+            "voo", "flight", "trem", "tgv", "ter", "frecciarossa", "shuttle", "ônibus", "onibus",
+            "check-in", "embarque", "retirar carro", "devolver carro", "sair para", "chegar a",
+            "conexão",
         ]
-        return keywords.contains { text.contains($0) }
+        return keywords.contains { title.contains(" \($0) ") }
     }
 
+    /// Hotel stays never alert — "Check-in — Hotel Don Luis" would otherwise fire
+    /// mid-flight. The bridge carries no type, so the 🏨 icon is the marker, with
+    /// the title as a fallback.
+    private func isLodging(_ stop: TripStop) -> Bool {
+        if stop.icon == "🏨" { return true }
+        let title = Self.wordLine(stop.title)
+        return ["hotel", "suites", "hostel", "pousada", "airbnb"].contains { title.contains(" \($0) ") }
+    }
+
+    /// Only real flights ("Voo IB 0983 — …") get the early warning; "Voo a comprar"
+    /// is a reminder, not a departure.
     private func leadMinutes(for stop: TripStop) -> Int {
-        let text = (stop.title + " " + stop.detail).lowercased()
-        let isFlight = text.contains("voo") || text.contains("flight")
+        let title = stop.title.lowercased()
+        let isFlight = title.hasPrefix("voo ") && !title.contains("a comprar")
         return isFlight ? Self.flightLeadMinutes : Self.defaultLeadMinutes
+    }
+
+    /// " sair para o terminal 4s " — lowercased words (hyphens kept, for
+    /// "check-in"), space-padded so phrases match on word boundaries.
+    private static func wordLine(_ text: String) -> String {
+        let words = text.lowercased().split(whereSeparator: { !$0.isLetter && !$0.isNumber && $0 != "-" })
+        return " " + words.joined(separator: " ") + " "
     }
 
     /// Rebuilds the whole schedule. Cheap, idempotent, and safe to call on every

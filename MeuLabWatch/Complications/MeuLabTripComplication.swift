@@ -129,6 +129,7 @@ struct TripComplicationRectangularView: View {
                     Image(systemName: snapshot.icon)
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(TripComplicationTheme.cyan)
+                        .widgetAccentable()
                     Text(snapshot.time)
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .lineLimit(1)
@@ -148,6 +149,7 @@ struct TripComplicationRectangularView: View {
                     Image(systemName: "suitcase.rolling")
                         .font(.system(size: 11, weight: .semibold))
                         .foregroundStyle(TripComplicationTheme.green)
+                        .widgetAccentable()
                     Text("Viagem")
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                 }
@@ -172,6 +174,7 @@ struct TripComplicationCircularView: View {
                 Image(systemName: snapshot?.icon ?? "checkmark.seal")
                     .font(.system(size: 11, weight: .semibold))
                     .foregroundStyle(TripComplicationTheme.cyan)
+                    .widgetAccentable()
                 Text(snapshot?.shortClock ?? "--:--")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .lineLimit(1)
@@ -191,6 +194,7 @@ struct TripComplicationCornerView: View {
             Image(systemName: snapshot?.icon ?? "checkmark.seal")
                 .font(.system(size: 16, weight: .semibold))
                 .foregroundStyle(TripComplicationTheme.cyan)
+                .widgetAccentable()
         }
         .widgetLabel {
             Text(snapshot?.shortClock ?? "sem eventos")

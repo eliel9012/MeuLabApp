@@ -435,9 +435,9 @@ struct SeriesView: View {
                                 DiskImage(url: series.posterURL, width: 60, height: 88, corner: 8)
                                 VStack(alignment: .leading, spacing: 4) {
                                     Text(series.name)
-                                        .font(.system(size: 17, weight: .semibold))
+                                        .scaledFont(size: 17, weight: .semibold)
                                     Text(subtitle(for: series))
-                                        .font(.system(size: 13))
+                                        .scaledFont(size: 13)
                                         .foregroundStyle(.secondary)
                                 }
                             }
@@ -449,6 +449,13 @@ struct SeriesView: View {
         }
         .navigationTitle("Séries")
         .navigationBarTitleDisplayMode(.inline)
+        // Title as a principal item: the "Mais" navigation bar shows only that,
+        // next to the back button.
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Séries").font(.headline)
+            }
+        }
         .onAppear { library.reload() }
         .refreshable { library.reload() }
         .toolbar {
@@ -469,6 +476,7 @@ struct SeriesView: View {
                 } label: {
                     Image(systemName: "ellipsis.circle")
                 }
+                .accessibilityLabel("Opções da biblioteca")
             }
         }
         .fileImporter(
@@ -502,25 +510,25 @@ struct SeriesView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Label("Nenhum vídeo", systemImage: "film.stack")
-                    .font(.system(size: 20, weight: .semibold))
+                    .scaledFont(size: 20, weight: .semibold)
 
                 Text(
                     "Conecte o iPhone ao Mac, abra o Finder, escolha o aparelho na barra lateral e vá em Arquivos › MeuLab. Crie uma pasta com o nome da série e arraste os .mp4 para dentro."
                 )
-                .font(.system(size: 14))
+                .scaledFont(size: 14)
                 .foregroundStyle(.secondary)
 
                 Divider()
 
                 Text("O QUE O APP ESTÁ VENDO")
-                    .font(.system(size: 11, weight: .bold))
+                    .scaledFont(size: 11, weight: .bold)
                     .tracking(1.1)
                     .foregroundStyle(.secondary)
 
                 VStack(alignment: .leading, spacing: 3) {
                     ForEach(library.diagnostics(), id: \.self) { line in
                         Text(line)
-                            .font(.system(size: 11, design: .monospaced))
+                            .scaledFont(size: 11, design: .monospaced)
                             .foregroundStyle(.primary.opacity(0.75))
                             .textSelection(.enabled)
                     }
@@ -532,21 +540,21 @@ struct SeriesView: View {
                     } label: {
                         Label("Escolher pasta", systemImage: "folder.badge.plus")
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
 
                     Button {
                         library.reload()
                     } label: {
                         Label("Procurar de novo", systemImage: "arrow.clockwise")
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
                 }
                 .padding(.top, 4)
 
                 Text(
                     "Se você copiou os vídeos para o iPhone e eles não aparecem, use \"Escolher pasta\" e aponte para onde eles estão no app Arquivos. O app lê de lá sem copiar nada."
                 )
-                .font(.system(size: 12))
+                .scaledFont(size: 12)
                 .foregroundStyle(.secondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
@@ -586,9 +594,9 @@ struct SeriesDetailView: View {
                             )
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(season.number == 0 ? "Sem temporada" : "Temporada \(season.number)")
-                                    .font(.system(size: 16, weight: .semibold))
+                                    .scaledFont(size: 16, weight: .semibold)
                                 Text(watchedText(season))
-                                    .font(.system(size: 12.5))
+                                    .scaledFont(size: 12.5)
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -629,18 +637,18 @@ struct SeasonDetailView: View {
                         )
                         VStack(alignment: .leading, spacing: 3) {
                             Text(episode.code)
-                                .font(.system(size: 11.5, weight: .bold, design: .monospaced))
+                                .scaledFont(size: 11.5, weight: .bold, design: .monospaced)
                                 .foregroundStyle(.secondary)
                             Text(episode.title)
-                                .font(.system(size: 15, weight: .semibold))
+                                .scaledFont(size: 15, weight: .semibold)
                                 .multilineTextAlignment(.leading)
                             if let seconds = PlaybackProgress.seconds(for: episode) {
                                 Text("Continuar de \(timeText(seconds))")
-                                    .font(.system(size: 11.5))
+                                    .scaledFont(size: 11.5)
                                     .foregroundStyle(Color.accentColor)
                             } else {
                                 Text(episode.sizeText)
-                                    .font(.system(size: 11.5))
+                                    .scaledFont(size: 11.5)
                                     .foregroundStyle(.secondary)
                             }
                         }
@@ -672,22 +680,23 @@ struct EpisodeDetailView: View {
                     url: episode.thumbnailURL, width: nil, height: 210,
                     corner: 0, placeholder: "play.fill"
                 )
+                .backgroundExtensionEffect()
 
                 VStack(alignment: .leading, spacing: 6) {
                     Text(episode.code)
-                        .font(.system(size: 12, weight: .bold, design: .monospaced))
+                        .scaledFont(size: 12, weight: .bold, design: .monospaced)
                         .foregroundStyle(.secondary)
                     Text(episode.title)
-                        .font(.system(size: 22, weight: .bold))
+                        .scaledFont(size: 22, weight: .bold)
                     Text(episode.sizeText)
-                        .font(.system(size: 12.5))
+                        .scaledFont(size: 12.5)
                         .foregroundStyle(.secondary)
                 }
                 .padding(.horizontal, 18)
 
                 if let synopsis = episode.synopsis, !synopsis.isEmpty {
                     Text(synopsis)
-                        .font(.system(size: 15))
+                        .scaledFont(size: 15)
                         .foregroundStyle(.primary.opacity(0.85))
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 18)
@@ -703,7 +712,7 @@ struct EpisodeDetailView: View {
                         )
                         .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.borderedProminent)
+                    .buttonStyle(.glassProminent)
                     .controlSize(.large)
 
                     if resume != nil {
@@ -714,7 +723,7 @@ struct EpisodeDetailView: View {
                             Label("Recomeçar do início", systemImage: "arrow.counterclockwise")
                                 .frame(maxWidth: .infinity)
                         }
-                        .buttonStyle(.bordered)
+                        .buttonStyle(.glass)
                         .controlSize(.large)
                     }
 
@@ -724,7 +733,7 @@ struct EpisodeDetailView: View {
                         Label("Enviar via AirDrop", systemImage: "square.and.arrow.up")
                             .frame(maxWidth: .infinity)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.glass)
                     .controlSize(.large)
                 }
                 .padding(.horizontal, 18)

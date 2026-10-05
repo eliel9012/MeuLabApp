@@ -24,6 +24,7 @@ class AudioPlayer: NSObject, ObservableObject {
     private var timeControlObservation: NSKeyValueObservation?
 
     private var notificationObservers: [NSObjectProtocol] = []
+    private var itemNotificationObservers: [NSObjectProtocol] = []
 
     /// User intent, kept separate from `isPlaying` (actual output). An interruption
     /// or a dropped stream flips `isPlaying` to false while intent stays true, which
@@ -130,10 +131,17 @@ class AudioPlayer: NSObject, ObservableObject {
             }
         }
 
-        // Live stream died mid-playback.
+        notificationObservers = [interruption, routeChange]
+    }
+
+    /// Failure/stall observers scoped to the current item only; re-registered per item.
+    private func registerItemNotifications(for item: AVPlayerItem) {
+        removeItemNotifications()
+        let center = NotificationCenter.default
+
         let failed = center.addObserver(
             forName: AVPlayerItem.failedToPlayToEndTimeNotification,
-            object: nil,
+            object: item,
             queue: .main
         ) { _ in
             Task { @MainActor in
@@ -141,10 +149,9 @@ class AudioPlayer: NSObject, ObservableObject {
             }
         }
 
-        // Buffer ran dry and the player gave up.
         let stalled = center.addObserver(
             forName: AVPlayerItem.playbackStalledNotification,
-            object: nil,
+            object: item,
             queue: .main
         ) { _ in
             Task { @MainActor in
@@ -152,7 +159,12 @@ class AudioPlayer: NSObject, ObservableObject {
             }
         }
 
-        notificationObservers = [interruption, routeChange, failed, stalled]
+        itemNotificationObservers = [failed, stalled]
+    }
+
+    private func removeItemNotifications() {
+        itemNotificationObservers.forEach { NotificationCenter.default.removeObserver($0) }
+        itemNotificationObservers = []
     }
 
     private func handleInterruption(typeRaw: UInt?, optionsRaw: UInt?) {
@@ -254,6 +266,7 @@ class AudioPlayer: NSObject, ObservableObject {
 
         let item = AVPlayerItem(url: streamURL)
         playerItem = item
+        registerItemNotifications(for: item)
 
         if player == nil {
             player = AVPlayer(playerItem: item)
@@ -337,6 +350,7 @@ class AudioPlayer: NSObject, ObservableObject {
 
         player?.pause()
         player?.replaceCurrentItem(with: nil)
+        removeItemNotifications()
         playerItem = nil
 
         isPlaying = false

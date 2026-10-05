@@ -129,7 +129,7 @@ struct MapView: View {
             }
         }
         .padding(8)
-        .glassCard(cornerRadius: 8)
+        .glassCard(cornerRadius: 8) // glass: floating (HUD sobre mapa)
     }
 
     private var closestAircraftToUser: (callsign: String, distance: Double)? {
@@ -361,7 +361,7 @@ struct MapAircraftInfoCard: View {
             }
         }
         .padding()
-        .glassCard(cornerRadius: 16)
+        .glassCard(cornerRadius: 16) // glass: floating (card sobre mapa)
     }
 }
 

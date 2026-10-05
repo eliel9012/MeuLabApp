@@ -81,20 +81,12 @@ struct EnhancedContentView: View {
                 }
             }
             .padding()
-            .background(Color(.secondarySystemBackground))
 
             Divider()
 
             // Navigation List
-            List {
-                ForEach(visibleTabs, id: \.self) { tab in
-                    Button {
-                        selectedTab = tab
-                    } label: {
-                        EnhancedSidebarRow(tab: tab, isSelected: selectedTab == tab)
-                    }
-                    .buttonStyle(.plain)
-                }
+            List(visibleTabs, id: \.self, selection: Binding<ContentView.Tab?>(get: { selectedTab }, set: { if let t = $0 { selectedTab = t } })) { tab in
+                EnhancedSidebarRow(tab: tab, isSelected: selectedTab == tab)
             }
             .listStyle(.sidebar)
         }
@@ -110,23 +102,21 @@ struct EnhancedContentView: View {
                 // Show current tab content
                 switch selectedTab {
                 case .adsb:
-                    ADSBView()
+                    ADSBView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 case .map:
                     MapView()
                 case .acars:
                     ACARSView()
-                case .satellite:
-                    SatelliteView()
                 case .system:
-                    SystemView()
+                    SystemView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 case .infra:
-                    InfraView()
+                    InfraView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 case .radio:
                     RadioView()
                 case .weather:
                     WeatherView()
                 case .analytics:
-                    SystemView()
+                    SystemView().dynamicTypeSize(...DynamicTypeSize.accessibility1)
                 case .flightSearch:
                     FlightSearchView()
                 case .export:
@@ -134,17 +124,21 @@ struct EnhancedContentView: View {
                 case .remote:
                     RemoteControlView()
                 case .intelligence:
-                    IntelligenceView()
+                    IntelligenceView().dynamicTypeSize(...DynamicTypeSize.xxxLarge)
                 case .bible:
                     BibleView()
                 case .tesouroReserva:
                     TesouroReservaView()
                 case .viagem:
                     ViagemView()
-                case .reservas:
-                    ReservasView()
                 case .series:
                     SeriesView()
+                case .notes:
+                    NotesView()
+                case .apuracao:
+                    ApuracaoView()
+                case .slides:
+                    SlidesControlView()
                 }
             }
         }
@@ -185,7 +179,7 @@ struct EnhancedContentView: View {
                         }
 
                         Text(tab.title)
-                            .font(.system(size: 10, weight: selectedTab == tab ? .bold : .semibold))
+                            .scaledFont(size: 10, weight: selectedTab == tab ? .bold : .semibold)
                             .foregroundStyle(selectedTab == tab ? .blue : .primary.opacity(0.5))
                     }
                     .frame(maxWidth: .infinity)
@@ -196,7 +190,7 @@ struct EnhancedContentView: View {
         }
         .padding(.horizontal, 10)
         .padding(.vertical, 8)
-        .glassCard(cornerRadius: 32)
+        .glassControl(cornerRadius: 32)
         .padding(.horizontal, 14)
     }
 }
@@ -211,28 +205,24 @@ struct EnhancedSidebarRow: View {
         HStack(spacing: 12) {
             Image(systemName: tab.icon)
                 .font(.system(size: 16, weight: .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
+                .foregroundStyle(.primary)
                 .frame(width: 20)
 
             Text(tab.title)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(isSelected ? .white : .primary)
+                .scaledFont(size: 15, weight: .medium)
+                .foregroundStyle(.primary)
 
             Spacer()
 
             // Status indicators
             if hasActiveAlerts(for: tab) {
                 Image(systemName: "bell.badge.fill")
-                    .font(.system(size: 10))
+                    .scaledFont(size: 10)
                     .foregroundStyle(.red)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(isSelected ? .blue : Color.clear)
-        )
         .contentShape(Rectangle())
     }
 
@@ -254,17 +244,17 @@ struct EnhancedQuickMetric: View {
     var body: some View {
         VStack(spacing: 2) {
             Text(value)
-                .font(.system(size: 14, weight: .bold))
+                .scaledFont(size: 14, weight: .bold)
                 .monospacedDigit()
                 .foregroundStyle(color)
 
             Text(title)
-                .font(.system(size: 10))
+                .scaledFont(size: 10)
                 .foregroundStyle(.secondary)
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
-        .glassCard(tint: color, cornerRadius: 8)
+        .contentCard(tint: color, cornerRadius: 8)
     }
 }
 

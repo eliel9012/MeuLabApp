@@ -31,11 +31,11 @@ struct BibleRandomView: View {
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(Color.amber, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    .padding(.vertical, 6)
                     .foregroundStyle(Color.mogno)
                 }
-                .buttonStyle(.plain)
+                .buttonStyle(.glassProminent)
+                .tint(Color.amber)
                 .disabled(isLoading)
 
                 if verse == nil {
@@ -129,7 +129,7 @@ private struct RandomVerseCard: View {
             .buttonStyle(.plain)
         }
         .padding(18)
-        .glassCard(tint: Color.amber, cornerRadius: 18)
+        .contentCard(tint: Color.amber, cornerRadius: 18)
     }
 }
 

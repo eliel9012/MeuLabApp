@@ -38,7 +38,7 @@ struct WatchWeatherView: View {
                                     .font(.caption.weight(.semibold))
                                     .foregroundStyle(WatchLabTheme.ink)
                                 Text("\(Int(current.temperature))°C")
-                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .scaledFont(size: 28, weight: .black, design: .rounded)
                                     .foregroundStyle(WatchLabTheme.ink)
                                 Text(current.condition)
                                     .font(.caption2)
@@ -48,7 +48,7 @@ struct WatchWeatherView: View {
                             Spacer()
 
                             Image(systemName: iconForCondition(current.condition))
-                                .font(.system(size: 22, weight: .semibold))
+                                .scaledFont(size: 22, weight: .semibold)
                                 .foregroundStyle(weatherTint(current.condition))
                         }
 
@@ -87,15 +87,16 @@ struct WatchWeatherView: View {
                                         .font(.caption.weight(.semibold))
                                         .foregroundStyle(WatchLabTheme.ink)
                                     Text(day.condition)
-                                        .font(.system(size: 10, weight: .medium))
+                                        .scaledFont(size: 10, weight: .medium)
                                         .foregroundStyle(WatchLabTheme.secondary)
                                         .lineLimit(1)
+                                        .minimumScaleFactor(0.7)
                                 }
 
                                 Spacer()
 
                                 Text("\(Int(day.tempMin))° / \(Int(day.tempMax))°")
-                                    .font(.system(size: 10, weight: .bold, design: .rounded))
+                                    .scaledFont(size: 10, weight: .bold, design: .rounded)
                                     .foregroundStyle(WatchLabTheme.ink)
                             }
                             .padding(.vertical, 3)

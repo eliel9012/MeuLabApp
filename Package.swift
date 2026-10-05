@@ -29,7 +29,6 @@ let package = Package(
                 "Views/Components/PlaneSpottersView.swift",
                 "Views/Settings/SiriShortcutsView.swift",
                 "Views/Tabs/AircraftDetailView.swift",
-                "Views/Tabs/AllSatellitePassesView.swift",
             ]),
     ]
 )

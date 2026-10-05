@@ -89,7 +89,7 @@ struct WatchBibleView: View {
                 } label: {
                     HStack {
                         Image(systemName: "shuffle")
-                            .font(.system(size: 11, weight: .bold))
+                            .scaledFont(size: 11, weight: .bold)
                             .foregroundStyle(WatchLabTheme.cyan)
                         Text("Versículo aleatório")
                             .font(.caption.weight(.medium))
@@ -109,7 +109,7 @@ struct WatchBibleView: View {
                 } label: {
                     HStack {
                         Image(systemName: "sun.max.fill")
-                            .font(.system(size: 11, weight: .bold))
+                            .scaledFont(size: 11, weight: .bold)
                             .foregroundStyle(WatchLabTheme.orange)
                         Text("Versículo do dia")
                             .font(.caption.weight(.medium))

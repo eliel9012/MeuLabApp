@@ -55,6 +55,7 @@ private struct FlightBar: View {
             }
             .progressViewStyle(.linear)
             .tint(FlightPalette.accent)
+            .widgetAccentable()
         case .landed:
             Capsule()
                 .fill(FlightPalette.accent)
@@ -90,6 +91,7 @@ private struct RouteLine: View {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(FlightPalette.accent)
+                .widgetAccentable()
 
             Rectangle()
                 .fill(FlightPalette.track)
@@ -175,6 +177,7 @@ private struct LiveDot: View {
         Circle()
             .fill(FlightPalette.live)
             .frame(width: 5, height: 5)
+            .widgetAccentable()
     }
 }
 
@@ -191,6 +194,7 @@ struct FlightLockScreenView: View {
                     Image(systemName: "airplane")
                         .font(.system(size: 11, weight: .bold))
                         .foregroundStyle(FlightPalette.accent)
+                        .widgetAccentable()
                     Text(attributes.flightCode)
                         .font(.system(size: 13, weight: .bold, design: .rounded))
                         .foregroundStyle(FlightPalette.strong)

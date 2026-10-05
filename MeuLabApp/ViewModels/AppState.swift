@@ -20,6 +20,7 @@ class AppState {
     func setActiveTab(_ rawValue: String) {
         let didChange = activeTabRawValue != rawValue
         activeTabRawValue = rawValue
+        updateAircraftStream()
         guard didChange, hasBootstrapped else { return }
 
         Task { @MainActor [weak self] in
@@ -154,6 +155,13 @@ class AppState {
     @ObservationIgnored private var moduleTimer: Timer?
     @ObservationIgnored private var radioBackgroundTimer: Timer?
 
+    // Radar ao vivo (WebSocket). Com aba ADS-B/mapa visível e app ativo, o stream
+    // substitui o polling da lista de aeronaves; se cair ou ficar >15s sem mensagem,
+    // tickADSB volta a buscar pelo polling normal.
+    @ObservationIgnored private let aircraftStream = AircraftStream()
+    @ObservationIgnored private var refreshEnabled = false
+    @ObservationIgnored private let aircraftStreamMaxSilence: TimeInterval = 15
+
     // Per-group in-flight guards — nunca bloqueia outro grupo.
     @ObservationIgnored private var adsbInFlight = false
     @ObservationIgnored private var systemInFlight = false
@@ -218,6 +226,9 @@ class AppState {
     init() {
         loadManualAirlineOverrides()
         rebuildADSBViewCache()
+        aircraftStream.onAircraft = { [weak self] items, _ in
+            self?.applyStreamAircraft(items)
+        }
     }
 
     deinit {
@@ -259,6 +270,8 @@ class AppState {
 
     func setRefreshEnabled(_ enabled: Bool) {
         guard hasBootstrapped else { return }
+        refreshEnabled = enabled
+        updateAircraftStream()
         if enabled {
             stopRadioBackgroundTimer()
             startRefreshTimers()
@@ -302,9 +315,13 @@ class AppState {
         let doSummary =
             adsbSummary == nil
             || shouldRefresh(last: lastADSBSummaryRefresh, interval: adsbSummaryInterval, now: now)
+        // Stream WebSocket saudável → lista de aeronaves vem dele; polling só do resumo.
+        let streamHealthy = aircraftStream.isHealthy(
+            maxSilence: aircraftStreamMaxSilence, now: now)
         let doAircraft =
-            aircraftList.isEmpty
-            || shouldRefresh(last: lastADSBListRefresh, interval: adsbAircraftInterval, now: now)
+            !streamHealthy
+            && (aircraftList.isEmpty
+                || shouldRefresh(last: lastADSBListRefresh, interval: adsbAircraftInterval, now: now))
         guard doSummary || doAircraft else { return }
 
         if doSummary { lastADSBSummaryRefresh = now }
@@ -388,8 +405,6 @@ class AppState {
         let doDkVer = shouldRefresh(
             last: lastDockerVersionRefresh, interval: dockerVersionInterval, now: now)
         let doSysd = shouldRefresh(last: lastSystemdRefresh, interval: systemdInterval, now: now)
-        let doSatdump = shouldRefresh(
-            last: lastSatDumpStatusRefresh, interval: satDumpStatusInterval, now: now)
         let doMetrics = shouldRefresh(last: lastMetricsRefresh, interval: metricsInterval, now: now)
         let doTuya =
             shouldRefresh(last: lastTuyaSensorRefresh, interval: tuyaSensorInterval, now: now)
@@ -403,7 +418,6 @@ class AppState {
         if doDkSt { lastDockerStatusRefresh = now }
         if doDkVer { lastDockerVersionRefresh = now }
         if doSysd { lastSystemdRefresh = now }
-        if doSatdump { lastSatDumpStatusRefresh = now }
         if doMetrics { lastMetricsRefresh = now }
         if doTuya { lastTuyaSensorRefresh = now }
 
@@ -415,10 +429,9 @@ class AppState {
         async let dkStatus: () = doDkSt ? refreshDockerStatus() : ()
         async let dkVersion: () = doDkVer ? refreshDockerVersion() : ()
         async let sysd: () = doSysd ? refreshSystemd() : ()
-        async let satdump: () = doSatdump ? refreshSatDumpStatus() : ()
         async let metrics: () = doMetrics ? refreshMetrics() : ()
         async let tuya: () = doTuya ? refreshTuyaSensor() : ()
-        _ = await (sys, fire, proc, parts, net, dkStatus, dkVersion, sysd, satdump, metrics, tuya)
+        _ = await (sys, fire, proc, parts, net, dkStatus, dkVersion, sysd, metrics, tuya)
     }
 
     private func tickRadio(_ now: Date, background: Bool = false) async {
@@ -477,7 +490,6 @@ class AppState {
         await tickADSBExtras(now)
         await tickSystem(now)
         await tickWeather(now)
-        await tickSatellite(now)
         await tickACARS(now)
     }
 
@@ -525,29 +537,7 @@ class AppState {
         if includeAircraft {
             switch localResult {
             case .success(let localAircraft):
-                let localItems = localAircraft.items.map { normalizeAircraftForDisplay($0) }
-                let merged = mergeADSBAircraft(localItems: localItems)
-
-                self.localAircraftCount = localItems.count
-                finalAircraftList = merged
-                if self.aircraftList != merged {
-                    self.aircraftList = merged
-                }
-
-                if !isOpenSkyEnabled, let currentSummary = self.adsbSummary {
-                    let updatedSummary = overlayAircraftMetrics(
-                        on: currentSummary,
-                        using: merged,
-                        preserveServerTotals: true
-                    )
-                    if updatedSummary != currentSummary {
-                        self.adsbSummary = updatedSummary
-                        WidgetDataManager.shared.updateADSB(
-                            total: updatedSummary.totalNow,
-                            withPos: updatedSummary.withPos
-                        )
-                    }
-                }
+                finalAircraftList = applyLocalAircraftItems(localAircraft.items)
             case .failure:
                 finalAircraftList = self.aircraftList
             case .none:
@@ -596,6 +586,76 @@ class AppState {
             self.adsbError = nil
         } else {
             self.adsbError = firstError?.localizedDescription
+        }
+    }
+
+    /// Caminho único para lista local de aeronaves (polling e WebSocket):
+    /// normaliza, mescla OpenSky, atualiza aircraftList/resumo/widget.
+    @discardableResult
+    private func applyLocalAircraftItems(_ items: [Aircraft]) -> [Aircraft] {
+        let localItems = items.map { normalizeAircraftForDisplay($0) }
+        let merged = mergeADSBAircraft(localItems: localItems)
+
+        self.localAircraftCount = localItems.count
+        if self.aircraftList != merged {
+            self.aircraftList = merged
+        }
+
+        if !isOpenSkyEnabled, let currentSummary = self.adsbSummary {
+            let updatedSummary = overlayAircraftMetrics(
+                on: currentSummary,
+                using: merged,
+                preserveServerTotals: true
+            )
+            if updatedSummary != currentSummary {
+                self.adsbSummary = updatedSummary
+                WidgetDataManager.shared.updateADSB(
+                    total: updatedSummary.totalNow,
+                    withPos: updatedSummary.withPos
+                )
+            }
+        }
+        return merged
+    }
+
+    // MARK: - ADS-B WebSocket
+
+    private func updateAircraftStream() {
+        let tab = activeTabRawValue
+        let shouldStream =
+            hasBootstrapped && refreshEnabled && (tab == "adsb" || tab == "map")
+        if shouldStream {
+            aircraftStream.start()
+        } else {
+            aircraftStream.stop()
+        }
+    }
+
+    private func applyStreamAircraft(_ items: [Aircraft]) {
+        let tab = activeTabRawValue
+        guard refreshEnabled, tab == "adsb" || tab == "map" else { return }
+        lastADSBListRefresh = Date()
+
+        let merged = applyLocalAircraftItems(items)
+
+        // Mesmo ajuste do polling quando só a lista chega (OpenSky ligado).
+        if isOpenSkyEnabled, let currentSummary = self.adsbSummary {
+            let updatedSummary = overlayAircraftMetrics(
+                on: currentSummary,
+                using: merged,
+                preserveServerTotals: false
+            )
+            if updatedSummary != currentSummary {
+                self.adsbSummary = updatedSummary
+                WidgetDataManager.shared.updateADSB(
+                    total: updatedSummary.totalNow,
+                    withPos: updatedSummary.withPos
+                )
+            }
+        }
+
+        if !self.aircraftList.isEmpty {
+            self.adsbError = nil
         }
     }
 
@@ -1768,10 +1828,6 @@ actor LabIntelligenceService {
         let cpu = Int(snapshot.system?.cpu?.usagePercent ?? 0)
         let mem = Int(snapshot.system?.memory?.usedPercent ?? 0)
         let temp = snapshot.system?.cpu?.temperatureC.map { String(format: "%.0f", $0) } ?? "-"
-        let lastPass =
-            snapshot.lastImages.map {
-                "\($0.images.count) imagens em \(compactPassName($0.passName))"
-            } ?? "sem passe recente"
         let acarsToday = snapshot.acarsSummary?.today.messages ?? snapshot.acarsMessages.count
         let weatherLine: String
         if let weather = snapshot.weather {
@@ -1790,7 +1846,6 @@ actor LabIntelligenceService {
             lines.append(
                 "Mais próxima: \(closest.displayCallsign) a \(String(format: "%.1f", d)) nm.")
         }
-        lines.append("Satélite: \(lastPass).")
         lines.append("ACARS hoje: \(acarsToday) mensagens.")
         lines.append("Sistema: CPU \(cpu)% • RAM \(mem)% • Temp \(temp)°C.")
         lines.append(weatherLine)
@@ -1846,13 +1901,6 @@ actor LabIntelligenceService {
             }
             return "Não encontrei velocidade de aeronaves agora."
         }
-        if q.contains("satel") || q.contains("meteor") || q.contains("passe") {
-            if let last = snapshot.lastImages {
-                return
-                    "Último passe: \(compactPassName(last.passName)) com \(last.images.count) imagens."
-            }
-            return "Sem passe de satélite recente no momento."
-        }
         if q.contains("cpu") || q.contains("ram") || q.contains("sistema")
             || q.contains("temperatura")
         {
@@ -1891,21 +1939,6 @@ actor LabIntelligenceService {
                         category: "Aeronave",
                         title: ac.displayCallsign,
                         subtitle: subtitle.isEmpty ? "Sem metadados adicionais" : subtitle,
-                        score: score
-                    ))
-            }
-        }
-
-        for pass in snapshot.passes {
-            let haystack = normalizeIntelligence("\(pass.name) \(pass.satelliteName)")
-            let score = scoreIntelligence(tokens, in: haystack)
-            if score > 0 {
-                results.append(
-                    .init(
-                        id: "pass_\(pass.id)",
-                        category: "Satélite",
-                        title: pass.satelliteName,
-                        subtitle: compactPassName(pass.name),
                         score: score
                     ))
             }
@@ -1978,17 +2011,6 @@ actor LabIntelligenceService {
                     category: "ACARS",
                     title: "Alerta de mensagem",
                     detail: alert.id
-                ))
-        }
-
-        if let last = snapshot.lastImages {
-            events.append(
-                .init(
-                    id: "sat_\(last.timestamp)",
-                    timeLabel: compactTime(last.timestamp),
-                    category: "Satélite",
-                    title: "Último passe capturado",
-                    detail: "\(last.images.count) imagens • \(compactPassName(last.passName))"
                 ))
         }
 
@@ -2065,16 +2087,6 @@ actor LabIntelligenceService {
                 ))
         }
 
-        if snapshot.lastImages == nil {
-            list.append(
-                .init(
-                    id: "sat_check",
-                    title: "Sem passe recente",
-                    detail: "Abrir Satélite e validar previsão/coleta.",
-                    targetTab: "satellite"
-                ))
-        }
-
         if list.isEmpty {
             list.append(
                 .init(
@@ -2090,7 +2102,6 @@ actor LabIntelligenceService {
 
     func dataQuality(from snapshot: LabIntelligenceSnapshot) -> [DataQualityItem] {
         let adsbOk = (snapshot.adsbSummary != nil || !snapshot.aircraft.isEmpty)
-        let satOk = (snapshot.lastImages != nil || !snapshot.passes.isEmpty)
         let acarsOk = (snapshot.acarsSummary != nil || !snapshot.acarsMessages.isEmpty)
         let sysOk = snapshot.system != nil
         let weatherOk = snapshot.weather != nil
@@ -2100,9 +2111,6 @@ actor LabIntelligenceService {
             .init(
                 id: "adsb", source: "ADS-B", status: adsbOk ? "OK" : "Sem dados",
                 detail: "Aeronaves: \(snapshot.aircraft.count)"),
-            .init(
-                id: "sat", source: "Satélite", status: satOk ? "OK" : "Sem dados",
-                detail: "Passes: \(snapshot.passes.count)"),
             .init(
                 id: "acars", source: "ACARS", status: acarsOk ? "OK" : "Sem dados",
                 detail: "Msgs: \(snapshot.acarsMessages.count)"),
@@ -2222,6 +2230,3 @@ private func normalizeIntelligence(_ text: String) -> String {
         .lowercased()
 }
 
-private func compactPassName(_ text: String) -> String {
-    text.replacingOccurrences(of: "_", with: " ")
-}

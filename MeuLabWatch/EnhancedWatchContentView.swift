@@ -48,6 +48,36 @@ struct WatchLabBackground: View {
     }
 }
 
+extension View {
+    /// Fundo customizado só antes do watchOS 26 — no 26 o sistema (toolbar/navegação em vidro) cuida do fundo.
+    @ViewBuilder
+    func watchLabCanvas() -> some View {
+        if #available(watchOS 26, *) {
+            self
+        } else {
+            self.background(WatchLabBackground())
+        }
+    }
+
+    /// Botão de ação: Liquid Glass no watchOS 26+, estilo anterior nas versões antigas.
+    @ViewBuilder
+    func watchActionButtonStyle(prominent: Bool = false, fallbackBordered: Bool = true) -> some View {
+        if #available(watchOS 26, *) {
+            if prominent {
+                self.buttonStyle(.glassProminent)
+            } else {
+                self.buttonStyle(.glass)
+            }
+        } else if prominent {
+            self.buttonStyle(.borderedProminent)
+        } else if fallbackBordered {
+            self.buttonStyle(.bordered)
+        } else {
+            self.buttonStyle(.automatic)
+        }
+    }
+}
+
 struct WatchLabScreen<Content: View>: View {
     let title: String
     let icon: String
@@ -71,7 +101,7 @@ struct WatchLabScreen<Content: View>: View {
             .padding(.top, 4)
             .padding(.bottom, 18)
         }
-        .background(WatchLabBackground())
+        .watchLabCanvas()
     }
 }
 
@@ -92,7 +122,7 @@ struct WatchLabTitle: View {
                 }
 
             Text(title)
-                .font(.system(size: 20, weight: .black, design: .rounded))
+                .scaledFont(size: 20, weight: .black, design: .rounded)
                 .foregroundStyle(WatchLabTheme.ink)
 
             Spacer(minLength: 0)
@@ -145,18 +175,19 @@ struct WatchLabMetricPill: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
             Text(title)
-                .font(.system(size: 9, weight: .semibold))
+                .scaledFont(size: 9, weight: .semibold)
                 .foregroundStyle(WatchLabTheme.tertiary)
 
             HStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 9, weight: .bold))
+                    .scaledFont(size: 9, weight: .bold)
                     .foregroundStyle(tint)
 
                 Text(value)
-                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                    .scaledFont(size: 11, weight: .bold, design: .rounded)
                     .foregroundStyle(WatchLabTheme.ink)
                     .lineLimit(1)
+                    .minimumScaleFactor(0.7)
             }
         }
         .padding(.horizontal, 10)
@@ -184,13 +215,13 @@ struct WatchLabMiniMetricCard: View {
                 }
 
             Text(value)
-                .font(.system(size: 18, weight: .black, design: .rounded))
+                .scaledFont(size: 18, weight: .black, design: .rounded)
                 .minimumScaleFactor(0.75)
                 .lineLimit(1)
                 .foregroundStyle(WatchLabTheme.ink)
 
             Text(label)
-                .font(.system(size: 10, weight: .medium))
+                .scaledFont(size: 10, weight: .medium)
                 .foregroundStyle(WatchLabTheme.secondary)
         }
         .frame(maxWidth: .infinity)
@@ -224,13 +255,13 @@ struct WatchLabStatRow: View {
                 }
 
             Text(title)
-                .font(.system(size: 11, weight: .semibold))
+                .scaledFont(size: 11, weight: .semibold)
                 .foregroundStyle(WatchLabTheme.secondary)
 
             Spacer()
 
             Text(value)
-                .font(.system(size: 11, weight: .bold, design: .rounded))
+                .scaledFont(size: 11, weight: .bold, design: .rounded)
                 .foregroundStyle(WatchLabTheme.ink)
         }
     }
@@ -247,7 +278,7 @@ struct WatchLabStateView: View {
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
-                .font(.system(size: 20, weight: .semibold))
+                .scaledFont(size: 20, weight: .semibold)
                 .foregroundStyle(tint)
 
             Text(title)
@@ -263,7 +294,7 @@ struct WatchLabStateView: View {
                 Button(actionTitle, action: action)
                     .font(.caption2.weight(.semibold))
                     .tint(tint)
-                    .buttonStyle(.bordered)
+                    .watchActionButtonStyle()
             }
         }
         .frame(maxWidth: .infinity)
@@ -309,15 +340,16 @@ struct WatchLabMenuLink<Destination: View>: View {
                         .foregroundStyle(WatchLabTheme.ink)
 
                     Text(subtitle)
-                        .font(.system(size: 10, weight: .medium))
+                        .scaledFont(size: 10, weight: .medium)
                         .foregroundStyle(WatchLabTheme.secondary)
                         .lineLimit(1)
+                        .minimumScaleFactor(0.7)
                 }
 
                 Spacer()
 
                 Image(systemName: "chevron.right")
-                    .font(.system(size: 10, weight: .bold))
+                    .scaledFont(size: 10, weight: .bold)
                     .foregroundStyle(WatchLabTheme.tertiary)
             }
             .padding(10)
@@ -377,12 +409,6 @@ struct EnhancedWatchContentView: View {
                             WatchACARSView()
                         }
                         WatchGridButton(
-                            title: "Satélite", icon: "antenna.radiowaves.left.and.right",
-                            tint: WatchLabTheme.violet
-                        ) {
-                            WatchSatDumpView()
-                        }
-                        WatchGridButton(
                             title: "Rádio", icon: "dot.radiowaves.left.and.right",
                             tint: WatchLabTheme.red
                         ) {
@@ -413,7 +439,7 @@ struct EnhancedWatchContentView: View {
                 .padding(.horizontal, 6)
                 .padding(.bottom, 16)
             }
-            .background(WatchLabBackground())
+            .watchLabCanvas()
             .navigationTitle("MeuLab")
         }
     }
@@ -429,19 +455,19 @@ struct WatchHomeCard: View {
         HStack(spacing: 10) {
             VStack(alignment: .leading, spacing: 2) {
                 Text("Painel")
-                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .scaledFont(size: 13, weight: .bold, design: .rounded)
                     .foregroundStyle(WatchLabTheme.ink)
 
                 HStack(spacing: 6) {
                     Label("\(adsb?.totalNow ?? 0)", systemImage: "airplane")
-                        .font(.system(size: 10, weight: .semibold))
+                        .scaledFont(size: 10, weight: .semibold)
                         .foregroundStyle(WatchLabTheme.blue)
 
                     Label(
                         system.map { "\(Int($0.cpuPercent))%" } ?? "--",
                         systemImage: "cpu"
                     )
-                    .font(.system(size: 10, weight: .semibold))
+                    .scaledFont(size: 10, weight: .semibold)
                     .foregroundStyle(WatchLabTheme.green)
                 }
             }
@@ -449,7 +475,7 @@ struct WatchHomeCard: View {
             Spacer()
 
             Image(systemName: "chevron.right")
-                .font(.system(size: 10, weight: .bold))
+                .scaledFont(size: 10, weight: .bold)
                 .foregroundStyle(WatchLabTheme.tertiary)
         }
         .padding(12)
@@ -498,7 +524,7 @@ struct WatchGridButton<Destination: View>: View {
                     }
 
                 Text(title)
-                    .font(.system(size: 10, weight: .semibold, design: .rounded))
+                    .scaledFont(size: 10, weight: .semibold, design: .rounded)
                     .foregroundStyle(WatchLabTheme.ink)
                     .lineLimit(1)
                     .minimumScaleFactor(0.8)

@@ -67,7 +67,7 @@ struct WatchAnalyticsView: View {
                                     .lineLimit(1)
                                 Spacer()
                                 Text("\(type.count)")
-                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .scaledFont(size: 11, weight: .bold, design: .rounded)
                                     .foregroundStyle(WatchLabTheme.cyan)
                             }
                             .padding(.vertical, 1)
@@ -103,7 +103,7 @@ struct WatchAnalyticsView: View {
                         // Peak hour
                         if let peak = hourly.max(by: { $0.flightCount < $1.flightCount }) {
                             Text("Pico: \(peak.hour)h (\(peak.flightCount) voos)")
-                                .font(.system(size: 9))
+                                .scaledFont(size: 9)
                                 .foregroundStyle(WatchLabTheme.secondary)
                         }
                     }

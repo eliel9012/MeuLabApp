@@ -57,11 +57,11 @@ struct WatchSatDumpView: View {
                         HStack {
                             VStack(alignment: .leading, spacing: 3) {
                                 Text("Próximo passe")
-                                    .font(.system(size: 10, weight: .semibold))
+                                    .scaledFont(size: 10, weight: .semibold)
                                     .foregroundStyle(WatchLabTheme.secondary)
 
                                 Text(nextPass.timeUntil)
-                                    .font(.system(size: 22, weight: .black, design: .rounded))
+                                    .scaledFont(size: 22, weight: .black, design: .rounded)
                                     .foregroundStyle(WatchLabTheme.green)
 
                                 Text(nextPass.satellite ?? "Meteor M2-x")
@@ -81,7 +81,7 @@ struct WatchSatDumpView: View {
                                     )
                                 }
                                 Text(nextPass.durationMinutes)
-                                    .font(.system(size: 10, weight: .medium))
+                                    .scaledFont(size: 10, weight: .medium)
                                     .foregroundStyle(WatchLabTheme.secondary)
                             }
                         }
@@ -90,7 +90,7 @@ struct WatchSatDumpView: View {
                         HStack(spacing: 2) {
                             ForEach(0..<5, id: \.self) { i in
                                 Image(systemName: i < nextPass.qualityStars ? "star.fill" : "star")
-                                    .font(.system(size: 8))
+                                    .scaledFont(size: 8)
                                     .foregroundStyle(
                                         i < nextPass.qualityStars
                                             ? WatchLabTheme.green : WatchLabTheme.tertiary)
@@ -116,13 +116,13 @@ struct WatchSatDumpView: View {
                                         .foregroundStyle(WatchLabTheme.ink)
                                         .lineLimit(1)
                                     Text(pass.timeUntil)
-                                        .font(.system(size: 10))
+                                        .scaledFont(size: 10)
                                         .foregroundStyle(WatchLabTheme.secondary)
                                 }
                                 Spacer()
                                 if let el = pass.maxElevation {
                                     Text("\(Int(el))°")
-                                        .font(.system(size: 11, weight: .bold, design: .rounded))
+                                        .scaledFont(size: 11, weight: .bold, design: .rounded)
                                         .foregroundStyle(
                                             el >= 30 ? WatchLabTheme.green : WatchLabTheme.orange)
                                 }

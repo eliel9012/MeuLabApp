@@ -29,12 +29,11 @@ struct BibleSearchView: View {
                             .foregroundStyle(.secondary)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel("Limpar busca")
                 }
             }
             .padding(12)
-            .background(
-                .ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12, style: .continuous)
-            )
+            .contentCard(cornerRadius: 12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12, style: .continuous)
                     .strokeBorder(Color.amber.opacity(0.3), lineWidth: 1)

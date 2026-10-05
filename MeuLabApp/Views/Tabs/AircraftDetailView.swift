@@ -45,7 +45,7 @@ struct AircraftDetailView: View {
 
                     VStack(alignment: .leading, spacing: 4) {
                         Text(ac.displayCallsign)
-                            .font(.system(size: 34, weight: .black, design: .monospaced))
+                            .scaledFont(size: 34, weight: .black, design: .monospaced)
                             .tracking(1)
                         if let airline = classifiedAirlineName ?? ac.airline {
                             Text(airline)
@@ -56,19 +56,19 @@ struct AircraftDetailView: View {
                     Spacer()
                 }
                 .padding()
-                .glassCard(cornerRadius: 24)
+                .contentCard(cornerRadius: 24)
 
                 // Route Visualizer (FlightAware)
                 if let faFlight {
                     AircraftRouteView(flight: faFlight)
                         .padding()
-                        .glassCard(cornerRadius: 20)
+                        .contentCard(cornerRadius: 20)
                 }
 
                 // Aircraft Photo (PlaneSpotters with OpenSky Fallback)
                 AircraftPhotoView(aircraft: ac)
                     .frame(height: 250)
-                    .glassCard(cornerRadius: 12)
+                    .contentCard(cornerRadius: 12)
                     .overlay(
                         RoundedRectangle(cornerRadius: 12)
                             .stroke(Color.white.opacity(0.2), lineWidth: 1)
@@ -159,15 +159,14 @@ struct AircraftDetailView: View {
                         }
                         .font(.headline)
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(Color.blue)
-                        .foregroundStyle(.white)
-                        .clipShape(RoundedRectangle(cornerRadius: 12))
+                        .padding(.vertical, 6)
                     }
+                    .buttonStyle(.glassProminent)
+                    .tint(.blue)
                     .padding(.top, 8)
                 }
                 .padding()
-                .glassCard(cornerRadius: 24)
+                .contentCard(cornerRadius: 24)
 
                 // FlightAware block (gate/terminal/schedule)
                 VStack(alignment: .leading, spacing: 12) {
@@ -252,7 +251,7 @@ struct AircraftDetailView: View {
                     }
                 }
                 .padding()
-                .glassCard(cornerRadius: 16)
+                .contentCard(cornerRadius: 16)
             }
             .padding()
         }
@@ -416,19 +415,6 @@ private struct AirlineClassificationSheet: View {
                     }
                 }
                 .padding()
-                .background(.ultraThinMaterial)
-
-                // Search
-                HStack {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    TextField("Buscar companhia", text: $search)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled(true)
-                }
-                .padding(10)
-                .background(Color(.tertiarySystemGroupedBackground))
-                .cornerRadius(10)
-                .padding()
 
                 List {
                     ForEach(filtered, id: \.self) { name in
@@ -446,6 +432,9 @@ private struct AirlineClassificationSheet: View {
                         .foregroundStyle(selected == name ? .blue : .primary)
                     }
                 }
+                .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always), prompt: "Buscar companhia")
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled(true)
 
                 Button {
                     if let selected {
@@ -456,11 +445,10 @@ private struct AirlineClassificationSheet: View {
                     Text("Salvar")
                         .bold()
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selected != nil ? Color.blue : Color.gray.opacity(0.3))
-                        .foregroundStyle(.white)
-                        .cornerRadius(12)
+                        .padding(.vertical, 6)
                 }
+                .buttonStyle(.glassProminent)
+                .tint(.blue)
                 .disabled(selected == nil)
                 .padding()
             }
@@ -524,7 +512,7 @@ struct AirportBlock: View {
     var body: some View {
         VStack(alignment: alignment, spacing: 4) {
             Text(code)
-                .font(.system(size: 32, weight: .bold, design: .monospaced))
+                .scaledFont(size: 32, weight: .bold, design: .monospaced)
             Text(city)
                 .font(.caption)
                 .foregroundStyle(.secondary)

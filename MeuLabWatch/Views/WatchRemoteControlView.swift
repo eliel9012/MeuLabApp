@@ -48,7 +48,7 @@ struct WatchRemoteControlView: View {
                             Spacer()
 
                             Image(systemName: "play.circle.fill")
-                                .font(.system(size: 14))
+                                .scaledFont(size: 14)
                                 .foregroundStyle(action.tint.opacity(0.6))
                         }
                         .padding(8)
@@ -107,14 +107,15 @@ struct WatchRemoteControlView: View {
                                 .frame(width: 6, height: 6)
 
                             Text(cmd.command.replacingOccurrences(of: "_", with: " ").capitalized)
-                                .font(.system(size: 10, weight: .medium))
+                                .scaledFont(size: 10, weight: .medium)
                                 .foregroundStyle(WatchLabTheme.ink)
                                 .lineLimit(1)
+                                .minimumScaleFactor(0.7)
 
                             Spacer()
 
                             Text(cmd.status)
-                                .font(.system(size: 9, weight: .bold))
+                                .scaledFont(size: 9, weight: .bold)
                                 .foregroundStyle(commandStatusColor(cmd.status))
                         }
                         .padding(.vertical, 2)

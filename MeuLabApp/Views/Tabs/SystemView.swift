@@ -86,50 +86,11 @@ private enum SystemTheme {
     )
 }
 
-private struct SystemPanelBackground: View {
-    let cornerRadius: CGFloat
-    let highlight: Color
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [SystemTheme.surfaceTop, SystemTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.28), SystemTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: SystemTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.07), radius: 14, x: 0, y: 6)
-    }
-}
-
 extension View {
     fileprivate func systemPanel(cornerRadius: CGFloat = 18, highlight: Color = SystemTheme.piBlue)
         -> some View
     {
-        background(SystemPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+        contentCard(tint: highlight, cornerRadius: cornerRadius)
     }
 }
 
@@ -211,7 +172,7 @@ private struct SystemToolbarTitle: View {
             }
 
             Text("Sistema")
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .scaledFont(size: 23, weight: .black, design: .rounded)
                 .tracking(0.5)
                 .foregroundStyle(
                     LinearGradient(
@@ -298,7 +259,6 @@ private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
     case temperature
     case environment
     case traffic
-    case satellite
 
     var id: String { rawValue }
 
@@ -310,7 +270,6 @@ private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
         case .temperature: return "Temperatura"
         case .environment: return "Ambiente"
         case .traffic: return "Radar"
-        case .satellite: return "Satélite"
         }
     }
 
@@ -322,7 +281,6 @@ private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
         case .temperature: return "Calor e estabilidade"
         case .environment: return "Sensor e histórico recente"
         case .traffic: return "Volume e leitura ADS-B"
-        case .satellite: return "Passes e desempenho"
         }
     }
 
@@ -334,7 +292,6 @@ private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
         case .temperature: return "thermometer.medium"
         case .environment: return "humidity.fill"
         case .traffic: return "airplane"
-        case .satellite: return "antenna.radiowaves.left.and.right"
         }
     }
 
@@ -346,7 +303,6 @@ private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
         case .temperature: return SystemTheme.amber
         case .environment: return .cyan
         case .traffic: return SystemTheme.piGreen
-        case .satellite: return SystemTheme.piBlue
         }
     }
 
@@ -355,7 +311,6 @@ private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
         case .cpu, .memory, .disk, .temperature: return .system
         case .environment: return .environment
         case .traffic: return .traffic
-        case .satellite: return .satellite
         }
     }
 
@@ -363,7 +318,7 @@ private enum SystemAnalyticsDestination: String, Identifiable, CaseIterable {
         switch self {
         case .cpu, .memory, .disk, .temperature:
             return rawValue
-        case .environment, .traffic, .satellite:
+        case .environment, .traffic:
             return nil
         }
     }
@@ -699,9 +654,10 @@ struct SystemView: View {
                                         id: item.device.id, name: item.device.name)
                                 } label: {
                                     Image(systemName: "camera")
-                                        .font(.system(size: 16, weight: .semibold))
+                                        .scaledFont(size: 16, weight: .semibold)
                                 }
                                 .adaptiveGlassButton()
+                                .accessibilityLabel("Capturar tela de \(item.device.name)")
                             }
                             Divider()
                         }
@@ -765,6 +721,9 @@ struct SystemView: View {
             }
         }
 
+        // Disk health (SMART)
+        DiskHealthCard()
+
         // Network
         if !appState.networkInterfaces.isEmpty {
             SystemCard(title: "Rede", icon: "arrow.left.and.right", color: .green) {
@@ -809,7 +768,7 @@ struct SystemView: View {
                                     .foregroundStyle(SystemTheme.ink.opacity(0.82))
 
                                 Text("ONLINE")
-                                    .font(.system(size: 10, weight: .black, design: .rounded))
+                                    .scaledFont(size: 10, weight: .black, design: .rounded)
                                     .tracking(1.0)
                                     .foregroundStyle(SystemTheme.piGreen)
                                     .padding(.horizontal, 10)
@@ -822,7 +781,7 @@ struct SystemView: View {
 
                                 VStack(alignment: .leading, spacing: 2) {
                                     Text(status.hostname)
-                                        .font(.system(size: 28, weight: .black, design: .rounded))
+                                        .scaledFont(size: 28, weight: .black, design: .rounded)
                                         .foregroundStyle(SystemTheme.ink)
 
                                     Text(status.location)
@@ -897,7 +856,7 @@ struct SystemView: View {
                                 .foregroundStyle(SystemTheme.ink.opacity(0.82))
 
                             Text("ONLINE")
-                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .scaledFont(size: 10, weight: .black, design: .rounded)
                                 .tracking(1.0)
                                 .foregroundStyle(SystemTheme.piGreen)
                                 .padding(.horizontal, 10)
@@ -910,7 +869,7 @@ struct SystemView: View {
 
                             VStack(alignment: .leading, spacing: 2) {
                                 Text(status.hostname)
-                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .scaledFont(size: 28, weight: .black, design: .rounded)
                                     .foregroundStyle(SystemTheme.ink)
 
                                 Text(status.location)
@@ -1328,11 +1287,8 @@ struct SystemView: View {
                         Label("Abrir histórico do sensor", systemImage: "arrow.up.right")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.cyan)
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 10)
-                            .background(.cyan.opacity(0.10), in: Capsule())
                     }
-                    .buttonStyle(.plain)
+                    .buttonStyle(.glass)
                 }
             }
         } else if let message = appState.tuyaSensorError {
@@ -1357,6 +1313,146 @@ struct SystemView: View {
         let formatter = ByteCountFormatter()
         formatter.countStyle = .binary
         return formatter.string(fromByteCount: bytes)
+    }
+}
+
+// MARK: - Saúde do disco
+
+private struct DiskHealthCard: View {
+    @State private var devices: [DiskHealthDevice] = []
+
+    var body: some View {
+        Group {
+            if !devices.isEmpty {
+                SystemCard(title: "Saúde do disco", icon: "heart.text.square", color: SystemTheme.piGreen) {
+                    VStack(spacing: 16) {
+                        ForEach(devices) { device in
+                            DiskHealthDeviceRow(device: device)
+                            if device.id != devices.last?.id { Divider() }
+                        }
+                    }
+                }
+            }
+        }
+        .task {
+            while !Task.isCancelled {
+                await load()
+                try? await Task.sleep(for: .seconds(600))
+            }
+        }
+    }
+
+    private func load() async {
+        do {
+            let response = try await APIService.shared.fetchDiskHealth()
+            if response.ok {
+                devices = response.devices
+            } else {
+                devices = []
+                #if DEBUG
+                print("[DiskHealth] ok=false: \(response.error ?? "sem detalhe")")
+                #endif
+            }
+        } catch {
+            if Task.isCancelled { return }
+            devices = []
+            #if DEBUG
+            print("[DiskHealth] falha: \(error)")
+            #endif
+        }
+    }
+}
+
+private struct DiskHealthDeviceRow: View {
+    let device: DiskHealthDevice
+
+    private var healthy: Bool { device.healthPassed ?? true }
+    private var statusColor: Color { device.healthPassed == nil ? .secondary : (healthy ? SystemTheme.piGreen : SystemTheme.piRed) }
+    private var statusText: String { device.healthPassed == nil ? "—" : (healthy ? "OK" : "Falha") }
+
+    private var usedPct: Double { min(max(device.percentageUsed ?? 0, 0), 100) }
+    private var usedColor: Color {
+        usedPct >= 90 ? SystemTheme.piRed : (usedPct >= 70 ? SystemTheme.amber : SystemTheme.piGreen)
+    }
+
+    private var powerOnText: String? {
+        guard let hours = device.powerOnHours else { return nil }
+        let days = Int(hours / 24)
+        if days < 1 { return "\(Int(hours)) h" }
+        if days < 365 { return "\(days) dias" }
+        let years = days / 365
+        let rest = days % 365
+        return "\(years) \(years == 1 ? "ano" : "anos") e \(rest) d"
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(device.model ?? device.device)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SystemTheme.ink)
+                        .lineLimit(1)
+                    if device.model != nil {
+                        Text(device.device)
+                            .font(.caption2)
+                            .foregroundStyle(SystemTheme.ink.opacity(0.56))
+                    }
+                }
+                Spacer()
+                Text(statusText)
+                    .font(.caption.weight(.bold))
+                    .foregroundStyle(statusColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 4)
+                    .background(statusColor.opacity(0.14), in: Capsule())
+            }
+
+            if device.percentageUsed != nil {
+                VStack(alignment: .leading, spacing: 4) {
+                    HStack {
+                        Text("Vida usada").font(.caption)
+                        Spacer()
+                        Text(String(format: "%.0f%%", usedPct)).font(.caption).monospacedDigit()
+                    }
+                    .foregroundStyle(SystemTheme.ink.opacity(0.68))
+                    ProgressView(value: usedPct, total: 100).tint(usedColor)
+                }
+            }
+
+            LazyVGrid(
+                columns: [GridItem(.flexible(), alignment: .leading), GridItem(.flexible(), alignment: .leading)],
+                alignment: .leading, spacing: 10
+            ) {
+                if let t = device.temperatureC {
+                    stat("Temperatura", String(format: "%.0f °C", t), t >= 70 ? SystemTheme.amber : nil)
+                }
+                if let w = device.dataWrittenTb {
+                    stat("Gravado", String(format: "%.1f TB", w), nil)
+                }
+                if let p = powerOnText {
+                    stat("Ligado", p, nil)
+                }
+                if let u = device.unsafeShutdowns {
+                    stat("Deslig. bruscos", String(format: "%.0f", u), nil)
+                }
+                if let m = device.mediaErrors {
+                    stat("Erros de mídia", String(format: "%.0f", m), m > 0 ? SystemTheme.piRed : nil)
+                }
+            }
+        }
+    }
+
+    private func stat(_ label: String, _ value: String, _ tint: Color?) -> some View {
+        VStack(alignment: .leading, spacing: 2) {
+            Text(label)
+                .font(.caption2)
+                .foregroundStyle(SystemTheme.ink.opacity(0.56))
+            Text(value)
+                .font(.subheadline.weight(.semibold))
+                .monospacedDigit()
+                .foregroundStyle(tint ?? SystemTheme.ink)
+        }
     }
 }
 
@@ -1452,8 +1548,9 @@ private struct RealtimeGaugeCard: View {
     }
 
     var body: some View {
+        let upper = maxValue.isFinite ? max(maxValue, 0.0001) : 1
         VStack(spacing: 10) {
-            Gauge(value: value, in: 0...maxValue) {
+            Gauge(value: value.isFinite ? value : 0, in: 0...upper) {
                 EmptyView()
             } currentValueLabel: {
                 Text(valueLabel)
@@ -1671,12 +1768,7 @@ private struct SystemChartTooltip: View {
             }
         }
         .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16, style: .continuous))
-        .overlay(
-            RoundedRectangle(cornerRadius: 16, style: .continuous)
-                .stroke(SystemTheme.piBlue.opacity(0.18), lineWidth: 1)
-        )
-        .shadow(color: SystemTheme.shadow.opacity(0.12), radius: 12, x: 0, y: 6)
+        .contentCard(tint: SystemTheme.piBlue, cornerRadius: 16)
     }
 }
 
@@ -1834,11 +1926,8 @@ private struct FirestickSnapshotView: View {
             .navigationTitle(deviceName)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Fechar") { dismiss() }
-                }
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EmptyView()
                 }
             }
             .task {

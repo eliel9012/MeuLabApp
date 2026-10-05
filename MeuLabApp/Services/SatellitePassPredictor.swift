@@ -19,33 +19,36 @@ struct PredictedPass: Identifiable {
         duration / 60.0
     }
 
+    private static func makeFormatter(
+        _ format: String, tz: String, locale: String? = nil
+    ) -> DateFormatter {
+        let f = DateFormatter()
+        f.dateFormat = format
+        if let locale { f.locale = Locale(identifier: locale) }
+        f.timeZone = TimeZone(identifier: tz)
+        return f
+    }
+
+    private static let aosUTCFormatter = makeFormatter("HH:mm", tz: "UTC")
+    private static let aosBRTFormatter = makeFormatter("HH:mm", tz: "America/Sao_Paulo")
+    private static let dateFormatter = makeFormatter("dd/MM", tz: "America/Sao_Paulo")
+    private static let dateFullFormatter = makeFormatter(
+        "EEEE, dd/MM", tz: "America/Sao_Paulo", locale: "pt_BR")
+
     var formattedAOSutc: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        formatter.timeZone = TimeZone(identifier: "UTC")
-        return formatter.string(from: aos)
+        Self.aosUTCFormatter.string(from: aos)
     }
 
     var formattedAOSbrt: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "HH:mm"
-        formatter.timeZone = TimeZone(identifier: "America/Sao_Paulo")
-        return formatter.string(from: aos)
+        Self.aosBRTFormatter.string(from: aos)
     }
 
     var formattedDate: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "dd/MM"
-        formatter.timeZone = TimeZone(identifier: "America/Sao_Paulo")
-        return formatter.string(from: aos)
+        Self.dateFormatter.string(from: aos)
     }
 
     var formattedDateFull: String {
-        let formatter = DateFormatter()
-        formatter.dateFormat = "EEEE, dd/MM"
-        formatter.locale = Locale(identifier: "pt_BR")
-        formatter.timeZone = TimeZone(identifier: "America/Sao_Paulo")
-        return formatter.string(from: aos).capitalized
+        Self.dateFullFormatter.string(from: aos).capitalized
     }
 
     var isUpcoming: Bool {

@@ -76,7 +76,7 @@ private struct TestamentSection: View {
             }
         }
         .padding(14)
-        .glassCard(cornerRadius: 16)
+        .contentCard(cornerRadius: 16)
     }
 }
 
@@ -255,11 +255,13 @@ struct BibleChapterView: View {
             } label: {
                 Image(systemName: "textformat.size.smaller")
             }
+            .accessibilityLabel("Diminuir fonte")
             Button {
                 fontSize = min(28, fontSize + 2)
             } label: {
                 Image(systemName: "textformat.size.larger")
             }
+            .accessibilityLabel("Aumentar fonte")
         }
     }
 }

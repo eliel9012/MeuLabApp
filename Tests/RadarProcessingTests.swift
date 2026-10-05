@@ -85,6 +85,25 @@ final class RadarProcessingTests: XCTestCase {
         XCTAssertFalse(history.update(aircraft: []))
     }
 
+    func testHiddenTrailsKeepHeadingHistoryWithoutBuildingGeometry() throws {
+        var history = RadarTrailHistory()
+        XCTAssertTrue(history.update(aircraft: [try makeTestAircraft()], includeGeometry: false))
+        XCTAssertTrue(history.update(aircraft: [try makeTestAircraft(lat: 11)], includeGeometry: false))
+        XCTAssertEqual(history.trails["test-aircraft"]?.coordinates.count, 2)
+        XCTAssertNil(history.trails["test-aircraft"]?.polyline)
+        XCTAssertTrue(history.prepareGeometry())
+        let polyline = try XCTUnwrap(history.trails["test-aircraft"]?.polyline)
+        XCTAssertEqual(polyline.pointCount, 2)
+        XCTAssertFalse(history.prepareGeometry())
+        XCTAssertTrue(history.trails["test-aircraft"]?.polyline === polyline)
+        // Movement while hidden invalidates geometry, but never loses heading points.
+        XCTAssertTrue(history.update(aircraft: [try makeTestAircraft(lat: 12)], includeGeometry: false))
+        XCTAssertNil(history.trails["test-aircraft"]?.polyline)
+        XCTAssertEqual(history.trails["test-aircraft"]?.coordinates.count, 3)
+        XCTAssertTrue(history.prepareGeometry())
+        XCTAssertEqual(history.trails["test-aircraft"]?.polyline?.pointCount, 3)
+    }
+
     func testLargeBatchReportsOneUpdateAndNoUpdateForSamePositions() throws {
         let aircraft = try (0..<500).map { try makeTestAircraft(id: String($0), lat: Double($0) / 10) }
         var history = RadarTrailHistory()

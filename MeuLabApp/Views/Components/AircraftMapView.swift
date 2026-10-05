@@ -197,7 +197,7 @@ struct AircraftInfoCard: View {
             }
         }
         .padding()
-        .glassCard(cornerRadius: 16)
+        .glassCard(cornerRadius: 16) // glass: floating (card sobre mapa)
     }
 }
 

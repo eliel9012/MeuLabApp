@@ -56,7 +56,7 @@ struct WatchACARSView: View {
                 WatchLabPanel(tint: WatchLabTheme.cyan) {
                     HStack(spacing: 6) {
                         Image(systemName: "magnifyingglass")
-                            .font(.system(size: 11))
+                            .scaledFont(size: 11)
                             .foregroundStyle(WatchLabTheme.secondary)
 
                         TextField("Buscar voo...", text: $searchText)
@@ -73,7 +73,7 @@ struct WatchACARSView: View {
                                 Task { await loadData() }
                             } label: {
                                 Image(systemName: "xmark.circle.fill")
-                                    .font(.system(size: 11))
+                                    .scaledFont(size: 11)
                                     .foregroundStyle(WatchLabTheme.secondary)
                             }
                             .buttonStyle(.plain)
@@ -100,7 +100,7 @@ struct WatchACARSView: View {
                                     Spacer()
                                     if let label = msg.label {
                                         Text(label)
-                                            .font(.system(size: 9, weight: .bold, design: .rounded))
+                                            .scaledFont(size: 9, weight: .bold, design: .rounded)
                                             .foregroundStyle(WatchLabTheme.orange)
                                             .padding(.horizontal, 5)
                                             .padding(.vertical, 2)

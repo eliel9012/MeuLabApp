@@ -155,7 +155,7 @@ private struct ADSBToolbarTitle: View {
             }
 
             Text("ADS-B")
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .scaledFont(size: 23, weight: .black, design: .rounded)
                 .tracking(0.8)
                 .foregroundStyle(
                     LinearGradient(
@@ -220,20 +220,15 @@ struct ADSBView: View {
         @Bindable var appState = appState
         NavigationStack {
             ScrollView {
-                // Glass never samples other glass, so sibling glass surfaces have to
-                // share a GlassEffectContainer to be rendered as one system. The
-                // groups below follow the reading blocks of the screen rather than
-                // wrapping the whole column: a single screen-wide container would
-                // merge shapes that are visually unrelated and pay for the effect
-                // across content that is scrolled off anyway.
+                // Content layer: cards use solid `contentCard` surfaces (no glass),
+                // so the reading blocks below are plain stacks.
                 LazyVStack(spacing: 20) {
                     trafficScopeBar
 
                     if let summary = appState.adsbSummary {
                         // Group 1 — live summary: the big count, the movement grid and
                         // the highlights list read as one panel stacked together.
-                        GlassSection(spacing: 20) {
-                            VStack(spacing: 20) {
+                        VStack(spacing: 20) {
                                 // Live Stats Header
                                 liveStatsHeader(
                                     summary,
@@ -250,7 +245,6 @@ struct ADSBView: View {
                                 {
                                     highlightsSection(summary.highlights)
                                 }
-                            }
                         }
 
                         // Airlines Carousel
@@ -265,11 +259,8 @@ struct ADSBView: View {
                         LoadingCard()
                     }
 
-                    // Group 2 — the stacked list cards: sensor, itinerary and nearby
-                    // traffic are three glass surfaces in a row, the densest run of
-                    // glass on the screen and the one that most needs to be shared.
-                    GlassSection(spacing: 20) {
-                        VStack(spacing: 20) {
+                    // Group 2 — the stacked list cards: sensor, itinerary and nearby traffic.
+                    VStack(spacing: 20) {
                             tuyaSensorSection
 
                             // Voos da minha viagem
@@ -283,14 +274,11 @@ struct ADSBView: View {
                             if !appState.aircraftList.isEmpty {
                                 aircraftPreviewSection
                             }
-                        }
                     }
 
                     // Group 3 — history: the chart card plus its record bubbles.
                     if let history = appState.adsbHistory {
-                        GlassSection(spacing: 20) {
-                            historyChartSection(history)
-                        }
+                        historyChartSection(history)
                     }
                 }
                 .padding(.horizontal)
@@ -338,9 +326,8 @@ struct ADSBView: View {
                     } label: {
                         Image(systemName: "magnifyingglass")
                             .foregroundStyle(ADSBTheme.radarBlue)
-                            .padding(8)
-                            .background(Circle().fill(ADSBTheme.toolbarBubble))
                     }
+                    .accessibilityLabel("Buscar voos")
                 }
 
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -351,9 +338,8 @@ struct ADSBView: View {
                     } label: {
                         Image(systemName: "slider.horizontal.3")
                             .foregroundStyle(ADSBTheme.radarBlue)
-                            .padding(8)
-                            .background(Circle().fill(ADSBTheme.toolbarBubble))
                     }
+                    .accessibilityLabel("Opções de tráfego")
                 }
             }
             .sheet(isPresented: $showAircraftList) {
@@ -405,7 +391,7 @@ struct ADSBView: View {
                                 .foregroundStyle(ADSBTheme.ink.opacity(0.82))
 
                                 Text(appState.isOpenSkyEnabled ? "EXPANDIDO" : "LOCAL")
-                                    .font(.system(size: 10, weight: .black, design: .rounded))
+                                    .scaledFont(size: 10, weight: .black, design: .rounded)
                                     .tracking(1.0)
                                     .foregroundStyle(
                                         appState.isOpenSkyEnabled
@@ -461,7 +447,7 @@ struct ADSBView: View {
                             .foregroundStyle(ADSBTheme.ink.opacity(0.82))
 
                             Text(appState.isOpenSkyEnabled ? "EXPANDIDO" : "LOCAL")
-                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .scaledFont(size: 10, weight: .black, design: .rounded)
                                 .tracking(1.0)
                                 .foregroundStyle(
                                     appState.isOpenSkyEnabled
@@ -566,7 +552,7 @@ struct ADSBView: View {
             HStack(alignment: .center, spacing: 14) {
                 // Large number
                 Text("\(total)")
-                    .font(.system(size: isCompactLayout ? 44 : 52, weight: .bold, design: .rounded))
+                    .scaledFont(size: isCompactLayout ? 44 : 52, weight: .bold, design: .rounded)
                     .monospacedDigit()
                     .foregroundStyle(ADSBTheme.ink)
 
@@ -588,7 +574,7 @@ struct ADSBView: View {
                         .frame(width: 8, height: 8)
                         .shadow(color: ADSBTheme.radarGreen.opacity(0.6), radius: 4)
                     Text("LIVE")
-                        .font(.system(size: 10, weight: .black, design: .rounded))
+                        .scaledFont(size: 10, weight: .black, design: .rounded)
                         .tracking(1.2)
                         .foregroundStyle(ADSBTheme.radarGreen)
                 }
@@ -616,7 +602,7 @@ struct ADSBView: View {
         .padding(isCompactLayout ? 16 : 20)
         .background {
             RoundedRectangle(cornerRadius: 24, style: .continuous)
-                .fill(.ultraThinMaterial)
+                .fill(Color(uiColor: .secondarySystemGroupedBackground))
                 .overlay {
                     LinearGradient(
                         colors: [
@@ -770,7 +756,7 @@ struct ADSBView: View {
                 }
             }
             .padding(16)
-            .glassCard(cornerRadius: 16)
+            .contentCard(cornerRadius: 16)
         }
     }
 
@@ -865,7 +851,7 @@ struct ADSBView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             .padding(16)
-            .glassCard(cornerRadius: 16)
+            .contentCard(cornerRadius: 16)
         }
     }
 
@@ -916,7 +902,7 @@ struct ADSBView: View {
                 }
             }
             .padding(16)
-            .glassCard(cornerRadius: 16)
+            .contentCard(cornerRadius: 16)
         }
         .sheet(item: $selectedNearbyAircraft) { aircraft in
             NavigationStack {
@@ -1002,7 +988,7 @@ struct ADSBView: View {
                 }
             }
             .padding(16)
-            .glassCard(cornerRadius: 16)
+            .contentCard(cornerRadius: 16)
 
             // Records bubbles
             HStack(spacing: 8) {
@@ -1141,7 +1127,7 @@ private struct MovementAircraftSheet: View {
                         .frame(maxWidth: .infinity)
                         .padding(.top, 36)
                     } else {
-                        GlassSection(spacing: 10) {
+                        VStack(spacing: 10) {
                             ForEach(sortedAircraft) { ac in
                                 NavigationLink(destination: AircraftDetailView(ac: ac)) {
                                     MovementAircraftRow(
@@ -1178,6 +1164,7 @@ private struct MovementAircraftSheet: View {
                         Image(systemName: "xmark.circle.fill")
                             .foregroundStyle(.secondary)
                     }
+                    .accessibilityLabel("Fechar")
                 }
             }
         }
@@ -1368,7 +1355,7 @@ private struct MovementAircraftRow: View {
             }
         }
         .padding(12)
-        .glassCard(cornerRadius: 16)
+        .contentCard(cornerRadius: 16)
         .overlay(
             RoundedRectangle(cornerRadius: 16, style: .continuous)
                 .stroke(Color.white.opacity(0.16), lineWidth: 1)
@@ -1419,7 +1406,7 @@ struct MiniStatCard: View {
             }
 
             Text(value)
-                .font(.system(size: compact ? 22 : 26, weight: .bold, design: .rounded))
+                .scaledFont(size: compact ? 22 : 26, weight: .bold, design: .rounded)
                 .monospacedDigit()
                 .foregroundStyle(ADSBTheme.ink)
                 .minimumScaleFactor(0.8)
@@ -1482,7 +1469,7 @@ struct AverageStatCard: View {
                     .foregroundStyle(ADSBTheme.tertiaryInk)
 
                 Text(value)
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .scaledFont(size: 16, weight: .bold, design: .rounded)
                     .monospacedDigit()
                     .foregroundStyle(ADSBTheme.ink)
                     .minimumScaleFactor(0.7)
@@ -1674,7 +1661,7 @@ private struct TripFlightRow: View {
 
                     if let callsign = live?.displayCallsign ?? flight.primaryCallsign {
                         Text(callsign)
-                            .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                            .scaledFont(size: 10, weight: .semibold, design: .monospaced)
                             .foregroundStyle(ADSBTheme.tertiaryInk)
                     }
                 }
@@ -1693,7 +1680,7 @@ private struct TripFlightRow: View {
 
             VStack(alignment: .trailing, spacing: 3) {
                 Text(isLive ? "NO AR" : "SEM SINAL")
-                    .font(.system(size: 9, weight: .black, design: .rounded))
+                    .scaledFont(size: 9, weight: .black, design: .rounded)
                     .tracking(0.8)
                     .padding(.horizontal, 7)
                     .padding(.vertical, 3)
@@ -1758,7 +1745,7 @@ struct AircraftRowApple: View {
                         aircraft.isDualTracked
                             ? "DUAL" : (aircraft.source == .local ? "LOCAL" : "REDE")
                     )
-                    .font(.system(size: 8, weight: .bold))
+                    .scaledFont(size: 8, weight: .bold)
                     .padding(.horizontal, 5)
                     .padding(.vertical, 2)
                     .background(badgeColor.opacity(0.15))
@@ -1768,7 +1755,7 @@ struct AircraftRowApple: View {
                     // Voo da minha viagem
                     if let tripFlight {
                         Text("MINHA VIAGEM · \(tripFlight.displayCode)")
-                            .font(.system(size: 8, weight: .bold))
+                            .scaledFont(size: 8, weight: .bold)
                             .padding(.horizontal, 5)
                             .padding(.vertical, 2)
                             .background(ADSBTheme.tripAccent.opacity(0.16))
@@ -1850,13 +1837,13 @@ struct RecordBubble: View {
 
             if let subtitle = subtitle {
                 Text(subtitle)
-                    .font(.system(size: 8))
+                    .scaledFont(size: 8)
                     .foregroundStyle(ADSBTheme.tertiaryInk)
                     .monospacedDigit()
             }
 
             Text(label)
-                .font(.system(size: 9))
+                .scaledFont(size: 9)
                 .foregroundStyle(ADSBTheme.secondaryInk)
         }
         .padding(.horizontal, 10)
@@ -1944,7 +1931,7 @@ struct ADSBAirlineFullscreenView: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(airline.name)
-                                    .font(.system(size: 28, weight: .black, design: .rounded))
+                                    .scaledFont(size: 28, weight: .black, design: .rounded)
                                     .foregroundStyle(ADSBTheme.ink)
 
                                 Text("\(sortedAircraft.count) aeronaves monitoradas agora")
@@ -2156,7 +2143,7 @@ struct ErrorCard: View {
         }
         .padding(24)
         .frame(maxWidth: .infinity)
-        .glassCard(tint: .orange, cornerRadius: 16)
+        .contentCard(tint: .orange, cornerRadius: 16)
     }
 }
 
@@ -2235,7 +2222,7 @@ struct TuyaSensorCard: View {
             }
         }
         .padding(16)
-        .glassCard(cornerRadius: 16)
+        .contentCard(cornerRadius: 16)
     }
 
     private var formattedTemperature: String {
@@ -2306,7 +2293,7 @@ struct TuyaPrimaryMetricCard: View {
                 .foregroundStyle(ADSBTheme.secondaryInk)
 
             Text(value)
-                .font(.system(size: 28, weight: .bold, design: .rounded))
+                .scaledFont(size: 28, weight: .bold, design: .rounded)
                 .monospacedDigit()
                 .foregroundStyle(color)
         }
@@ -2352,7 +2339,7 @@ struct TuyaSensorStatusCard: View {
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .glassCard(cornerRadius: 16)
+        .contentCard(cornerRadius: 16)
     }
 }
 
@@ -2368,7 +2355,7 @@ struct LoadingCard: View {
         }
         .padding(32)
         .frame(maxWidth: .infinity)
-        .glassCard(cornerRadius: 16)
+        .contentCard(cornerRadius: 16)
     }
 }
 
@@ -2613,10 +2600,9 @@ struct AircraftDetailView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: detailSpacing) {
-                // Group 4 — flight identity: callsign card, route strip and
-                // photo are stacked tight at the top of the sheet, so their
-                // glass shapes are grouped instead of each sampling alone.
-                GlassSection(spacing: detailSpacing) {
+                // Group 4 — flight identity: callsign card, route strip and photo
+                // (content layer: solid cards, no glass container needed).
+                Group {
                     VStack(spacing: detailSpacing) {
                         // Premium Header with Airline Logo and Main Info
                         HStack(spacing: 16) {
@@ -2636,7 +2622,7 @@ struct AircraftDetailView: View {
                                 .frame(width: 60, height: 60)
                                 .padding(8)
                                 .background(
-                                    .ultraThinMaterial,
+                                    Color(uiColor: .tertiarySystemGroupedBackground),
                                     in: RoundedRectangle(cornerRadius: 16, style: .continuous)
                                 )
                                 .overlay(
@@ -2647,8 +2633,9 @@ struct AircraftDetailView: View {
 
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(ac.displayCallsign)
-                                    .font(.system(size: 30, weight: .bold, design: .monospaced))
+                                    .scaledFont(size: 30, weight: .bold, design: .monospaced)
                                     .lineLimit(1)
+                                    .minimumScaleFactor(0.8)
                                 if let airline = classifiedAirlineName ?? ac.airline {
                                     Text(airline)
                                         .font(.headline)
@@ -2671,13 +2658,13 @@ struct AircraftDetailView: View {
                             Spacer()
                         }
                         .padding()
-                        .glassCard(cornerRadius: 24)
+                        .contentCard(cornerRadius: 24)
 
                         // Route Visualizer (FlightAware)
                         if let faFlight {
                             AircraftRouteView(flight: faFlight)
                                 .padding(isWide ? 16 : 14)
-                                .glassCard(cornerRadius: 20)
+                                .contentCard(cornerRadius: 20)
                                 .zIndex(2)
                         }
 
@@ -2685,7 +2672,7 @@ struct AircraftDetailView: View {
                         AircraftPhotoView(aircraft: ac)
                             .frame(height: photoHeight)
                             .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
-                            .glassCard(cornerRadius: 12)
+                            .contentCard(cornerRadius: 12)
                             .overlay(
                                 RoundedRectangle(cornerRadius: 12)
                                     .stroke(Color.white.opacity(0.2), lineWidth: 1)
@@ -2695,10 +2682,9 @@ struct AircraftDetailView: View {
                     }
                 }
 
-                // Group 5 — flight data: the telemetry card (which itself holds
-                // the interactive glass "Ver no Mapa" button) and the FlightAware
-                // card sit directly below each other and share a container.
-                GlassSection(spacing: detailSpacing) {
+                // Group 5 — flight data: the telemetry card (with the glass
+                // "Ver no Mapa" button) and the FlightAware card.
+                Group {
                     VStack(spacing: detailSpacing) {
                         // Flight Data Grid
                         VStack(spacing: 16) {
@@ -2786,18 +2772,14 @@ struct AircraftDetailView: View {
                                 }
                                 .font(.headline)
                                 .frame(maxWidth: .infinity)
-                                .padding()
-                                .foregroundStyle(.primary)
-                                .glassInteractive(cornerRadius: 12)
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: 12, style: .continuous)
-                                        .stroke(Color.blue.opacity(0.35), lineWidth: 1.5)
-                                )
+                                .padding(.vertical, 6)
                             }
+                            .buttonStyle(.glassProminent)
+                            .tint(.blue)
                             .padding(.top, 8)
                         }
                         .padding()
-                        .glassCard(cornerRadius: 24)
+                        .contentCard(cornerRadius: 24)
 
                         // FlightAware block (gate/terminal/schedule)
                         VStack(alignment: .leading, spacing: 12) {
@@ -2907,7 +2889,7 @@ struct AircraftDetailView: View {
                             }
                         }
                         .padding()
-                        .glassCard(cornerRadius: 16)
+                        .contentCard(cornerRadius: 16)
                     }
                 }
             }
@@ -3097,18 +3079,6 @@ private struct AirlineClassificationSheet: View {
                     }
                 }
                 .padding()
-                .background(.ultraThinMaterial)
-
-                // Search
-                HStack {
-                    Image(systemName: "magnifyingglass").foregroundStyle(.secondary)
-                    TextField("Buscar companhia", text: $search)
-                        .textInputAutocapitalization(.characters)
-                        .autocorrectionDisabled(true)
-                }
-                .padding(10)
-                .glassCard(cornerRadius: 10)
-                .padding()
 
                 List {
                     ForEach(filtered, id: \.self) { name in
@@ -3127,6 +3097,9 @@ private struct AirlineClassificationSheet: View {
                     }
                 }
                 .scrollContentBackground(.hidden)
+                .searchable(text: $search, placement: .navigationBarDrawer(displayMode: .always), prompt: "Buscar companhia")
+                .textInputAutocapitalization(.characters)
+                .autocorrectionDisabled(true)
 
                 Button {
                     if let selected {
@@ -3137,11 +3110,10 @@ private struct AirlineClassificationSheet: View {
                     Text("Salvar")
                         .bold()
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .background(selected != nil ? Color.blue : Color.gray.opacity(0.3))
-                        .foregroundStyle(.white)
-                        .cornerRadius(12)
+                        .padding(.vertical, 6)
                 }
+                .buttonStyle(.glassProminent)
+                .tint(.blue)
                 .disabled(selected == nil)
                 .padding()
             }
@@ -3231,7 +3203,7 @@ struct AirportBlock_Legacy: View {
     var body: some View {
         VStack(alignment: alignment, spacing: 4) {
             Text(code)
-                .font(.system(size: 26, weight: .bold, design: .monospaced))
+                .scaledFont(size: 26, weight: .bold, design: .monospaced)
                 .lineLimit(1)
                 .minimumScaleFactor(0.85)
             Text(city)
@@ -3277,7 +3249,7 @@ struct AircraftPhotoView: View {
                     VStack(alignment: .trailing, spacing: 2) {
                         if let photographer {
                             Text("© \(photographer)")
-                                .font(.system(size: 8))
+                                .scaledFont(size: 8)
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 2)
@@ -3287,7 +3259,7 @@ struct AircraftPhotoView: View {
 
                         if let sourceName {
                             Text(sourceName)
-                                .font(.system(size: 8, weight: .bold))
+                                .scaledFont(size: 8, weight: .bold)
                                 .foregroundStyle(.white)
                                 .padding(.horizontal, 4)
                                 .padding(.vertical, 2)

@@ -248,6 +248,7 @@ struct AdvancedExportView: View {
                     } label: {
                         Image(systemName: "plus")
                     }
+                    .accessibilityLabel("Nova exportação")
                 }
             }
             .sheet(isPresented: $showingAddExport) {
@@ -304,10 +305,8 @@ struct ExportRequestRow: View {
                 onExecute()
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
-            .background(Color.blue)
-            .foregroundStyle(.white)
-            .cornerRadius(8)
+            .buttonStyle(.glassProminent)
+            .tint(.blue)
         }
         .padding(.vertical, 4)
     }

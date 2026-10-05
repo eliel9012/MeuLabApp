@@ -84,7 +84,7 @@ struct PlayRadioIntent: AppIntent {
 
 struct IntelligentBriefingIntent: AppIntent {
     static var title: LocalizedStringResource = "Briefing inteligente do laboratório"
-    static var description = IntentDescription("Gera um resumo inteligente com radar, satélite, ACARS e sistema.")
+    static var description = IntentDescription("Gera um resumo inteligente com radar, ACARS e sistema.")
 
     static var openAppWhenRun: Bool = false
 
@@ -92,16 +92,12 @@ struct IntelligentBriefingIntent: AppIntent {
     func perform() async throws -> some IntentResult & ProvidesDialog {
         async let adsbTask = APIService.shared.fetchADSBSummary()
         async let systemTask = APIService.shared.fetchSystemStatus()
-        async let satTask = APIService.shared.fetchLastImages()
         async let acarsTask = APIService.shared.fetchACARSSummary()
 
         var parts: [String] = []
 
         if let adsb = try? await adsbTask {
             parts.append("Radar: \(adsb.totalNow) aeronaves.")
-        }
-        if let sat = try? await satTask {
-            parts.append("Satélite: \(sat.images.count) imagens no último passe.")
         }
         if let acars = try? await acarsTask {
             parts.append("ACARS: \(acars.today.messages) mensagens hoje.")
@@ -122,7 +118,7 @@ struct IntelligentBriefingIntent: AppIntent {
 
 struct AskLabIntent: AppIntent {
     static var title: LocalizedStringResource = "Perguntar ao laboratório"
-    static var description = IntentDescription("Responde perguntas rápidas sobre radar, sistema, satélite e alertas.")
+    static var description = IntentDescription("Responde perguntas rápidas sobre radar, sistema e alertas.")
 
     static var openAppWhenRun: Bool = false
 
@@ -139,13 +135,6 @@ struct AskLabIntent: AppIntent {
             let adsbCount = (try? await adsb.alerts.count) ?? 0
             let acarsCount = (try? await acars.alerts.count) ?? 0
             return .result(dialog: "Alertas recentes: ADS-B \(adsbCount), ACARS \(acarsCount).")
-        }
-
-        if q.contains("satel") || q.contains("meteor") || q.contains("passe") {
-            if let sat = try? await APIService.shared.fetchLastImages() {
-                return .result(dialog: "Último passe com \(sat.images.count) imagens.")
-            }
-            return .result(dialog: "Não consegui consultar satélite agora.")
         }
 
         if q.contains("sistema") || q.contains("cpu") || q.contains("temperatura") {
@@ -311,64 +300,6 @@ struct LabAlertQuery: EntityStringQuery {
     }
 }
 
-@available(iOS 18.0, *)
-struct LabSatellitePassEntity: IndexedEntity {
-    static var typeDisplayRepresentation = TypeDisplayRepresentation(name: "Passe de satélite")
-    static var defaultQuery = LabSatellitePassQuery()
-
-    let id: String
-    let satelliteName: String
-    let passName: String
-    let detail: String
-
-    var displayRepresentation: DisplayRepresentation {
-        DisplayRepresentation(
-            title: LocalizedStringResource(stringLiteral: satelliteName),
-            subtitle: LocalizedStringResource(stringLiteral: detail)
-        )
-    }
-
-    var attributeSet: CSSearchableItemAttributeSet {
-        let attributes = CSSearchableItemAttributeSet(itemContentType: UTType.text.identifier)
-        attributes.title = satelliteName
-        attributes.displayName = satelliteName
-        attributes.contentDescription = detail
-        attributes.keywords = [satelliteName, passName, detail]
-        return attributes
-    }
-
-    init(pass: SatellitePassExtended) {
-        id = pass.id
-        satelliteName = pass.name.replacingOccurrences(of: "_", with: " ")
-        passName = pass.name
-        detail = "\(pass.imageCount) imagens • \(String(format: "%.1f", pass.sizeMb)) MB • qualidade \(pass.qualityStars)/5"
-    }
-}
-
-@available(iOS 18.0, *)
-struct LabSatellitePassQuery: EntityStringQuery {
-    func entities(for identifiers: [String]) async throws -> [LabSatellitePassEntity] {
-        let passes = try await APIService.shared.fetchPasses(limit: 80).passes
-        return passes.filter { identifiers.contains($0.id) }.map(LabSatellitePassEntity.init)
-    }
-
-    func suggestedEntities() async throws -> [LabSatellitePassEntity] {
-        let passes = try await APIService.shared.fetchPasses(limit: 24).passes
-        return passes.map(LabSatellitePassEntity.init)
-    }
-
-    func entities(matching string: String) async throws -> [LabSatellitePassEntity] {
-        let needle = string.folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
-        let passes = try await APIService.shared.fetchPasses(limit: 80).passes
-        return passes.filter {
-            "\($0.name) \($0.imageFolder)"
-                .folding(options: [.diacriticInsensitive, .caseInsensitive], locale: .current)
-                .contains(needle)
-        }
-        .map(LabSatellitePassEntity.init)
-    }
-}
-
 // MARK: - Open Intents
 
 @available(iOS 18.0, *)
@@ -426,33 +357,6 @@ struct OpenAlertInMeuLabIntent: OpenIntent {
     }
 }
 
-@available(iOS 18.0, *)
-struct OpenSatellitePassInMeuLabIntent: OpenIntent {
-    static var title: LocalizedStringResource = "Abrir passe de satélite no MeuLab"
-
-    @Parameter(title: "Passe")
-    var target: LabSatellitePassEntity
-
-    @MainActor
-    func perform() async throws -> some IntentResult {
-        NotificationCenter.default.post(
-            name: .meulabNavigateToTab,
-            object: nil,
-            userInfo: ["tab": ContentView.Tab.satellite.rawValue]
-        )
-        NotificationCenter.default.post(
-            name: .meulabOpenContext,
-            object: nil,
-            userInfo: [
-                "tab": ContentView.Tab.satellite.rawValue,
-                "kind": "satellite_pass",
-                "identifier": target.id,
-            ]
-        )
-        return .result()
-    }
-}
-
 // MARK: - Spotlight Indexing
 
 @available(iOS 18.0, *)
@@ -472,11 +376,9 @@ actor LabEntityIndexer {
         do {
             let aircraft = try await LabAircraftQuery().suggestedEntities()
             let alerts = try await LabAlertQuery().suggestedEntities()
-            let passes = try await LabSatellitePassQuery().suggestedEntities()
             let index = CSSearchableIndex.default()
             try await index.indexAppEntities(aircraft)
             try await index.indexAppEntities(alerts)
-            try await index.indexAppEntities(passes)
             lastIndexedAt = Date()
         } catch {
             #if DEBUG

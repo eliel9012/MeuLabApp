@@ -69,77 +69,13 @@ private enum AnalyticsTheme {
     )
 }
 
-private struct AnalyticsPanelBackground: View {
-    let cornerRadius: CGFloat
-    let highlight: Color
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(
-                LinearGradient(
-                    colors: [AnalyticsTheme.surfaceTop, AnalyticsTheme.mist],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-            )
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.12), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.26), AnalyticsTheme.surfaceStroke],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        ),
-                        lineWidth: 1.1
-                    )
-            }
-            .shadow(color: AnalyticsTheme.shadow.opacity(0.08), radius: 22, x: 0, y: 12)
-            .shadow(color: highlight.opacity(0.06), radius: 16, x: 0, y: 6)
-    }
-}
-
-private struct AnalyticsInsetBackground: View {
-    let cornerRadius: CGFloat
-    let highlight: Color
-
-    var body: some View {
-        RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-            .fill(AnalyticsTheme.insetSurface)
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .fill(
-                        LinearGradient(
-                            colors: [highlight.opacity(0.08), .clear],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
-                        )
-                    )
-            }
-            .overlay {
-                RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
-                    .strokeBorder(highlight.opacity(0.16), lineWidth: 1)
-            }
-            .shadow(color: AnalyticsTheme.shadow.opacity(0.05), radius: 14, x: 0, y: 8)
-    }
-}
-
 extension View {
     fileprivate func analyticsPanel(
         cornerRadius: CGFloat = 20, highlight: Color = AnalyticsTheme.blue
     )
         -> some View
     {
-        background(AnalyticsPanelBackground(cornerRadius: cornerRadius, highlight: highlight))
+        contentCard(tint: highlight, cornerRadius: cornerRadius)
     }
 
     fileprivate func analyticsInsetPanel(
@@ -147,7 +83,10 @@ extension View {
     )
         -> some View
     {
-        background(AnalyticsInsetBackground(cornerRadius: cornerRadius, highlight: highlight))
+        background(
+            RoundedRectangle(cornerRadius: cornerRadius, style: .continuous)
+                .fill(Color(.tertiarySystemFill))
+        )
     }
 }
 
@@ -180,7 +119,7 @@ private struct AnalyticsToolbarTitle: View {
             }
 
             Text(title)
-                .font(.system(size: 23, weight: .black, design: .rounded))
+                .scaledFont(size: 23, weight: .black, design: .rounded)
                 .tracking(0.4)
                 .foregroundStyle(
                     LinearGradient(
@@ -231,43 +170,6 @@ private struct AnalyticsInfoChip: View {
     }
 }
 
-private struct AnalyticsFilterChip: View {
-    let title: String
-    let isSelected: Bool
-    let tint: Color
-
-    var body: some View {
-        Text(title)
-            .font(.subheadline.weight(.semibold))
-            .padding(.horizontal, 16)
-            .padding(.vertical, 10)
-            .background(
-                Capsule()
-                    .fill(
-                        isSelected
-                            ? LinearGradient(
-                                colors: [tint, tint.opacity(0.84)],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                            : LinearGradient(
-                                colors: [
-                                    AnalyticsTheme.surfaceTop.opacity(0.92), AnalyticsTheme.mist,
-                                ],
-                                startPoint: .topLeading,
-                                endPoint: .bottomTrailing
-                            )
-                    )
-            )
-            .foregroundStyle(isSelected ? Color.white : AnalyticsTheme.ink)
-            .overlay(
-                Capsule()
-                    .stroke(isSelected ? tint.opacity(0.2) : tint.opacity(0.12), lineWidth: 1)
-            )
-            .shadow(color: isSelected ? tint.opacity(0.18) : .clear, radius: 10, x: 0, y: 4)
-    }
-}
-
 private struct AnalyticsSectionHeader: View {
     let title: String
     let subtitle: String
@@ -304,7 +206,6 @@ enum AnalyticsFocusPanel: String, Identifiable {
     case system
     case environment
     case traffic
-    case satellite
 
     var id: String { rawValue }
 
@@ -314,7 +215,6 @@ enum AnalyticsFocusPanel: String, Identifiable {
         case .system: return "Histórico do Sistema"
         case .environment: return "Ambiente"
         case .traffic: return "Tráfego Aéreo"
-        case .satellite: return "Satélite"
         }
     }
 
@@ -324,22 +224,19 @@ enum AnalyticsFocusPanel: String, Identifiable {
         case .system: return "Janela do sistema"
         case .environment: return "Janela do ambiente"
         case .traffic: return "Janela do radar"
-        case .satellite: return "Janela do satélite"
         }
     }
 
     var subtitle: String {
         switch self {
         case .dashboard:
-            return "Sistema, ambiente, ADS-B e satélite dentro da mesma janela de leitura."
+            return "Sistema, ambiente e ADS-B dentro da mesma janela de leitura."
         case .system:
             return "CPU, memória, disco e temperatura em leitura histórica."
         case .environment:
             return "Temperatura e umidade do sensor local com histórico recente."
         case .traffic:
             return "Volume horário e composição do tráfego ADS-B."
-        case .satellite:
-            return "Passes, sucesso de coleta e imagens ao longo da janela."
         }
     }
 
@@ -349,7 +246,6 @@ enum AnalyticsFocusPanel: String, Identifiable {
         case .system: return AnalyticsTheme.blue
         case .environment: return AnalyticsTheme.cyan
         case .traffic: return AnalyticsTheme.green
-        case .satellite: return AnalyticsTheme.violet
         }
     }
 
@@ -470,10 +366,6 @@ struct AnalyticsView: View {
                         adsbAnalyticsSection(adsb)
                     }
 
-                    if showsSatelliteSection, let satellite = satelliteAnalytics {
-                        satelliteAnalyticsSection(satellite)
-                    }
-
                     if isLoading {
                         ProgressView("Carregando analytics...")
                             .frame(maxWidth: .infinity)
@@ -532,25 +424,14 @@ struct AnalyticsView: View {
                     if isLoading {
                         ProgressView()
                             .controlSize(.small)
-                            .padding(8)
-                            .background(
-                                Circle()
-                                    .fill(AnalyticsTheme.toolbarBubble)
-                            )
+                            .accessibilityLabel("Atualizando")
                     } else {
                         Button {
                             loadAnalytics(for: selectedPeriod, clearIfMissingCache: false)
                         } label: {
                             Image(systemName: "arrow.clockwise")
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundStyle(AnalyticsTheme.blue)
-                                .padding(8)
-                                .background(
-                                    Circle()
-                                        .fill(AnalyticsTheme.toolbarBubble)
-                                )
                         }
-                        .buttonStyle(.plain)
+                        .accessibilityLabel("Atualizar")
                     }
                 }
             }
@@ -581,9 +462,6 @@ struct AnalyticsView: View {
         focus == .dashboard || focus == .traffic
     }
 
-    private var showsSatelliteSection: Bool {
-        focus == .dashboard || focus == .satellite
-    }
 
     private var isCompactLayout: Bool {
         horizontalSizeClass == .compact
@@ -608,7 +486,7 @@ struct AnalyticsView: View {
                         Spacer(minLength: 8)
 
                         Text(isLoading ? "ATUALIZANDO" : "PRONTO")
-                            .font(.system(size: 10, weight: .black, design: .rounded))
+                            .scaledFont(size: 10, weight: .black, design: .rounded)
                             .tracking(1)
                             .foregroundStyle(
                                 isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green
@@ -643,7 +521,7 @@ struct AnalyticsView: View {
                                 .foregroundStyle(AnalyticsTheme.ink.opacity(0.82))
 
                             Text(isLoading ? "ATUALIZANDO" : "PRONTO")
-                                .font(.system(size: 10, weight: .black, design: .rounded))
+                                .scaledFont(size: 10, weight: .black, design: .rounded)
                                 .tracking(1)
                                 .foregroundStyle(
                                     isLoading ? AnalyticsTheme.orange : AnalyticsTheme.green
@@ -726,25 +604,12 @@ struct AnalyticsView: View {
                     .font(.headline)
                     .foregroundStyle(AnalyticsTheme.ink)
 
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 12) {
-                        ForEach(AnalyticsPeriod.allCases, id: \.self) { period in
-                            Button {
-                                withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
-                                    selectedPeriod = period
-                                }
-                            } label: {
-                                AnalyticsFilterChip(
-                                    title: period.displayName,
-                                    isSelected: selectedPeriod == period,
-                                    tint: AnalyticsTheme.blue
-                                )
-                            }
-                            .buttonStyle(.plain)
-                        }
+                Picker("Período", selection: $selectedPeriod) {
+                    ForEach(AnalyticsPeriod.allCases, id: \.self) { period in
+                        Text(period.displayName).tag(period)
                     }
-                    .padding(.horizontal, 2)
                 }
+                .pickerStyle(.segmented)
             }
 
             if focus.allowsMetricPicker {
@@ -753,25 +618,12 @@ struct AnalyticsView: View {
                         .font(.headline)
                         .foregroundStyle(AnalyticsTheme.ink)
 
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: 12) {
-                            ForEach(AnalyticsMetric.allCases, id: \.self) { metric in
-                                Button {
-                                    withAnimation(.spring(response: 0.28, dampingFraction: 0.84)) {
-                                        selectedMetric = metric
-                                    }
-                                } label: {
-                                    AnalyticsFilterChip(
-                                        title: metric.displayName,
-                                        isSelected: selectedMetric == metric,
-                                        tint: metric.color
-                                    )
-                                }
-                                .buttonStyle(.plain)
-                            }
+                    Picker("Métrica do Sistema", selection: $selectedMetric) {
+                        ForEach(AnalyticsMetric.allCases, id: \.self) { metric in
+                            Text(metric.displayName).tag(metric)
                         }
-                        .padding(.horizontal, 2)
                     }
+                    .pickerStyle(.menu)
                 }
             }
         }
@@ -805,7 +657,7 @@ struct AnalyticsView: View {
             VStack(alignment: .leading, spacing: 14) {
                 HStack(alignment: .firstTextBaseline, spacing: 10) {
                     Text(selectedMetric.displayName)
-                        .font(.system(size: 32, weight: .black, design: .rounded))
+                        .scaledFont(size: 32, weight: .black, design: .rounded)
                         .foregroundStyle(AnalyticsTheme.ink)
 
                     if let lastValue = points.last?.valueText {
@@ -1112,7 +964,7 @@ struct AnalyticsView: View {
                 .foregroundStyle(AnalyticsTheme.ink.opacity(0.56))
 
             Text(value)
-                .font(.system(size: 26, weight: .bold, design: .rounded))
+                .scaledFont(size: 26, weight: .bold, design: .rounded)
                 .monospacedDigit()
                 .foregroundStyle(tint)
         }
@@ -1205,16 +1057,13 @@ struct AnalyticsView: View {
             async let adsbTask: ADSBAnalytics? = {
                 try? await APIService.shared.fetchADSBAnalytics(period: period.rawValue)
             }()
-            async let satelliteTask: SatelliteAnalytics? = {
-                try? await APIService.shared.fetchSatelliteAnalytics(period: period.rawValue)
-            }()
             async let tuyaTask: TuyaTemperatureHumidityResponse? = {
                 try? await APIService.shared.fetchTuyaTemperatureHumidity(
                     historyLimit: historyLimit)
             }()
 
-            let (system, adsb, satellite, tuya) = await (
-                systemTask, adsbTask, satelliteTask, tuyaTask
+            let (system, adsb, tuya) = await (
+                systemTask, adsbTask, tuyaTask
             )
             guard !Task.isCancelled else { return }
 
@@ -1222,12 +1071,11 @@ struct AnalyticsView: View {
                 guard selectedPeriod == period else { return }
                 if let system { self.systemAnalytics = system }
                 if let adsb { self.adsbAnalytics = adsb }
-                if let satellite { self.satelliteAnalytics = satellite }
                 if let tuya { self.tuyaSensor = tuya }
                 AnalyticsScreenCache.entries[period.rawValue] = .init(
                     system: system ?? self.systemAnalytics,
                     adsb: adsb ?? self.adsbAnalytics,
-                    satellite: satellite ?? self.satelliteAnalytics,
+                    satellite: nil,
                     tuya: tuya ?? self.tuyaSensor
                 )
                 self.isLoading = false
@@ -2064,21 +1912,7 @@ private struct AnalyticsChartTooltip: View {
             }
         }
         .padding(10)
-        .background(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .fill(
-                    LinearGradient(
-                        colors: [AnalyticsTheme.surfaceTop, AnalyticsTheme.mist],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 12, style: .continuous)
-                .stroke(accent.opacity(0.24), lineWidth: 1)
-        )
-        .shadow(color: AnalyticsTheme.shadow.opacity(0.12), radius: 10, x: 0, y: 4)
+        .contentCard(tint: accent, cornerRadius: 12)
     }
 }
 

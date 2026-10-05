@@ -49,6 +49,7 @@ struct ContainerLogsView: View {
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
+                    .accessibilityLabel("Mais opções")
                 }
             }
             .refreshable {
@@ -427,6 +428,7 @@ struct ContainerLogViewer: View {
                 }
                 .background(Color(.systemBackground))
             }
+            .searchable(text: $searchQuery, prompt: "Buscar logs...")
             .navigationTitle(container.names)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -454,19 +456,6 @@ struct ContainerLogViewer: View {
     @ViewBuilder
     private var filterBar: some View {
         VStack(spacing: 12) {
-            // Search
-            HStack {
-                Image(systemName: "magnifyingglass")
-                    .foregroundStyle(.secondary)
-
-                TextField("Buscar logs...", text: $searchQuery)
-                    .textFieldStyle(.plain)
-            }
-            .padding(.horizontal, 16)
-            .padding(.vertical, 12)
-            .background(Color(.systemBackground))
-            .cornerRadius(12)
-
             // Log Level Filter
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 12) {
@@ -494,7 +483,6 @@ struct ContainerLogViewer: View {
             }
         }
         .padding()
-        .background(Color(.systemBackground))
     }
 
     private func applyFilters() {

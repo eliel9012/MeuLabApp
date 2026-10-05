@@ -17,7 +17,6 @@ struct MeuLabTimelineProvider: TimelineProvider {
             aircraftCount: 42,
             cpuPercent: 35,
             temperature: 52,
-            lastSatellite: "Meteor M2-x",
             weatherTemp: 25,
             weatherCondition: "Ensolarado",
             nextPassIn: "2h 15m",
@@ -32,7 +31,6 @@ struct MeuLabTimelineProvider: TimelineProvider {
             aircraftCount: 42,
             cpuPercent: 35,
             temperature: 52,
-            lastSatellite: "Meteor M2-x",
             weatherTemp: 25,
             weatherCondition: "Ensolarado",
             nextPassIn: "2h 15m",
@@ -47,7 +45,6 @@ struct MeuLabTimelineProvider: TimelineProvider {
             var aircraftCount = 0
             var cpuPercent = 0.0
             var temperature = 0.0
-            var lastSatellite = "N/A"
             var weatherTemp: Int?
             var weatherCondition: String?
             var nextPassIn: String?
@@ -64,11 +61,6 @@ struct MeuLabTimelineProvider: TimelineProvider {
                 let system = try await WatchAPIService.shared.fetchSystemStatus()
                 cpuPercent = system.cpuPercent
                 temperature = system.cpuTemp ?? 0
-            } catch {}
-
-            do {
-                let satdump = try await WatchAPIService.shared.fetchSatDumpStatus()
-                lastSatellite = satdump.status?.lastPass?.satellite ?? "N/A"
             } catch {}
 
             do {
@@ -95,7 +87,6 @@ struct MeuLabTimelineProvider: TimelineProvider {
                 aircraftCount: aircraftCount,
                 cpuPercent: Int(cpuPercent),
                 temperature: Int(temperature),
-                lastSatellite: lastSatellite,
                 weatherTemp: weatherTemp,
                 weatherCondition: weatherCondition,
                 nextPassIn: nextPassIn,
@@ -118,7 +109,6 @@ struct MeuLabEntry: TimelineEntry {
     let aircraftCount: Int
     let cpuPercent: Int
     let temperature: Int
-    let lastSatellite: String
     var weatherTemp: Int? = nil
     var weatherCondition: String? = nil
     var nextPassIn: String? = nil
@@ -139,6 +129,7 @@ struct MeuLabCircularView: View {
                 Image(systemName: "airplane")
                     .font(.system(size: 12))
                     .foregroundStyle(WatchComplicationTheme.blue)
+                    .widgetAccentable()
                 Text("\(entry.aircraftCount)")
                     .font(.system(size: 16, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
@@ -159,6 +150,7 @@ struct MeuLabRectangularView: View {
                     Image(systemName: "airplane")
                         .font(.caption2)
                         .foregroundStyle(WatchComplicationTheme.blue)
+                        .widgetAccentable()
                     Text("\(entry.aircraftCount) voos")
                         .font(.caption2)
                         .foregroundStyle(.white)
@@ -168,6 +160,7 @@ struct MeuLabRectangularView: View {
                     Image(systemName: "cpu")
                         .font(.caption2)
                         .foregroundStyle(WatchComplicationTheme.green)
+                        .widgetAccentable()
                     Text("\(entry.cpuPercent)%  \(entry.temperature)°")
                         .font(.caption2)
                         .foregroundStyle(.white)
@@ -178,6 +171,7 @@ struct MeuLabRectangularView: View {
                         Image(systemName: "cloud.sun.fill")
                             .font(.caption2)
                             .foregroundStyle(.cyan)
+                            .widgetAccentable()
                         Text("\(wTemp)°C")
                             .font(.caption2)
                             .foregroundStyle(.white)
@@ -187,6 +181,7 @@ struct MeuLabRectangularView: View {
                         Image(systemName: "thermometer")
                             .font(.caption2)
                             .foregroundStyle(WatchComplicationTheme.orange)
+                            .widgetAccentable()
                         Text("\(entry.temperature)°C")
                             .font(.caption2)
                             .foregroundStyle(.white)
@@ -200,6 +195,7 @@ struct MeuLabRectangularView: View {
                 Image(systemName: "antenna.radiowaves.left.and.right")
                     .font(.caption)
                     .foregroundStyle(WatchComplicationTheme.violet)
+                    .widgetAccentable()
                 Text("MeuLab")
                     .font(.system(size: 8))
                     .foregroundStyle(.white.opacity(0.8))
@@ -220,6 +216,7 @@ struct MeuLabCornerView: View {
             Text("\(entry.aircraftCount)")
                 .font(.system(size: 20, weight: .bold, design: .rounded))
                 .foregroundStyle(WatchComplicationTheme.blue)
+                .widgetAccentable()
         }
         .widgetLabel {
             Text("voos")
@@ -236,10 +233,12 @@ struct MeuLabInlineView: View {
         HStack(spacing: 4) {
             Image(systemName: "airplane")
                 .foregroundStyle(WatchComplicationTheme.blue)
+                .widgetAccentable()
             Text("\(entry.aircraftCount)")
             Text("|")
             Image(systemName: "cpu")
                 .foregroundStyle(WatchComplicationTheme.green)
+                .widgetAccentable()
             Text("\(entry.cpuPercent)%")
         }
     }
@@ -294,14 +293,12 @@ struct MeuLabComplicationEntryView: View {
     MeuLabComplication()
 } timeline: {
     MeuLabEntry(
-        date: Date(), aircraftCount: 42, cpuPercent: 35, temperature: 52,
-        lastSatellite: "Meteor M2-x")
+        date: Date(), aircraftCount: 42, cpuPercent: 35, temperature: 52)
 }
 
 #Preview(as: .accessoryRectangular) {
     MeuLabComplication()
 } timeline: {
     MeuLabEntry(
-        date: Date(), aircraftCount: 42, cpuPercent: 35, temperature: 52,
-        lastSatellite: "Meteor M2-x")
+        date: Date(), aircraftCount: 42, cpuPercent: 35, temperature: 52)
 }

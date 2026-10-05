@@ -56,7 +56,9 @@ class PushNotificationManager: NSObject, ObservableObject {
     func handleDeviceToken(_ deviceToken: Data) {
         let tokenString = deviceToken.map { String(format: "%02.2hhx", $0) }.joined()
         self.deviceToken = tokenString
+        #if DEBUG
         print("Device token: \(tokenString)")
+        #endif
 
         // Envia para o servidor
         Task {

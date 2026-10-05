@@ -118,6 +118,8 @@ enum FlightLegBuilder {
         ("são paulo", "America/Sao_Paulo"),
         ("sao paulo", "America/Sao_Paulo"),
         ("londrina", "America/Sao_Paulo"),
+        ("campinas", "America/Sao_Paulo"),
+        ("viracopos", "America/Sao_Paulo"),
         ("madrid", "Europe/Madrid"),
         ("madri", "Europe/Madrid"),
         ("marseille", "Europe/Paris"),
@@ -190,7 +192,11 @@ enum FlightLegBuilder {
                 arrival = cal.date(byAdding: .day, value: 1, to: arrival) ?? arrival
             }
 
-            let code = flightCode(in: stop.title) ?? stop.title
+            // No flight number in the title ("Voo BA Cityflyer — …"): keep the part
+            // before the route rather than the whole line.
+            let code = flightCode(in: stop.title)
+                ?? stop.title.components(separatedBy: " — ").first
+                ?? stop.title
 
             out.append(
                 FlightLeg(

@@ -30,7 +30,7 @@ struct StatCard: View {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 12)
         .padding(.horizontal, 8)
-        .glassCard(cornerRadius: 10)
+        .contentCard(cornerRadius: 10)
     }
 }
 
@@ -64,6 +64,6 @@ struct EmptyStateCard: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .glassCard(cornerRadius: 12)
+        .contentCard(cornerRadius: 12)
     }
 }

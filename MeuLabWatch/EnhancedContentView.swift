@@ -62,12 +62,6 @@ struct WatchHomeView: View {
                     }
 
                     NavigationLink {
-                        EnhancedWatchSatDumpView()
-                    } label: {
-                        Label("SatDump", systemImage: "antenna.radiowaves.left.and.right")
-                    }
-
-                    NavigationLink {
                         WatchRadioView()
                     } label: {
                         Label("Rádio", systemImage: "dot.radiowaves.left.and.right")
@@ -514,7 +508,7 @@ struct ErrorCard: View {
                 retry()
             }
             .font(.caption)
-            .buttonStyle(.borderedProminent)
+            .watchActionButtonStyle(prominent: true)
             .controlSize(.small)
         }
         .padding()
@@ -659,12 +653,6 @@ struct EnhancedWatchACARSView: View {
 struct EnhancedWatchWeatherView: View {
     var body: some View {
         WatchWeatherView()
-    }
-}
-
-struct EnhancedWatchSatDumpView: View {
-    var body: some View {
-        WatchSatDumpView()
     }
 }
 

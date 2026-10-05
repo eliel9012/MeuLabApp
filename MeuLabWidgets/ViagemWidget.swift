@@ -68,6 +68,7 @@ private struct TripSystemSmallView: View {
                             Image(systemName: event.icon)
                                 .font(.system(size: 13, weight: .semibold))
                                 .foregroundStyle(WidgetGradients.cyan)
+                                .widgetAccentable()
                         }
                         Text(event.shortClock)
                             .font(.system(size: 24, weight: .black, design: .rounded))
@@ -128,6 +129,7 @@ private struct TripSystemMediumView: View {
                             Image(systemName: event.icon)
                                 .font(.system(size: 22, weight: .semibold))
                                 .foregroundStyle(WidgetGradients.cyan)
+                                .widgetAccentable()
                         }
                         .frame(width: 52, height: 52)
 
@@ -234,6 +236,7 @@ private struct TripAccessoryCircularView: View {
             VStack(spacing: 0) {
                 Image(systemName: event?.icon ?? "checkmark.seal")
                     .font(.system(size: 12, weight: .semibold))
+                    .widgetAccentable()
                 Text(event?.shortClock ?? "--:--")
                     .font(.system(size: 13, weight: .bold, design: .rounded))
                     .lineLimit(1)

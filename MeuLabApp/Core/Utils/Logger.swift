@@ -78,8 +78,7 @@ struct Logger {
     // MARK: - Persistência (Placeholder)
 
     private func persistLog(_ message: String, level: LogLevel) {
-        // TODO: Implementar persistência de logs em arquivo se necessário
-        // Por enquanto, apenas imprime no console
+        // Sem persistência em arquivo: logs apenas no console.
     }
 }
 

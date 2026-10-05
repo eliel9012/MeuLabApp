@@ -132,8 +132,7 @@ struct RemoteControlView: View {
                             // Navigate to full command history
                         }
                         .frame(maxWidth: .infinity)
-                        .padding()
-                        .glassCard(cornerRadius: 12)
+                        .buttonStyle(.glass)
                     }
                 }
             }
@@ -266,9 +265,7 @@ struct QuickActionCard: View {
             }
             .frame(maxWidth: .infinity)
             .padding()
-            .background(Color(.systemBackground))
-            .cornerRadius(16)
-            .shadow(color: .black.opacity(0.05), radius: 2, x: 0, y: 1)
+            .contentCard(cornerRadius: 16)
         }
         .buttonStyle(.plain)
     }
@@ -467,7 +464,7 @@ struct CommandDetailView: View {
             }
         }
         .padding()
-        .glassCard(cornerRadius: 12)
+        .contentCard(cornerRadius: 12)
     }
 
     @ViewBuilder
@@ -511,10 +508,8 @@ struct CommandDetailView: View {
                     retryCommand()
                 }
                 .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.blue)
-                .foregroundStyle(.white)
-                .cornerRadius(12)
+                .buttonStyle(.glassProminent)
+                .tint(.blue)
             }
 
             if (updatedCommand?.status ?? command.status) == .pending {
@@ -522,10 +517,8 @@ struct CommandDetailView: View {
                     cancelCommand()
                 }
                 .frame(maxWidth: .infinity)
-                .padding()
-                .background(Color.red)
-                .foregroundStyle(.white)
-                .cornerRadius(12)
+                .buttonStyle(.glassProminent)
+                .tint(.red)
             }
         }
     }

@@ -201,7 +201,7 @@ private struct IntelligenceToolbarTitle: View {
                     .font(.headline.weight(.bold))
                 HStack(spacing: 4) {
                     Image(systemName: symbol)
-                        .font(.system(size: 9, weight: .bold))
+                        .scaledFont(size: 9, weight: .bold)
                     Text(statusLabel)
                         .font(.caption2.weight(.semibold))
                 }
@@ -236,14 +236,7 @@ private struct IntelligenceWorkflowCard: View {
             }
             .frame(maxWidth: .infinity, minHeight: 128, alignment: .leading)
             .padding(16)
-            .background(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(.ultraThinMaterial)
-            )
-            .overlay(
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .stroke(tint.opacity(0.18), lineWidth: 1)
-            )
+            .contentCard(tint: tint, cornerRadius: 20)
         }
         .buttonStyle(.plain)
     }
@@ -257,11 +250,9 @@ private struct IntelligenceActionChip: View {
         Button(action: tap) {
             Label(action.title, systemImage: action.systemImage)
                 .font(.caption.weight(.semibold))
-                .padding(.horizontal, 12)
-                .padding(.vertical, 9)
-                .background(Capsule().fill(Color.accentColor.opacity(0.12)))
         }
-        .buttonStyle(.plain)
+        .buttonStyle(.glass)
+        .controlSize(.small)
     }
 }
 
@@ -381,6 +372,7 @@ struct IntelligenceViewModern: View {
                     ScrollView {
                         VStack(spacing: 18) {
                             heroSection
+                            LabAskCard(tint: IntelligenceTheme.accent)
                             workflowSection
                             if incidentMode {
                                 incidentBanner
@@ -394,18 +386,17 @@ struct IntelligenceViewModern: View {
                         .padding(.top, isWide ? 18 : 12)
                         .padding(.bottom, 12)
                     }
+                    .scrollEdgeEffectStyle(.soft, for: .bottom)
                     .onAppear { scrollProxy = proxy }
                 }
 
-                Divider()
                 inputBar
             }
         }
         .navigationTitle(sessionTitle)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .navigationBarLeading) {
-                HStack(spacing: 12) {
+            ToolbarItemGroup(placement: .navigationBarLeading) {
                     Button {
                         showHistory = true
                     } label: {
@@ -428,7 +419,7 @@ struct IntelligenceViewModern: View {
                     } label: {
                         Image(systemName: "ellipsis.circle")
                     }
-                }
+                    .accessibilityLabel("Mais opções")
             }
 
             ToolbarItem(placement: .principal) {
@@ -510,14 +501,7 @@ struct IntelligenceViewModern: View {
             }
         }
         .padding(20)
-        .background(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .fill(.ultraThinMaterial)
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: 26, style: .continuous)
-                .stroke(Color.white.opacity(0.18), lineWidth: 1)
-        )
+        .contentCard(cornerRadius: 26)
     }
 
     private var workflowSection: some View {
@@ -570,7 +554,7 @@ struct IntelligenceViewModern: View {
                                     }
                                     .frame(width: isWide ? 240 : 210, alignment: .leading)
                                     .padding(14)
-                                    .background(RoundedRectangle(cornerRadius: 18).fill(.thinMaterial))
+                                    .contentCard(cornerRadius: 18)
                                 }
                                 .buttonStyle(.plain)
                             }
@@ -598,7 +582,7 @@ struct IntelligenceViewModern: View {
                                 .foregroundStyle(item.delta.hasPrefix("+") ? .green : .orange)
                         }
                         .padding(12)
-                        .background(RoundedRectangle(cornerRadius: 16).fill(.thinMaterial))
+                        .contentCard(cornerRadius: 16)
                     }
                 }
             }
@@ -620,7 +604,7 @@ struct IntelligenceViewModern: View {
                         }
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
-                        .background(Capsule().fill(.thinMaterial))
+                        .background(Capsule().fill(Color(.secondarySystemGroupedBackground)))
                     }
                 }
             }
@@ -645,7 +629,7 @@ struct IntelligenceViewModern: View {
                             Spacer()
                         }
                         .padding(10)
-                        .background(RoundedRectangle(cornerRadius: 14).fill(.thinMaterial))
+                        .contentCard(cornerRadius: 14)
                     }
                 }
             }
@@ -691,11 +675,7 @@ struct IntelligenceViewModern: View {
                 .foregroundStyle(.secondary)
         }
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.ultraThinMaterial))
-        .overlay(
-            RoundedRectangle(cornerRadius: 18)
-                .stroke(Color.red.opacity(0.25), lineWidth: 1)
-        )
+        .contentCard(tint: .red, cornerRadius: 18)
     }
 
     @ViewBuilder
@@ -733,11 +713,7 @@ struct IntelligenceViewModern: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 20).fill(.ultraThinMaterial))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 20)
-                        .stroke(Color.white.opacity(0.14), lineWidth: 1)
-                )
+                .contentCard(cornerRadius: 20)
 
                 Spacer(minLength: 40)
             }
@@ -852,7 +828,7 @@ struct IntelligenceViewModern: View {
             }
             .padding(.horizontal, 14)
             .padding(.vertical, 12)
-            .background(RoundedRectangle(cornerRadius: 20).fill(.thinMaterial))
+            .contentCard(cornerRadius: 20)
 
             Spacer(minLength: 40)
         }
@@ -866,14 +842,14 @@ struct IntelligenceViewModern: View {
                 .focused($isInputFocused)
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .background(RoundedRectangle(cornerRadius: 22).fill(.ultraThinMaterial))
+                .glassControl(cornerRadius: 22, interactive: false)
                 .onSubmit { Task { await sendUserMessage() } }
 
             Button {
                 Task { await sendUserMessage() }
             } label: {
                 Image(systemName: "arrow.up.circle.fill")
-                    .font(.system(size: 34))
+                    .scaledFont(size: 34)
                     .foregroundStyle(canSend ? IntelligenceTheme.accent : .gray.opacity(0.4))
             }
             .disabled(!canSend)
@@ -925,11 +901,10 @@ struct IntelligenceViewModern: View {
                     .onDelete(perform: deleteSessions)
                 }
             }
-            .scrollContentBackground(.hidden)
             .navigationTitle("Conversas")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
+                ToolbarItem(placement: .cancellationAction) {
                     Button("Fechar") { showHistory = false }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -939,6 +914,7 @@ struct IntelligenceViewModern: View {
                     } label: {
                         Image(systemName: "square.and.pencil")
                     }
+                    .accessibilityLabel("Nova conversa")
                 }
             }
         }
@@ -959,16 +935,22 @@ struct IntelligenceViewModern: View {
 
     private func quickMetric(title: String, value: String, tint: Color) -> some View {
         VStack(alignment: .leading, spacing: 4) {
+            // Four tiles share one row: shrink large text instead of breaking mid-word.
             Text(title)
                 .font(.caption2.weight(.bold))
                 .foregroundStyle(.secondary)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)
             Text(value)
                 .font(.headline.weight(.bold))
                 .foregroundStyle(tint)
+                .lineLimit(1)
+                .minimumScaleFactor(0.5)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(12)
-        .background(RoundedRectangle(cornerRadius: 18).fill(.thinMaterial))
+        .accessibilityElement(children: .combine)
+        .background(RoundedRectangle(cornerRadius: 18).fill(Color(.tertiarySystemFill)))
     }
 
     private func bootstrapIfNeeded() {
@@ -1169,8 +1151,6 @@ struct IntelligenceViewModern: View {
             let kind: String? = switch tab {
             case ContentView.Tab.map.rawValue, ContentView.Tab.adsb.rawValue:
                 "aircraft"
-            case ContentView.Tab.satellite.rawValue:
-                "satellite_pass"
             case ContentView.Tab.acars.rawValue:
                 "acars"
             case ContentView.Tab.weather.rawValue:
@@ -1424,7 +1404,7 @@ struct IntelligenceViewLegacy: View {
                 }
             }
             .padding(12)
-            .glassCard(tint: .red, cornerRadius: 12)
+            .contentCard(tint: .red, cornerRadius: 12)
         }
     }
 
@@ -1436,7 +1416,7 @@ struct IntelligenceViewLegacy: View {
                 .font(.subheadline)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(12)
-                .glassCard(cornerRadius: 12)
+                .contentCard(cornerRadius: 12)
         }
     }
 

@@ -5,6 +5,16 @@ import WidgetKit
   final class NotificationService: UNNotificationServiceExtension {
       private var contentHandler: ((UNNotificationContent) -> Void)?
       private var bestAttemptContent: UNMutableNotificationContent?
+      private let deliverLock = NSLock()
+
+      /// Entrega o conteúdo uma única vez (download e timeWillExpire podem correr juntos).
+      private func deliver(_ content: UNNotificationContent) {
+          deliverLock.lock()
+          let handler = contentHandler
+          contentHandler = nil
+          deliverLock.unlock()
+          handler?(content)
+      }
 
       private let appGroup = "group.com.meulab"
       private let dataKey = "widget_shared_data"
@@ -17,7 +27,7 @@ import WidgetKit
           self.bestAttemptContent = (request.content.mutableCopy() as? UNMutableNotificationContent)
 
           guard let bestAttemptContent else {
-              contentHandler(request.content)
+              deliver(request.content)
               return
           }
 
@@ -35,12 +45,12 @@ import WidgetKit
               let url = URL(string: urlString),
               url.scheme?.lowercased() == "https"
           else {
-              contentHandler(bestAttemptContent)
+              deliver(bestAttemptContent)
               return
           }
 
-          URLSession.shared.downloadTask(with: url) { tmpURL, _, _ in
-              defer { contentHandler(bestAttemptContent) }
+          URLSession.shared.downloadTask(with: url) { [weak self] tmpURL, _, _ in
+              defer { self?.deliver(bestAttemptContent) }
               guard let tmpURL else { return }
 
               do {
@@ -63,8 +73,8 @@ import WidgetKit
       }
 
       override func serviceExtensionTimeWillExpire() {
-          if let contentHandler, let bestAttemptContent {
-              contentHandler(bestAttemptContent)
+          if let bestAttemptContent {
+              deliver(bestAttemptContent)
           }
       }
 

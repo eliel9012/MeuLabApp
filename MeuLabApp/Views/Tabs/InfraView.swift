@@ -11,7 +11,7 @@ struct InfraView: View {
                 // Overview group: the API metrics card and the Docker version card are
                 // adjacent glass siblings, so they share one container and sample the same
                 // backdrop instead of each rendering its own isolated effect.
-                GlassSection(spacing: 0) {
+                Group {
                     VStack(spacing: 16) {
                         if let metrics = appState.metrics {
                             metricsSection(metrics)
@@ -26,7 +26,7 @@ struct InfraView: View {
                 }
 
                 // Inventory group: the two long list cards (containers and systemd units).
-                GlassSection(spacing: 0) {
+                Group {
                     VStack(spacing: 16) {
                         if !appState.dockerContainers.isEmpty {
                             dockerContainersSection(appState.dockerContainers)
@@ -45,7 +45,14 @@ struct InfraView: View {
             .padding()
         }
         .navigationTitle("Infra")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationBarTitleDisplayMode(.inline)
+        // Title as a principal item: the "Mais" navigation bar shows only that,
+        // next to the back button.
+        .toolbar {
+            ToolbarItem(placement: .principal) {
+                Text("Infra").font(.headline)
+            }
+        }
         .searchable(text: $searchText, prompt: "Buscar containers")
         .sheet(item: $selectedContainer) { container in
             ContainerLogView(containerName: container.names)
@@ -65,7 +72,7 @@ struct InfraView: View {
 
             // The four stat cards are glass siblings inside the grid; grouping them keeps
             // the tiles visually consistent and costs a single rendering pass.
-            GlassSection(spacing: 0) {
+            Group {
                 LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 12) {
                     InfraStatCard(
                         title: "Uptime",
@@ -96,7 +103,7 @@ struct InfraView: View {
             }
         }
         .padding()
-        .glassCard(cornerRadius: 12)
+        .contentCard(cornerRadius: 12)
     }
 
     @ViewBuilder
@@ -117,7 +124,7 @@ struct InfraView: View {
             .foregroundStyle(.secondary)
         }
         .padding()
-        .glassCard(cornerRadius: 12)
+        .contentCard(cornerRadius: 12)
     }
 
     @ViewBuilder
@@ -177,7 +184,7 @@ struct InfraView: View {
             }
         }
         .padding()
-        .glassCard(cornerRadius: 12)
+        .contentCard(cornerRadius: 12)
     }
 
     @ViewBuilder
@@ -207,7 +214,7 @@ struct InfraView: View {
             }
         }
         .padding()
-        .glassCard(cornerRadius: 12)
+        .contentCard(cornerRadius: 12)
     }
 }
 
@@ -268,6 +275,7 @@ struct ContainerLogView: View {
                             .textSelection(.enabled)
                     }
                     .background(Color(white: 0.1))
+                    .scrollEdgeEffectStyle(.soft, for: .top)
                 }
             }
             .navigationTitle(containerName)
@@ -279,6 +287,7 @@ struct ContainerLogView: View {
                     } label: {
                         Image(systemName: "arrow.clockwise")
                     }
+                    .accessibilityLabel("Atualizar logs")
                 }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Fechar", role: .cancel) {
@@ -340,7 +349,7 @@ struct InfraStatCard: View {
             Spacer()
         }
         .padding()
-        .glassCard(cornerRadius: 12)
+        .contentCard(cornerRadius: 12)
     }
 }
 

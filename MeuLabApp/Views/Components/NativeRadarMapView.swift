@@ -70,9 +70,9 @@ struct RadarTrail {
     let coordinates: [CLLocationCoordinate2D]
     let polyline: MKPolyline?
 
-    init(coordinates: [CLLocationCoordinate2D]) {
+    init(coordinates: [CLLocationCoordinate2D], includeGeometry: Bool = true) {
         self.coordinates = coordinates
-        polyline = coordinates.count >= 2
+        polyline = includeGeometry && coordinates.count >= 2
             ? MKPolyline(coordinates: coordinates, count: coordinates.count) : nil
     }
 }
@@ -83,7 +83,7 @@ struct RadarTrailHistory {
 
     /// Keep collecting with trails hidden: annotation heading uses the last two points.
     /// Return false without replacing geometry when aircraft have not moved.
-    mutating func update(aircraft: [Aircraft]) -> Bool {
+    mutating func update(aircraft: [Aircraft], includeGeometry: Bool = true) -> Bool {
         var changed = false
         var membershipChanged = false
         var activeIDs = Set<Aircraft.ID>()
@@ -97,7 +97,7 @@ struct RadarTrailHistory {
             if trails[aircraft.id] == nil { membershipChanged = true }
             coordinates.append(CLLocationCoordinate2D(latitude: lat, longitude: lon))
             if coordinates.count > 60 { coordinates.removeFirst() }
-            trails[aircraft.id] = RadarTrail(coordinates: coordinates)
+            trails[aircraft.id] = RadarTrail(coordinates: coordinates, includeGeometry: includeGeometry)
             changed = true
         }
         for key in trails.keys where !activeIDs.contains(key) {
@@ -106,6 +106,17 @@ struct RadarTrailHistory {
             changed = true
         }
         if membershipChanged { orderedIDs = trails.keys.sorted() }
+        return changed
+    }
+
+    /// Showing trails prepares existing history without adding points or removing
+    /// tracks. Hidden trails still supply heading, but allocate no new polylines.
+    mutating func prepareGeometry() -> Bool {
+        var changed = false
+        for (id, trail) in trails where trail.polyline == nil && trail.coordinates.count >= 2 {
+            trails[id] = RadarTrail(coordinates: trail.coordinates)
+            changed = true
+        }
         return changed
     }
 }
@@ -268,6 +279,11 @@ private struct NativeRadarMapContent: View {
                 appState.mapFocusAircraft = nil
             }
         }
+        .onChange(of: showTrails) { _, visible in
+            guard visible else { return }
+            var updated = trailHistory
+            if updated.prepareGeometry() { trailHistory = updated }
+        }
         .sheet(isPresented: $showSettings) {
             radarSettingsSheet
         }
@@ -363,7 +379,7 @@ private struct NativeRadarMapContent: View {
                     }
                 } label: {
                     Text("Radar ADS-B")
-                        .font(.system(size: 14, weight: .bold))
+                        .scaledFont(size: 14, weight: .bold)
                         .foregroundStyle(.white)
                 }
 
@@ -379,14 +395,15 @@ private struct NativeRadarMapContent: View {
                 Spacer()
 
                 // Controls
+                GlassSection(spacing: 4) {
                 HStack(spacing: 4) {
-                    headerButton(icon: "line.3.horizontal", isActive: false) {
+                    headerButton(icon: "line.3.horizontal", label: "Ajustes do radar", isActive: false) {
                         showSettings.toggle()
                     }
-                    headerButton(icon: "globe", isActive: appState.isOpenSkyEnabled) {
+                    headerButton(icon: "globe", label: "Tráfego global OpenSky", isActive: appState.isOpenSkyEnabled) {
                         appState.isOpenSkyEnabled.toggle()
                     }
-                    headerButton(icon: "location.fill", isActive: false) {
+                    headerButton(icon: "location.fill", label: "Centralizar na minha posição", isActive: false) {
                         if let userCoord = locationManager.userCoordinate {
                             withAnimation {
                                 position = .region(
@@ -399,6 +416,7 @@ private struct NativeRadarMapContent: View {
                         }
                     }
                 }
+                }
             }
             .padding(.horizontal, 12)
             .padding(.vertical, 8)
@@ -410,21 +428,21 @@ private struct NativeRadarMapContent: View {
                         .fill(.green)
                         .frame(width: 6, height: 6)
                     Text("Ao vivo")
-                        .font(.system(size: 10))
+                        .scaledFont(size: 10)
                         .foregroundStyle(.secondary)
                 }
                 Label("\(aircraftWithPosition.count)", systemImage: "airplane")
-                    .font(.system(size: 10, weight: .semibold))
+                    .scaledFont(size: 10, weight: .semibold)
                     .foregroundStyle(.white)
                     .monospacedDigit()
 
                 if appState.isOpenSkyEnabled {
                     HStack(spacing: 2) {
                         Image(systemName: "globe")
-                            .font(.system(size: 8))
+                            .scaledFont(size: 8)
                             .foregroundStyle(.orange)
                         Text("\(appState.openskyAircraftCount)")
-                            .font(.system(size: 10, weight: .medium))
+                            .scaledFont(size: 10, weight: .medium)
                             .foregroundStyle(.orange)
                             .monospacedDigit()
                     }
@@ -434,7 +452,7 @@ private struct NativeRadarMapContent: View {
                     "\(appState.localAircraftCount)",
                     systemImage: "antenna.radiowaves.left.and.right"
                 )
-                .font(.system(size: 10))
+                .scaledFont(size: 10)
                 .foregroundStyle(.blue)
                 .monospacedDigit()
 
@@ -443,10 +461,10 @@ private struct NativeRadarMapContent: View {
                 if milCount > 0 {
                     HStack(spacing: 2) {
                         Image(systemName: "shield.fill")
-                            .font(.system(size: 8))
+                            .scaledFont(size: 8)
                             .foregroundStyle(.indigo)
                         Text("\(milCount)")
-                            .font(.system(size: 10, weight: .medium))
+                            .scaledFont(size: 10, weight: .medium)
                             .foregroundStyle(.indigo)
                             .monospacedDigit()
                     }
@@ -457,10 +475,10 @@ private struct NativeRadarMapContent: View {
                 if emgCount > 0 {
                     HStack(spacing: 2) {
                         Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.system(size: 8))
+                            .scaledFont(size: 8)
                             .foregroundStyle(.red)
                         Text("\(emgCount)")
-                            .font(.system(size: 10, weight: .bold))
+                            .scaledFont(size: 10, weight: .bold)
                             .foregroundStyle(.red)
                             .monospacedDigit()
                     }
@@ -469,7 +487,7 @@ private struct NativeRadarMapContent: View {
                 Spacer()
 
                 Text(timeString)
-                    .font(.system(size: 10, design: .monospaced))
+                    .scaledFont(size: 10, design: .monospaced)
                     .foregroundStyle(.secondary)
             }
             .padding(.horizontal, 12)
@@ -484,17 +502,20 @@ private struct NativeRadarMapContent: View {
         return f.string(from: Date())
     }
 
-    private func headerButton(icon: String, isActive: Bool, action: @escaping () -> Void)
+    private func headerButton(icon: String, label: String, isActive: Bool, action: @escaping () -> Void)
         -> some View
     {
         Button(action: action) {
             Image(systemName: icon)
                 .font(.system(size: 13, weight: .medium))
                 .frame(width: 32, height: 32)
-                .background(isActive ? Color.accentColor : Color(.systemGray5).opacity(0.5))
                 .foregroundStyle(isActive ? .white : .primary)
-                .clipShape(RoundedRectangle(cornerRadius: 8))
+                .contentShape(RoundedRectangle(cornerRadius: 8))
         }
+        .buttonStyle(.plain)
+        .glassControl(tint: isActive ? .accentColor : nil, cornerRadius: 8)
+        .accessibilityLabel(label)
+        .accessibilityAddTraits(isActive ? .isSelected : [])
     }
 
     // MARK: - Detail Card
@@ -514,14 +535,14 @@ private struct NativeRadarMapContent: View {
                     VStack(alignment: .leading, spacing: 2) {
                         HStack(spacing: 6) {
                             Text(aircraft.displayCallsign)
-                                .font(.system(size: 20, weight: .bold, design: .monospaced))
+                                .scaledFont(size: 20, weight: .bold, design: .monospaced)
 
                             // Source badge
                             Text(
                                 aircraft.source == .opensky
                                     ? "OpenSky" : (aircraft.source == .network ? "Rede" : "Local")
                             )
-                            .font(.system(size: 9, weight: .semibold))
+                            .scaledFont(size: 9, weight: .semibold)
                             .padding(.horizontal, 6)
                             .padding(.vertical, 2)
                             .background(
@@ -534,7 +555,7 @@ private struct NativeRadarMapContent: View {
                             // Military badge
                             if aircraft.isMilitary {
                                 Text("MILITAR")
-                                    .font(.system(size: 9, weight: .bold))
+                                    .scaledFont(size: 9, weight: .bold)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(Color.indigo.opacity(0.3))
@@ -545,7 +566,7 @@ private struct NativeRadarMapContent: View {
                             // Emergency badge
                             if let emg = aircraft.emergencyLabel {
                                 Text(emg)
-                                    .font(.system(size: 9, weight: .bold))
+                                    .scaledFont(size: 9, weight: .bold)
                                     .padding(.horizontal, 6)
                                     .padding(.vertical, 2)
                                     .background(Color.red.opacity(0.3))
@@ -557,22 +578,22 @@ private struct NativeRadarMapContent: View {
                         HStack(spacing: 8) {
                             if let hex = aircraft.hex {
                                 Text(hex.uppercased())
-                                    .font(.system(size: 10, design: .monospaced))
+                                    .scaledFont(size: 10, design: .monospaced)
                                     .foregroundStyle(.secondary)
                             }
                             if let model = aircraft.model, !model.isEmpty {
                                 Text(model)
-                                    .font(.system(size: 10, weight: .medium))
+                                    .scaledFont(size: 10, weight: .medium)
                                     .foregroundStyle(.secondary)
                             }
                             if let reg = aircraft.registration, !reg.isEmpty {
                                 Text(reg)
-                                    .font(.system(size: 10, weight: .medium))
+                                    .scaledFont(size: 10, weight: .medium)
                                     .foregroundStyle(.blue)
                             }
                             if let sq = aircraft.squawk, !sq.isEmpty {
                                 Text("SQ \(sq)")
-                                    .font(.system(size: 10, weight: .semibold, design: .monospaced))
+                                    .scaledFont(size: 10, weight: .semibold, design: .monospaced)
                                     .foregroundStyle(aircraft.isEmergency ? .red : .secondary)
                             }
                         }
@@ -594,19 +615,23 @@ private struct NativeRadarMapContent: View {
                                 systemName: favoritesManager.isFavorite(aircraft: aircraft)
                                     ? "star.fill" : "star"
                             )
-                            .font(.system(size: 14))
+                            .scaledFont(size: 14)
                             .foregroundStyle(
                                 favoritesManager.isFavorite(aircraft: aircraft)
                                     ? .yellow : .secondary)
                         }
+                        .accessibilityLabel(
+                            favoritesManager.isFavorite(aircraft: aircraft)
+                                ? "Remover dos favoritos" : "Adicionar aos favoritos")
 
                         Button {
                             isFollowing.toggle()
                         } label: {
                             Image(systemName: isFollowing ? "location.fill" : "location")
-                                .font(.system(size: 14))
+                                .scaledFont(size: 14)
                                 .foregroundStyle(isFollowing ? .blue : .secondary)
                         }
+                        .accessibilityLabel(isFollowing ? "Parar de seguir" : "Seguir aeronave")
 
                         Button {
                             dismissSelectedAircraft()
@@ -620,6 +645,7 @@ private struct NativeRadarMapContent: View {
                                 .contentShape(Circle())
                         }
                         .buttonStyle(.plain)
+                        .accessibilityLabel("Fechar")
                     }
                 }
 
@@ -676,7 +702,7 @@ private struct NativeRadarMapContent: View {
             .padding(.horizontal, 16)
             .padding(.bottom, 16)
         }
-        .glassCard(cornerRadius: 20)
+        .glassCard(cornerRadius: 20) // glass: floating (painel sobre o mapa)
         .shadow(color: .black.opacity(0.15), radius: 16, x: 0, y: -4)
         .padding(.horizontal, 8)
         .padding(.bottom, 44)  // space for altitude bar
@@ -698,7 +724,7 @@ private struct NativeRadarMapContent: View {
         let dist = snapshot.altitudeDistribution
         return HStack(spacing: 6) {
             Text("ALT")
-                .font(.system(size: 9, weight: .bold))
+                .scaledFont(size: 9, weight: .bold)
                 .foregroundStyle(.secondary)
 
             GeometryReader { geo in
@@ -837,15 +863,15 @@ private struct NativeRadarMapContent: View {
                             HStack {
                                 Image(systemName: "star.fill")
                                     .foregroundStyle(.yellow)
-                                    .font(.system(size: 12))
+                                    .scaledFont(size: 12)
                                 Text(fav)
-                                    .font(.system(size: 13, design: .monospaced))
+                                    .scaledFont(size: 13, design: .monospaced)
                                 Spacer()
                                 Button {
                                     favoritesManager.toggle(fav)
                                 } label: {
                                     Image(systemName: "trash")
-                                        .font(.system(size: 12))
+                                        .scaledFont(size: 12)
                                         .foregroundStyle(.red)
                                 }
                             }
@@ -952,7 +978,7 @@ private struct NativeRadarMapContent: View {
 
     private func updateTrails() {
         var updated = trailHistory
-        if updated.update(aircraft: aircraftWithPosition) {
+        if updated.update(aircraft: aircraftWithPosition, includeGeometry: showTrails) {
             trailHistory = updated
         }
     }
@@ -1097,11 +1123,11 @@ private struct RadarStatCell: View {
     var body: some View {
         VStack(spacing: 3) {
             Image(systemName: icon)
-                .font(.system(size: 11, weight: .semibold))
+                .scaledFont(size: 11, weight: .semibold)
                 .foregroundStyle(color)
 
             Text(value)
-                .font(.system(size: 16, weight: .bold, design: .rounded))
+                .scaledFont(size: 16, weight: .bold, design: .rounded)
                 .monospacedDigit()
                 .foregroundStyle(.primary)
                 .lineLimit(1)
@@ -1111,7 +1137,7 @@ private struct RadarStatCell: View {
             // weakest contrast on the card. A solid label with real weight reads
             // at a glance without shouting over the number.
             Text(unit.uppercased())
-                .font(.system(size: 9.5, weight: .semibold))
+                .scaledFont(size: 9.5, weight: .semibold)
                 .tracking(0.4)
                 .foregroundStyle(.primary.opacity(0.55))
         }

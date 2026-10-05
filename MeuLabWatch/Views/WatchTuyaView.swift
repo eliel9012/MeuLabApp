@@ -44,7 +44,7 @@ struct WatchTuyaView: View {
 
                     if data.degraded == true, let reason = data.degradedReason {
                         Text(reason)
-                            .font(.system(size: 9))
+                            .scaledFont(size: 9)
                             .foregroundStyle(WatchLabTheme.orange)
                     }
                 }
@@ -57,15 +57,15 @@ struct WatchTuyaView: View {
                             if let temp = current.temperatureC {
                                 VStack(spacing: 4) {
                                     Image(systemName: "thermometer")
-                                        .font(.system(size: 18))
+                                        .scaledFont(size: 18)
                                         .foregroundStyle(temperatureColor(temp))
 
                                     Text(String(format: "%.1f°C", temp))
-                                        .font(.system(size: 20, weight: .black, design: .rounded))
+                                        .scaledFont(size: 20, weight: .black, design: .rounded)
                                         .foregroundStyle(WatchLabTheme.ink)
 
                                     Text("Temperatura")
-                                        .font(.system(size: 9))
+                                        .scaledFont(size: 9)
                                         .foregroundStyle(WatchLabTheme.secondary)
                                 }
                                 .frame(maxWidth: .infinity)
@@ -75,15 +75,15 @@ struct WatchTuyaView: View {
                             if let hum = current.humidityPct {
                                 VStack(spacing: 4) {
                                     Image(systemName: "humidity")
-                                        .font(.system(size: 18))
+                                        .scaledFont(size: 18)
                                         .foregroundStyle(humidityColor(hum))
 
                                     Text(String(format: "%.0f%%", hum))
-                                        .font(.system(size: 20, weight: .black, design: .rounded))
+                                        .scaledFont(size: 20, weight: .black, design: .rounded)
                                         .foregroundStyle(WatchLabTheme.ink)
 
                                     Text("Umidade")
-                                        .font(.system(size: 9))
+                                        .scaledFont(size: 9)
                                         .foregroundStyle(WatchLabTheme.secondary)
                                 }
                                 .frame(maxWidth: .infinity)

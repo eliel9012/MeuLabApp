@@ -70,9 +70,6 @@ struct BibleView: View {
                     .font(.caption)
                     .fontWeight(.semibold)
                     .foregroundStyle(.secondary)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 3)
-                    .background(.ultraThinMaterial, in: Capsule())
             }
         }
     }
@@ -108,7 +105,7 @@ struct BibleView: View {
             }
         }
         .padding(4)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+        .contentCard(cornerRadius: 14)
     }
 }
 

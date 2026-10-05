@@ -37,7 +37,7 @@ struct WatchSystemView: View {
                                 .font(.caption.weight(.semibold))
                                 .foregroundStyle(WatchLabTheme.ink)
                             Text("Pi5")
-                                .font(.system(size: 22, weight: .black, design: .rounded))
+                                .scaledFont(size: 22, weight: .black, design: .rounded)
                                 .foregroundStyle(WatchLabTheme.ink)
                         }
 
@@ -186,7 +186,7 @@ struct WatchGaugeCard: View {
             .frame(width: 62, height: 62)
 
             Text(label)
-                .font(.system(size: 10, weight: .medium))
+                .scaledFont(size: 10, weight: .medium)
                 .foregroundStyle(WatchLabTheme.secondary)
         }
         .frame(maxWidth: .infinity)

@@ -43,12 +43,6 @@ struct ContentView: View {
                     }
 
                     NavigationLink {
-                        WatchSatDumpView()
-                    } label: {
-                        Label("SatDump", systemImage: "antenna.radiowaves.left.and.right")
-                    }
-
-                    NavigationLink {
                         WatchRadioView()
                     } label: {
                         Label("Rádio", systemImage: "dot.radiowaves.left.and.right")

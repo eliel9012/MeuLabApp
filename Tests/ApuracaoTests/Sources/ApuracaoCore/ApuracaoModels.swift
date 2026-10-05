@@ -1,0 +1,1 @@
+../../../../MeuLabApp/Models/ApuracaoModels.swift
