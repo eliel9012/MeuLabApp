@@ -12,13 +12,20 @@ struct MeuLabVisionApp: App {
                 .environment(lab)
         }
         .windowStyle(.plain)
-        .defaultSize(width: 1820, height: 850)
+        .defaultSize(width: 1120, height: 850)
 
         WindowGroup(id: "radar-volume") {
             RadarVolumeView()
                 .environment(flights)
         }
         .windowStyle(.volumetric)
-        .defaultSize(width: 0.9, height: 0.6, depth: 0.9, in: .meters)
+        .defaultSize(width: 0.8, height: 0.6, depth: 0.8, in: .meters)
+        .defaultWindowPlacement { _, context in
+            guard let control = context.windows.first(where: { $0.id == "mission-control" }) else {
+                return WindowPlacement()
+            }
+            return WindowPlacement(.trailing(control))
+        }
+
     }
 }

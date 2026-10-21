@@ -24,12 +24,23 @@
 		9F868B477B764F01D1C93B6D /* VisionLabStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F45EF5E443C582CB4CEFE6D6 /* VisionLabStore.swift */; };
 		A374059984DF2C24EB11DDE2 /* AircraftDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24AD8F820CF8986A63D1523 /* AircraftDecoder.swift */; };
 		A3884BAA1B939023A92F1E3D /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE79B3ED10643FA069DD785 /* Formatters.swift */; };
+		BD3B2E138803EA82F399142A /* MeuLabVisionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CEA0029006525D7AFDFDB7 /* MeuLabVisionUITests.swift */; };
 		C58B099D1641484B220E8804 /* MeuLabVisionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88C21742CD0B97DA602C77BB /* MeuLabVisionApp.swift */; };
 		CC400623A4C14FAF288C9D5C /* ReadsbAircraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C1BE4695C0F89D9F39ABDF /* ReadsbAircraft.swift */; };
 		D51E07FE486F10F462AFC52F /* ADSBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014024C7FB954B89DABF4E7F /* ADSBClient.swift */; };
 		E52347E528306836B3913081 /* WeatherModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2DCD6F574FAA7ECA393919 /* WeatherModels.swift */; };
 		F4846CCF6F6F5F70BEF219B4 /* RadarSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E926EE03F39E50855BF21C1 /* RadarSettings.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		BE1D722FDF4025635E62EE96 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 75CF483D513D39DDE178B003 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A2B9A3E5319CE9E6EBB750FB;
+			remoteInfo = MeuLabVision;
+		};
+/* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
 		014024C7FB954B89DABF4E7F /* ADSBClient.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ADSBClient.swift; sourceTree = "<group>"; };
@@ -42,11 +53,13 @@
 		4E926EE03F39E50855BF21C1 /* RadarSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarSettings.swift; sourceTree = "<group>"; };
 		6B4EBECF33C0FBBFC6EFCF34 /* RadarSceneController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarSceneController.swift; sourceTree = "<group>"; };
 		76C1BE4695C0F89D9F39ABDF /* ReadsbAircraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ReadsbAircraft.swift; sourceTree = "<group>"; };
+		8692472ED671C1F9A1EA6B62 /* MeuLabVisionUITests.xctest */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.cfbundle; path = MeuLabVisionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		88C21742CD0B97DA602C77BB /* MeuLabVisionApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabVisionApp.swift; sourceTree = "<group>"; };
 		890B7D0FCBCF7A3DBD5828AA /* RadarVolumeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarVolumeView.swift; sourceTree = "<group>"; };
 		8916CBBE95B5EE9E87B2A77C /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
 		9407B510605FFA7F5118CB91 /* AircraftListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftListView.swift; sourceTree = "<group>"; };
 		B24AD8F820CF8986A63D1523 /* AircraftDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDecoder.swift; sourceTree = "<group>"; };
+		B2CEA0029006525D7AFDFDB7 /* MeuLabVisionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabVisionUITests.swift; sourceTree = "<group>"; };
 		B3DF4E298105F80313D8A33A /* AircraftDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDetailView.swift; sourceTree = "<group>"; };
 		C10A8DA0BCC6D3794D46C900 /* MeuLabVision.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MeuLabVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC2DCD6F574FAA7ECA393919 /* WeatherModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherModels.swift; sourceTree = "<group>"; };
@@ -58,6 +71,14 @@
 /* End PBXFileReference section */
 
 /* Begin PBXGroup section */
+		02B8A299329D9F094ABE3803 /* UITests */ = {
+			isa = PBXGroup;
+			children = (
+				B2CEA0029006525D7AFDFDB7 /* MeuLabVisionUITests.swift */,
+			);
+			path = UITests;
+			sourceTree = "<group>";
+		};
 		11A961937B8C797F10519CE6 /* Services */ = {
 			isa = PBXGroup;
 			children = (
@@ -70,6 +91,7 @@
 			isa = PBXGroup;
 			children = (
 				C10A8DA0BCC6D3794D46C900 /* MeuLabVision.app */,
+				8692472ED671C1F9A1EA6B62 /* MeuLabVisionUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -121,6 +143,7 @@
 			children = (
 				5BB10DE0625886D2E915D460 /* MeuLabVision */,
 				3C05E8F2C79E9980ED36AA02 /* Sources */,
+				02B8A299329D9F094ABE3803 /* UITests */,
 				1C35993A9DA37E5909DD6AF8 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -147,6 +170,24 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0241574F026CA8DAA2A03D4D /* MeuLabVisionUITests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7D00C153A5E5F57ECE230798 /* Build configuration list for PBXNativeTarget "MeuLabVisionUITests" */;
+			buildPhases = (
+				76C910FD670600F6CAF94E54 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				013954AEE16880C82B95EBAE /* PBXTargetDependency */,
+			);
+			name = MeuLabVisionUITests;
+			packageProductDependencies = (
+			);
+			productName = MeuLabVisionUITests;
+			productReference = 8692472ED671C1F9A1EA6B62 /* MeuLabVisionUITests.xctest */;
+			productType = "com.apple.product-type.bundle.ui-testing";
+		};
 		A2B9A3E5319CE9E6EBB750FB /* MeuLabVision */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 56CA24CF4A18FBB6C2B643D7 /* Build configuration list for PBXNativeTarget "MeuLabVision" */;
@@ -174,6 +215,9 @@
 				BuildIndependentTargetsInParallel = YES;
 				LastUpgradeCheck = 1430;
 				TargetAttributes = {
+					0241574F026CA8DAA2A03D4D = {
+						TestTargetID = A2B9A3E5319CE9E6EBB750FB;
+					};
 				};
 			};
 			buildConfigurationList = 9191F8AA9D1FD301475E18AF /* Build configuration list for PBXProject "MeuLabVision" */;
@@ -191,6 +235,7 @@
 			projectRoot = "";
 			targets = (
 				A2B9A3E5319CE9E6EBB750FB /* MeuLabVision */,
+				0241574F026CA8DAA2A03D4D /* MeuLabVisionUITests */,
 			);
 		};
 /* End PBXProject section */
@@ -218,6 +263,14 @@
 /* End PBXShellScriptBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		76C910FD670600F6CAF94E54 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				BD3B2E138803EA82F399142A /* MeuLabVisionUITests.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		DDE274C485D55A6EC48B170D /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -249,12 +302,38 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		013954AEE16880C82B95EBAE /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A2B9A3E5319CE9E6EBB750FB /* MeuLabVision */;
+			targetProxy = BE1D722FDF4025635E62EE96 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		06C7F4A2369268CF6942292B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = fun.meulab.vision.uitests;
+				SDKROOT = xros;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_TARGET_NAME = MeuLabVision;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
 		6FDD422CED4FBEAAB0F5FABD /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "MeuLab Vision";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -389,11 +468,29 @@
 			};
 			name = Release;
 		};
+		B83BE00223D390692CCF6A96 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@loader_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = fun.meulab.vision.uitests;
+				SDKROOT = xros;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_TARGET_NAME = MeuLabVision;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
 		F3F92EAD54C7EFB70847F1BA /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				INFOPLIST_FILE = Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = "MeuLab Vision";
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				LD_RUNPATH_SEARCH_PATHS = (
@@ -415,6 +512,15 @@
 			buildConfigurations = (
 				F3F92EAD54C7EFB70847F1BA /* Debug */,
 				6FDD422CED4FBEAAB0F5FABD /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		7D00C153A5E5F57ECE230798 /* Build configuration list for PBXNativeTarget "MeuLabVisionUITests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B83BE00223D390692CCF6A96 /* Debug */,
+				06C7F4A2369268CF6942292B /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Debug;

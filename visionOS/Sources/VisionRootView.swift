@@ -4,6 +4,8 @@ struct VisionRootView: View {
     @Environment(VisionLabStore.self) private var lab
     @Environment(FlightStore.self) private var flights
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
 
     var body: some View {
         HStack(spacing: 14) {
@@ -12,8 +14,7 @@ struct VisionRootView: View {
             Group {
                 if lab.selection == .radar {
                     DashboardView()
-                        .frame(width: 840)
-                    radarPanel
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     VisionDataView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -23,7 +24,17 @@ struct VisionRootView: View {
         .padding(24)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color(red: 0.035, green: 0.045, blue: 0.07).opacity(0.82), in: RoundedRectangle(cornerRadius: 32))
-        .task { lab.start() }
+        .task {
+            lab.start()
+            try? await Task.sleep(for: .milliseconds(400))
+            if !Task.isCancelled, lab.selection == .radar, !flights.isVolumeOpen {
+                openWindow(id: "radar-volume")
+            }
+        }
+        .onChange(of: lab.selection) { _, section in
+            if section == .radar { openWindow(id: "radar-volume") }
+            else { dismissWindow(id: "radar-volume") }
+        }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { lab.start() }
             else { lab.stop() }
@@ -66,31 +77,6 @@ struct VisionRootView: View {
         .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 26))
     }
 
-    private var radarPanel: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                Label("Radar espacial", systemImage: "circle.hexagongrid")
-                    .font(.title3.bold())
-                Spacer()
-                Text("FRANCA · \(Int(flights.settings.radiusKilometers)) km")
-                    .font(.caption.monospaced())
-                    .foregroundStyle(.secondary)
-            }
-            RadarPreviewView()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            HStack {
-                Circle().fill(flights.isConnected ? .green : .orange).frame(width: 8, height: 8)
-                Text(flights.status)
-                Spacer()
-                Text("\(flights.renderableAircraft().count) em alcance")
-            }
-            .font(.caption)
-            .foregroundStyle(.secondary)
-        }
-        .padding(20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 26))
-    }
 }
 
 struct VisionDataView: View {

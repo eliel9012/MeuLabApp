@@ -29,11 +29,28 @@ final class RadarSceneController {
         background.children.forEach { $0.removeFromParent() }
 
         let base = ModelEntity(
-            mesh: .generateBox(size: [0.72, 0.004, 0.72]),
-            materials: [SimpleMaterial(color: UIColor.white.withAlphaComponent(0.12), isMetallic: false)]
+            mesh: .generateBox(size: [0.72, 0.018, 0.72]),
+            materials: [SimpleMaterial(color: UIColor.white.withAlphaComponent(0.14), isMetallic: false)]
         )
-        base.position = [0, groundY - 0.005, 0]
+        base.position = [0, groundY - 0.012, 0]
         background.addChild(base)
+
+        for x in [-0.36 as Float, 0.36] {
+            let edge = ModelEntity(
+                mesh: .generateBox(size: [0.003, 0.02, 0.72]),
+                materials: [SimpleMaterial(color: UIColor.cyan.withAlphaComponent(0.45), isMetallic: true)]
+            )
+            edge.position = [x, groundY - 0.01, 0]
+            background.addChild(edge)
+        }
+        for z in [-0.36 as Float, 0.36] {
+            let edge = ModelEntity(
+                mesh: .generateBox(size: [0.72, 0.02, 0.003]),
+                materials: [SimpleMaterial(color: UIColor.cyan.withAlphaComponent(0.45), isMetallic: true)]
+            )
+            edge.position = [0, groundY - 0.01, z]
+            background.addChild(edge)
+        }
 
         for fraction in [Float(0.25), Float(0.5), Float(0.75), Float(1.0)] {
             let radius = visualRadius * fraction

@@ -12,6 +12,11 @@ targets:
     type: application
     platform: visionOS
     deploymentTarget: "2.0"
+    info:
+      path: Info.plist
+      properties:
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: true
     sources:
       - path: Sources
       - path: ../MeuLabApp/Models/SystemModels.swift
@@ -31,3 +36,14 @@ targets:
           if [ -f "${PROJECT_DIR}/../Secrets.plist" ]; then
             cp "${PROJECT_DIR}/../Secrets.plist" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Secrets.plist"
           fi
+  MeuLabVisionUITests:
+    type: bundle.ui-testing
+    platform: visionOS
+    deploymentTarget: "2.0"
+    sources:
+      - path: UITests
+    dependencies:
+      - target: MeuLabVision
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fun.meulab.vision.uitests

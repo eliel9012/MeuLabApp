@@ -1,6 +1,6 @@
 # MeuLab Vision
 
-App nativo visionOS. A central mostra ADS-B, Sistema, Infraestrutura, Rádio, Clima e ACARS com dados reais. O botão **Radar 3D** abre um volume RealityKit separado. O app iOS original permanece no seu alvo atual.
+App nativo visionOS. A central mostra ADS-B, Sistema, Infraestrutura, Rádio, Clima e ACARS com dados reais. Ao abrir ADS-B, o radar surge como volume RealityKit tridimensional ao lado da janela; o botão **Radar 3D** permite fechá-lo e reabri-lo. O app iOS original permanece no seu alvo atual.
 
 ## Abrir
 
