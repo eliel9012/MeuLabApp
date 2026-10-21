@@ -96,35 +96,44 @@ struct DashboardView: View {
     }
 
     private var controls: some View {
-        HStack(spacing: 12) {
-            Text(store.status)
-                .font(.caption)
-                .foregroundStyle(.secondary)
-                .lineLimit(1)
-            if let lastReceivedAt = store.lastReceivedAt {
-                Text("Auto · \(lastReceivedAt.formatted(date: .omitted, time: .standard))")
-                    .font(.caption.monospacedDigit())
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 12) {
+                Text(store.status)
+                    .font(.caption)
                     .foregroundStyle(.secondary)
-            } else if store.isLoading {
-                ProgressView().controlSize(.small)
-            }
-            Button(store.isPaused ? "Retomar" : "Pausar", systemImage: store.isPaused ? "play.fill" : "pause.fill") {
-                store.setPaused(!store.isPaused)
-            }
+                    .lineLimit(1)
+                    .fixedSize(horizontal: true, vertical: false)
 
-            Spacer()
+                Spacer()
 
-            Button {
-                if store.isVolumeOpen {
-                    dismissWindow(id: "radar-volume")
-                } else {
-                    openWindow(id: "radar-volume")
+                Button {
+                    if store.isVolumeOpen {
+                        dismissWindow(id: "radar-volume")
+                    } else {
+                        openWindow(id: "radar-volume")
+                    }
+                } label: {
+                    Label(store.isVolumeOpen ? "Fechar radar" : "Radar 3D", systemImage: "cube.transparent")
+                        .frame(minWidth: 140)
                 }
-            } label: {
-                Label(store.isVolumeOpen ? "Fechar radar" : "Radar 3D", systemImage: "cube.transparent")
-                    .frame(minWidth: 140)
+                .buttonStyle(.bordered)
             }
-            .buttonStyle(.bordered)
+
+            HStack(spacing: 12) {
+                if let lastReceivedAt = store.lastReceivedAt {
+                    Text("\(store.isPaused ? "Última leitura" : "Auto") · \(lastReceivedAt.formatted(date: .omitted, time: .standard))")
+                        .font(.caption.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                } else if store.isLoading {
+                    ProgressView().controlSize(.small)
+                }
+
+                Spacer()
+
+                Button(store.isPaused ? "Retomar" : "Pausar", systemImage: store.isPaused ? "play.fill" : "pause.fill") {
+                    store.setPaused(!store.isPaused)
+                }
+            }
         }
     }
 }

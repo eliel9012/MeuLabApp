@@ -94,7 +94,9 @@ final class FlightStore {
         fetching = true
         isLoading = true
         defer { fetching = false; isLoading = false }
-        status = "Atualizando radar…"
+        if !isConnected {
+            status = "Atualizando radar…"
+        }
         do {
             let data = try await client.fetch()
             let snapshot = try await Task.detached(priority: .userInitiated) {
