@@ -25,7 +25,6 @@ struct ContentView: View {
         case series
         case notes
         case apuracao
-        case slides
 
         var title: String {
             switch self {
@@ -47,7 +46,6 @@ struct ContentView: View {
             case .series: return "Séries"
             case .notes: return "Notas"
             case .apuracao: return "Apuração"
-            case .slides: return "Slides FDF"
             }
         }
 
@@ -71,7 +69,6 @@ struct ContentView: View {
             case .series: return "film.stack"
             case .notes: return "note.text"
             case .apuracao: return "checkmark.seal"
-            case .slides: return "rectangle.on.rectangle.angled"
             }
         }
 
@@ -95,7 +92,6 @@ struct ContentView: View {
             case .series: return "film.stack.fill"
             case .notes: return "note.text"
             case .apuracao: return "checkmark.seal"
-            case .slides: return "rectangle.on.rectangle.angled"
             }
         }
 
@@ -108,7 +104,7 @@ struct ContentView: View {
         static var secondaryTabs: [Tab] {
             [
                 .map, .acars, .infra, .weather, .flightSearch, .export,
-                .apuracao, .remote, .slides, .intelligence, .bible, .tesouroReserva, .viagem, .series, .notes,
+                .apuracao, .remote, .intelligence, .bible, .tesouroReserva, .viagem, .series, .notes,
             ]
         }
 
@@ -230,11 +226,6 @@ struct ContentView: View {
                         Label(Tab.apuracao.title, systemImage: Tab.apuracao.icon)
                     }
 
-                    SwiftUI.Tab(value: Tab.slides) {
-                        tabView(for: .slides)
-                    } label: {
-                        Label(Tab.slides.title, systemImage: Tab.slides.icon)
-                    }
                 }
             }
         }
@@ -324,7 +315,6 @@ struct ContentView: View {
         case .series: SeriesView()
         case .notes: NotesView()
         case .apuracao: ApuracaoView()
-        case .slides: SlidesControlView()
         }
     }
 

@@ -63,6 +63,7 @@ enum TripFlightParser {
         "AF": ["AFR"],
         "BA": ["BAW", "CFE"],
         "UX": ["AEA"],
+        "TO": ["TVF"],
         "VY": ["VLG"],
         "U2": ["EZY", "EJU"],
         "TK": ["THY"],

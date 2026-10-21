@@ -1,0 +1,839 @@
+{
+  "days": [
+    {
+      "id": "pre",
+      "date": "Até 22/10",
+      "weekday": "antes de embarcar",
+      "place": "Franca",
+      "strips": [
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "22/10",
+          "title": "Short paper JOAS e pôster A0 preparados",
+          "detail": "Submissões concluídas antes do prazo. Pôster A0 destinado à apresentação no simpósio: transportar protegido até Madri.",
+          "ref": "Submetido"
+        }
+      ]
+    },
+    {
+      "id": "d23",
+      "date": "23/10",
+      "weekday": "sexta",
+      "place": "Ribeirão Preto → Londrina",
+      "strips": [
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "madrugada",
+          "title": "Franca → Ribeirão Preto",
+          "detail": "Estar no aeroporto por volta de 5h."
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "06:00",
+          "end": "09:55",
+          "title": "RAO → LDB",
+          "detail": "Azul 4211, uma conexão.",
+          "ref": "WMLUKZ"
+        }
+      ]
+    },
+    {
+      "id": "d24",
+      "date": "24/10",
+      "weekday": "sábado",
+      "place": "Londrina → Congonhas → Guarulhos → Madri",
+      "strips": [
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "07:20",
+          "end": "08:30",
+          "title": "LDB → CGH",
+          "detail": "GOL G3 1209, direto, tarifa Classic, assento 10D.",
+          "ref": "EATVSY"
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "08:45",
+          "title": "Congonhas → Guarulhos",
+          "detail": "Depois do pouso às 08:30, considerar retirada de bagagem e transporte até GRU T2: chegada estimada entre 10:10 e 11:00. Bilhetes GOL e Air Europa separados. Priorizar check-in, segurança e imigração antes de pensar em sala VIP."
+        },
+        {
+          "kind": "sala",
+          "status": "ok",
+          "time": "11:45",
+          "end": "12:20",
+          "title": "The Lounge São Paulo Internacional / SkyTeam — GRU T2",
+          "detail": "Opção LoungeKey no mezanino internacional após imigração. Ducha SEM custo extra, confirmada por GRU Airport; banho curto só se chegar cedo e não houver fila. Janela 11:45–12:20. Não ir ao T3: desvio sem margem. Gratuidade da entrada depende do emissor.",
+          "ref": "LoungeKey · T2 internacional"
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "13:50",
+          "end": "04:00 +1",
+          "title": "GRU → MAD",
+          "detail": "Air Europa UX058, Economy Standard, 10h10 de voo. Check-in abre de 24 a 48h antes.",
+          "ref": "UX058"
+        }
+      ]
+    },
+    {
+      "id": "d25",
+      "date": "25/10",
+      "weekday": "domingo",
+      "place": "Madri → Paris",
+      "strips": [
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "04:00",
+          "title": "Chegada a Madri",
+          "detail": "A Europa saiu do horário de verão nesta madrugada: Madri e Paris ficam 4h à frente de Brasília, Londres 3h. Entrada no Espaço Schengen aqui, com fila de imigração e biometria do EES."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "05:00",
+          "title": "Retirar a mala e despachar de novo na Transavia",
+          "detail": "Air Europa e Transavia em bilhetes separados: imigração e retirada da bagagem no T1; caminhar para o T2 (cerca de 4–10 min). Transavia France faz check-in no T2, balcões 401–411. Despachar a mala novamente antes da segurança."
+        },
+        {
+          "kind": "sala",
+          "status": "nota",
+          "time": "07:40",
+          "end": "08:10",
+          "title": "Puerta de Alcalá, MAD T2 — opcional",
+          "detail": "Após o novo check-in Transavia e segurança, sala Schengen na zona D do T2. A Aena confirma chuveiros, mas 07:40–08:10 é uma janela curta: banho NÃO recomendado. Se imigração, bagagem ou despacho atrasarem, ir direto ao portão. Taxa de ducha a confirmar.",
+          "ref": "Visa / LoungeKey · 20–30 min"
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "09:05",
+          "end": "11:10",
+          "title": "MAD → ORY",
+          "detail": "Transavia TO4631, tarifa Smart, assento 9C. Inclui item pessoal, mala de cabine, 20 kg despachados, embarque prioritário e Fast Track. Voo dentro do Schengen: sem imigração em Orly.",
+          "ref": "TO4631"
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "11:45",
+          "title": "Orly → Hotel Avalon, Gare du Nord",
+          "detail": "Táxi oficial com tarifa fixa de 45 € para a margem direita, uns 25 a 40 minutos. Pelo transporte público, cerca de 50 minutos e bilhete aeroporto de 14 €: metrô 14 até Châtelet e RER B ou D uma estação até Gare du Nord, ou Orlyval e RER B direto. Orly, não Charles de Gaulle."
+        },
+        {
+          "kind": "pouso",
+          "status": "ok",
+          "time": "13:00",
+          "title": "Hotel Avalon Paris Gare du Nord",
+          "detail": "131–133 Boulevard Magenta, perto da Gare du Nord. Hospedagem organizada de 23 a 26/10, para três adultos; Ivan e Daniel chegam no dia 23. Check-in oficial às 15h.",
+          "ref": "23 a 26/10"
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "13:30",
+          "end": "18:00",
+          "title": "Almoço, descanso e preparação",
+          "detail": "Dormir um pouco depois da noite no avião. Carregar baterias, testar câmera, microfone e conexão, e fazer um teste técnico com o Ivan antes da transmissão."
+        },
+        {
+          "kind": "eleicao",
+          "status": "agenda",
+          "time": "21:00",
+          "title": "Brasil, segundo turno: cobertura em Paris",
+          "detail": "Com Ivan Kleber e Daniel. Votação das 8h às 17h de Brasília em todo o país; o TSE começa a divulgar resultados às 17h de Brasília, 21h em Paris. Não há horário fixo para a definição. Justificar a ausência pelo e-Título no dia."
+        }
+      ]
+    },
+    {
+      "id": "d26",
+      "date": "26/10",
+      "weekday": "segunda",
+      "place": "Paris → Londres",
+      "strips": [
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "07:15",
+          "title": "Ivan e Daniel voltam a Londres",
+          "detail": "Ivan e Daniel seguem no easyJet EZY8412, CDG 2D 10:05 → Gatwick North 10:15. Saída do hotel por volta de 7h15; RER B da Gare du Nord ao CDG leva cerca de 35 minutos.",
+          "ref": "KDK9V86"
+        },
+        {
+          "kind": "pouso",
+          "status": "nota",
+          "time": "11:00",
+          "title": "Checkout do Hotel Avalon",
+          "detail": "Saída do quarto pela manhã; deixar a bagagem na recepção e recuperá-la antes do Eurostar."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "11:30",
+          "end": "17:15",
+          "title": "Tarde livre em Paris",
+          "detail": "Sugestão sem correria: subir a pé a Montmartre e Sacré-Cœur, uns 20 minutos da Gare du Nord, e almoçar por lá; depois, descer pelo Canal Saint-Martin. O Musée d'Orsay fecha às segundas."
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "17:30",
+          "title": "Retirar a mala e ir à Gare du Nord",
+          "detail": "O hotel fica a poucos minutos da estação."
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "18:11",
+          "title": "Embarque do Eurostar",
+          "detail": "Horário recomendado pela Eurostar. Antes do trem: segurança, saída do Schengen com registro no EES e controle britânico, onde vale o UK ETA. Portões fecham às 18h41."
+        },
+        {
+          "kind": "terra",
+          "status": "ok",
+          "time": "19:11",
+          "end": "20:30",
+          "title": "Eurostar Paris Nord → London St Pancras",
+          "detail": "Trem 9055, Standard, carro 7, assento 51. A imigração britânica já foi feita em Paris: em St Pancras é só sair.",
+          "ref": "9055"
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "20:45",
+          "title": "St Pancras → hospedagem",
+          "detail": "King's Cross St Pancras é um grande nó do metrô, com seis linhas. St Pancras, não Gatwick."
+        },
+        {
+          "kind": "pouso",
+          "status": "ok",
+          "title": "Pouso em Londres, 26 a 28/10",
+          "detail": "Hospedagem organizada para duas noites em Londres. Seguir para o local combinado após chegar a St Pancras."
+        }
+      ]
+    },
+    {
+      "id": "d27",
+      "date": "27/10",
+      "weekday": "terça",
+      "place": "Londres",
+      "strips": [
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "manhã",
+          "title": "Dia de preparação para a cobertura",
+          "detail": "Revisar listas, pesquisas e fontes oficiais; montar os gráficos da transmissão."
+        },
+        {
+          "kind": "eleicao",
+          "status": "agenda",
+          "time": "20:00",
+          "title": "Israel, eleição para o Knesset: cobertura em Londres",
+          "detail": "Cobertura com Ivan Kleber. Referência de horário: 22h em Israel correspondem a 20h em Londres e 17h em Brasília após a mudança do horário de verão. A divulgação das bocas de urna é esperada no fechamento das urnas."
+        }
+      ]
+    },
+    {
+      "id": "d28",
+      "date": "28/10",
+      "weekday": "quarta",
+      "place": "Londres → Madri",
+      "strips": [
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "06:45",
+          "title": "Chegar a Heathrow, Terminal 5",
+          "detail": "Previsão de chegada ao Terminal 5, com margem para despacho, segurança e imigração de entrada na chegada a Madri."
+        },
+        {
+          "kind": "sala",
+          "status": "nota",
+          "time": "07:40",
+          "end": "08:20",
+          "title": "Plaza Premium (preferida) ou Club Aspire — Heathrow T5",
+          "detail": "IB0712/BA7053 sai do T5. Plaza Premium (A7) tem chuveiro PAGO, sujeito a fila/reserva; banho rápido possível se chegar cedo. Club Aspire (A18) tem informações divergentes sobre duchas: confirmar na recepção. Sair até 08:20 ou antes para portões B/C.",
+          "ref": "Visa / LoungeKey · T5"
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "09:15",
+          "end": "12:50",
+          "title": "LHR → MAD",
+          "detail": "BA7053, operado pela Iberia como IB0712, tarifa Económica Plus. Chega no T4S. Nova entrada no Espaço Schengen, com nova fila do EES.",
+          "ref": "ZB6CZB"
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "13:30",
+          "title": "Aeroporto → hotel → CRIDA",
+          "detail": "Entre imigração, trem do satélite e esteira, conte uns 40 minutos até sair. O hotel fica em Rejas, perto do aeroporto, com check-in às 14h: dá para deixar a mala antes do PostQat. Se apertar, o PostQat tem opção online."
+        },
+        {
+          "kind": "pouso",
+          "status": "ok",
+          "time": "14:00",
+          "title": "Compostela Suites",
+          "detail": "Zambrana 4, San Blas. Primeira reserva: apartamento individual por uma noite, com checkout às 12h.",
+          "ref": "28 a 29/10"
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "15:00",
+          "end": "18:00",
+          "title": "Workshop PostQat",
+          "detail": "Concept Development and Stakeholder Alignment, no CRIDA: Kudos Innovation Campus Las Mercedes, Calle Campezo 1, perto do hotel. Chegada a partir das 14h. Há opção online se o voo atrasar.",
+          "ref": "Inscrito"
+        }
+      ]
+    },
+    {
+      "id": "d29",
+      "date": "29/10",
+      "weekday": "quinta",
+      "place": "Madri, OpenSky Symposium",
+      "strips": [
+        {
+          "kind": "pouso",
+          "status": "nota",
+          "time": "07:45",
+          "title": "Checkout da primeira reserva do Compostela",
+          "detail": "O hotel não emendou as reservas: fazer o checkout, deixar a mala na recepção e levar o pôster. O CRIDA fica no Kudos Innovation Campus Las Mercedes, Calle Campezo 1, no mesmo código postal do hotel (28022). Usar a entrada do campus marcada no Google Maps."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "08:30",
+          "end": "09:00",
+          "title": "Abertura do simpósio",
+          "detail": "Portas abrem às 8h. Apresentar na entrada o ingresso da Ticketpark (Academia), no celular ou impresso; ele vale para os dois dias. Horários do programa em CET, o fuso de Madri.",
+          "ref": "Inscrito"
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "09:00",
+          "end": "10:30",
+          "title": "Sessão: Trajectory Processing & Generation",
+          "detail": "Chair: Martin Strohmeier. Três trabalhos sobre detecção de patamares, geração de perfis verticais e modelos generativos de trajetórias ADS-B."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "10:30",
+          "end": "11:00",
+          "title": "Coffee break",
+          "detail": "Coffee break e exposição de pôsteres: bom momento para ficar perto do seu."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "11:00",
+          "end": "12:30",
+          "title": "Sessão: Radiowaves & Aircraft Localization",
+          "detail": "Chair: Junzi Sun. Destaque para você: avaliação empírica da multilateração crowdsourced com mlat-client/server na Suíça (Strohmeier, Greub e Schäfer)."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "12:30",
+          "end": "13:30",
+          "title": "Almoço",
+          "detail": "Incluído na inscrição."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "13:30",
+          "end": "14:50",
+          "title": "Sessão: Machine Learning & Flight Information",
+          "detail": "Chair: Niclas Feier. Identificação de categoria de aeronave, detecção de pushback e derivação de voos a partir de ADS-B."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "14:50",
+          "end": "15:20",
+          "title": "Coffee break",
+          "detail": "Coffee break e exposição de pôsteres: bom momento para ficar perto do seu."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "15:20",
+          "end": "16:20",
+          "title": "Sessão: Air Traffic Flow, Capacity & Operational Analytics",
+          "detail": "Chair: Manuel Waltert. Gerador de dados para gestão de fluxo e capacidade, e fluxos operacionais em aeródromos internacionais."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "16:20",
+          "end": "17:20",
+          "title": "Sessão de pôsteres: a sua",
+          "detail": "Quinze pôsteres; o seu é o sétimo da lista. Na mesma sessão há outro trabalho brasileiro: \"Comparing São Paulo Airspace Designs Through KPI08 and Gibbs Sampling\", de Marcelo Xavier Guterres.",
+          "ref": "Apresentador"
+        },
+        {
+          "kind": "pouso",
+          "status": "ok",
+          "time": "18:00",
+          "title": "Compostela Suites, segunda reserva",
+          "detail": "Novo check-in e retirada da mala na recepção. Apartamento de 1 quarto, duas noites. Tarifa não reembolsável.",
+          "ref": "29 a 31/10"
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "20:30",
+          "end": "22:30",
+          "title": "Jantar do simpósio",
+          "detail": "Couzapín, restaurante e sidreria asturiana no bairro do Retiro. Incluído na inscrição, confirmado pelo Allan em 17/10.",
+          "ref": "Incluído"
+        }
+      ]
+    },
+    {
+      "id": "d30",
+      "date": "30/10",
+      "weekday": "sexta",
+      "place": "Madri, OpenSky Symposium",
+      "strips": [
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "09:00",
+          "end": "10:30",
+          "title": "Sessão: Conflict Resolution & Separation Management",
+          "detail": "Chair: Xavier Olive. Detecção probabilística de conflitos, resolução por aprendizado por reforço inverso e sequenciamento de chegadas.",
+          "ref": "Inscrito"
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "10:30",
+          "end": "11:00",
+          "title": "Coffee break",
+          "detail": "Coffee break e exposição de pôsteres: bom momento para ficar perto do seu."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "11:00",
+          "end": "12:30",
+          "title": "Sessão: Fuel Consumption & Aircraft Mass Estimation",
+          "detail": "Chair: Enrico Spinielli. Modelos de consumo contra dados QAR, consumo em procedimentos trombone e massa no topo da descida."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "12:30",
+          "end": "13:30",
+          "title": "Almoço",
+          "detail": "Incluído na inscrição."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "13:30",
+          "end": "14:30",
+          "title": "Sessão: ADS-B Security & Applications of Aircraft Localization",
+          "detail": "Chair: Vincent Lenders. Destaque para você: \"Trace-Driven Evaluation of Post-Quantum Authentication for ADS-B Using OpenSky Network Data\" (Cabanas Maldonado, Sun e Strohmeier), ligado direto ao tema do PostQat."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "14:30",
+          "end": "15:00",
+          "title": "Coffee break",
+          "detail": "Último coffee break com os pôsteres expostos. Depois, retirar o seu."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "15:00",
+          "end": "16:45",
+          "title": "EUROCONTROL PRC Data Challenge",
+          "detail": "Com Enrico Spinielli."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "15:45",
+          "end": "16:15",
+          "title": "Encerramento",
+          "detail": "No programa, o encerramento aparece dentro do horário do Data Challenge."
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "noite",
+          "title": "Noite livre em Madri",
+          "detail": "Curta: o voo de sábado para Londres sai às 7h30, com saída do hotel por volta das 5h."
+        }
+      ]
+    },
+    {
+      "id": "d31",
+      "date": "31/10",
+      "weekday": "sábado",
+      "place": "Madri → Londres",
+      "strips": [
+        {
+          "kind": "pouso",
+          "status": "nota",
+          "time": "05:00",
+          "title": "Checkout do Compostela Suites e ida ao aeroporto",
+          "detail": "O metrô ainda não está aberto a essa hora: táxi ou aplicativo, poucos minutos. Confira o terminal no cartão de embarque e avise a recepção na véspera sobre a saída de madrugada. Saída do Espaço Schengen, com controle de passaporte."
+        },
+        {
+          "kind": "sala",
+          "status": "nota",
+          "time": "06:10",
+          "end": "06:30",
+          "title": "Neptuno, T4S — só após segurança, trem e imigração",
+          "detail": "A Neptuno tem chuveiros confirmados pela Aena, mas NÃO há tempo seguro para banho (só 06:10–06:30). Check-in BA no T4; segurança, trem T4→T4S e imigração ANTES de entrar. Exige cartão de embarque do T4S. Sair até 06:30; em atraso, direto ao portão.",
+          "ref": "Visa / LoungeKey · T4S"
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "07:30",
+          "end": "08:50",
+          "title": "MAD → LCY",
+          "detail": "BA Cityflyer, direto, 2h20. A British Airways opera check-in no T4 de Madri; voo ao Reino Unido tende a usar portões S no T4S, mas a sala Neptuno depende da confirmação no cartão de embarque.",
+          "ref": "YRRYBR"
+        },
+        {
+          "kind": "pouso",
+          "status": "ok",
+          "title": "Pouso em Londres, 31/10 a 2/11",
+          "detail": "Hospedagem com o Ivan e na casa da Katia."
+        }
+      ]
+    },
+    {
+      "id": "d01",
+      "date": "01/11",
+      "weekday": "domingo",
+      "place": "Londres",
+      "strips": [
+        {
+          "kind": "nota",
+          "status": "nota",
+          "title": "Manhã livre em Londres",
+          "detail": "Os EUA saem do horário de verão hoje: Nova York passa a ficar 2h atrás de Brasília."
+        },
+        {
+          "kind": "evento",
+          "status": "ok",
+          "time": "15:00",
+          "title": "The View from The Shard, pacote VIP",
+          "detail": "Três ingressos. Chegar às 14h45 e retirar os ingressos no balcão do nível 1; o e-mail de confirmação não vale como entrada. 32 London Bridge St, ao lado da estação London Bridge. Tour guiado de 30 minutos, taça de champanhe, duas fotos digitais e voucher de £10 na loja. Só aceita cartão: levar o Mastercard.",
+          "ref": "Mastercard Priceless"
+        }
+      ]
+    },
+    {
+      "id": "d02",
+      "date": "02/11",
+      "weekday": "segunda",
+      "place": "Londres → Madri",
+      "strips": [
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "manhã",
+          "title": "Dia livre em Londres",
+          "detail": "Janela livre até a ida ao aeroporto, com a mala junto ou guardada na hospedagem até a saída."
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "17:45",
+          "title": "Chegar ao London City Airport",
+          "detail": "LCY é pequeno e rápido, mas não possui lounge público operacional em 2026 (nova sala prevista para 2027). Não reservar tempo adicional para LoungeKey ou Visa. A entrada no Schengen será em Madri."
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "19:15",
+          "end": "22:35",
+          "title": "LCY → MAD",
+          "detail": "BA Cityflyer, direto, 2h20.",
+          "ref": "YTN55U"
+        },
+        {
+          "kind": "pouso",
+          "status": "ok",
+          "time": "23:00",
+          "title": "Hotel Don Luis",
+          "detail": "Avenida General 12, Barajas, colado no aeroporto. Quarto individual, sem café.",
+          "ref": "R$ 353"
+        }
+      ]
+    },
+    {
+      "id": "d03",
+      "date": "03/11",
+      "weekday": "terça",
+      "place": "Madri → Lisboa → Porto",
+      "strips": [
+        {
+          "kind": "pouso",
+          "status": "nota",
+          "time": "08:00",
+          "title": "Checkout e ida ao aeroporto",
+          "detail": "O voo agora sai às 10h25: deixar o Don Luis por volta das 8h."
+        },
+        {
+          "kind": "sala",
+          "status": "nota",
+          "time": "09:00",
+          "title": "Puerta de Alcalá, MAD T2 — visita breve",
+          "detail": "Air Europa para Lisboa usa T2 Schengen. Puerta de Alcalá na zona D tem chuveiros confirmados pela Aena, mas com 09:05–09:35 não planeje banho. Priorize embarque às 10:25. Não tentar Neptuno do T4S.",
+          "ref": "Visa / LoungeKey · T2"
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "10:25",
+          "end": "10:45",
+          "title": "MAD → LIS",
+          "detail": "Air Europa 7854, vendido pela Azul. Voo dentro do Espaço Schengen, sem controle de passaporte. Lisboa está 1h atrás de Madri.",
+          "ref": "OWCS5A"
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "11:00",
+          "title": "Aeroporto de Lisboa → Oriente",
+          "detail": "Metrô, linha vermelha, cerca de 10 minutos, ou táxi. No balcão de Madri, verificar a etiqueta da mala até VCP; a conexão ao trem é mais confortável sem retirada de bagagem em Lisboa."
+        },
+        {
+          "kind": "terra",
+          "status": "ok",
+          "time": "12:09",
+          "end": "14:48",
+          "title": "Lisboa Oriente → Porto Campanhã",
+          "detail": "CP Alfa Pendular AP 125, carruagem 3, lugar 51.",
+          "ref": "AP 125"
+        },
+        {
+          "kind": "nota",
+          "status": "nota",
+          "time": "tarde",
+          "title": "Tarde e noite no Porto",
+          "detail": "Sem hotel: tudo o que você carregar vai junto até o trem da madrugada."
+        },
+        {
+          "kind": "eleicao",
+          "status": "agenda",
+          "time": "23:00",
+          "title": "EUA, eleições de meio de mandato",
+          "detail": "Primeiras urnas fecham às 18h de Nova York, 23h em Portugal e 20h em Brasília. Os resultados decisivos saem de madrugada, com você no Porto e depois no trem."
+        }
+      ]
+    },
+    {
+      "id": "d04",
+      "date": "04/11",
+      "weekday": "quarta",
+      "place": "Porto → Lisboa → Campinas → Franca",
+      "strips": [
+        {
+          "kind": "terra",
+          "status": "ok",
+          "time": "01:08",
+          "end": "05:50",
+          "title": "Porto Campanhã → Lisboa Oriente",
+          "detail": "CP Regional R 3400. Viagem noturna; acompanhar avisos operacionais da CP antes do embarque.",
+          "ref": "R 3400"
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "05:50",
+          "title": "Oriente → aeroporto",
+          "detail": "O metrô costuma abrir por volta das 6h30; de táxi ou aplicativo são uns 10 minutos. Chegar ao aeroporto até umas 6h15."
+        },
+        {
+          "kind": "sala",
+          "status": "nota",
+          "time": "06:45",
+          "title": "ANA Lounge, Lisboa T1 — antes do passaporte",
+          "end": "07:30",
+          "detail": "ANA Lounge no T1 Schengen, antes do passaporte para o Brasil. Ducha disponível, paga à parte (cerca de €17; confirmar). Boa ocasião após o trem noturno: se chegar até 06:45, pedir banho de 10–15 min imediatamente; sair até 07:30 para imigração e embarque do AD8751.",
+          "ref": "Visa / LoungeKey · T1"
+        },
+        {
+          "kind": "voo",
+          "status": "ok",
+          "time": "09:15",
+          "end": "16:50",
+          "title": "LIS → VCP",
+          "detail": "Azul 8751. Saída do Espaço Schengen em Lisboa: estar no aeroporto umas 3h antes.",
+          "ref": "OWCS5A"
+        },
+        {
+          "kind": "terra",
+          "status": "nota",
+          "time": "18:00",
+          "title": "Viracopos → Rodoviária de Campinas",
+          "detail": "Entre imigração, bagagem e alfândega, conte cerca de 1h após o pouso. Depois, aplicativo ou táxi, uns 30 a 40 minutos. Sobra por volta de 1h de folga; se o voo atrasar muito, remarque o ônibus."
+        },
+        {
+          "kind": "terra",
+          "status": "ok",
+          "time": "20:00",
+          "end": "01:40 +1",
+          "title": "Campinas → Franca",
+          "detail": "Viação Cometa, poltrona 22. Embarque direto: vá à plataforma e mostre ao motorista o cartão de embarque que chega por e-mail.",
+          "ref": "1QJ92VQ8"
+        }
+      ]
+    }
+  ],
+  "lounges": [
+    {
+      "id": "d24",
+      "date": "24 OUT",
+      "airport": "GRU",
+      "terminal": "T2 internacional",
+      "lounge": "The Lounge São Paulo Internacional / SkyTeam",
+      "flight": "UX058 · 13:50",
+      "window": "11:45–12:20",
+      "level": "condicional",
+      "access": "LoungeKey",
+      "logistics": "Priorize o deslocamento de CGH, despacho, raio-X e imigração. Se entrar na área internacional depois das 12:00, dispense a sala. O lounge fica no mesmo T2; não vale mudar ao T3 para usar Visa Infinite Lounge ou Mastercard Black.",
+      "source": "https://airport.mastercard.com/en/lounge-finder/lounge?loungecode=GRU26",
+      "showerSource": "https://www.gru.com.br/pt/passageiro/descubra-gru/conforto/salas-vip",
+      "shower": {
+        "available": "sim",
+        "cost": "Sem custo adicional",
+        "practical": "condicional",
+        "guidance": "Duchas confirmadas pelo aeroporto. Banho rápido de 10–15 min só se a transferência CGH→GRU e a entrada no T2 ocorrerem cedo, sem fila na ducha. A janela de 35 min não inclui imprevistos."
+      }
+    },
+    {
+      "id": "d25",
+      "date": "25 OUT",
+      "airport": "MAD",
+      "terminal": "T1 → T2",
+      "lounge": "Puerta de Alcalá",
+      "flight": "TO4631 · 09:05",
+      "window": "07:40–08:10",
+      "level": "condicional",
+      "access": "Visa Airport Companion / LoungeKey",
+      "logistics": "Desembarque internacional da Air Europa no T1; imigração e retirada da mala. A Transavia France atende no T2, cerca de 4–10 minutos a pé do T1. Só usar a sala após o novo despacho e a segurança.",
+      "source": "https://www.dragonpass.com/explore/lounge/A10065/N00438",
+      "showerSource": "https://www.aena.es/es/madrid-barajas-adolfo-suarez/servicios-vip/salas-vip/sala-vip-puerta-alcala.html",
+      "shower": {
+        "available": "sim",
+        "cost": "Taxa não informada pela Aena; confirmar",
+        "practical": "nao_recomendado",
+        "guidance": "A Aena confirma duchas. Porém a conexão envolve imigração, mala e novo check-in: com 30 min previstos na sala, não planeje banho; somente se tudo estiver pronto e houver ducha imediata."
+      }
+    },
+    {
+      "id": "d28",
+      "date": "28 OUT",
+      "airport": "LHR",
+      "terminal": "T5A",
+      "lounge": "Plaza Premium ou Club Aspire",
+      "flight": "IB0712 · 09:15",
+      "window": "07:40–08:20",
+      "level": "boa",
+      "access": "Visa Airport Companion / LoungeKey",
+      "logistics": "Iberia parte do T5, check-in zona H. Sem mudança de terminal. Preferir Plaza Premium (DragonPass e LoungeKey); Club Aspire é alternativa no LoungeKey. Se o voo tiver portão B/C, considerar mais 15 minutos para chegar lá.",
+      "source": "https://www.dragonpass.com/explore/lounge/A10047/N01597",
+      "showerSource": "https://airport.mastercard.com/pt/lounge-finder/lounge?loungecode=LHR30",
+      "shower": {
+        "available": "sim",
+        "cost": "Plaza Premium: pagamento extra (valor a confirmar)",
+        "practical": "possivel",
+        "guidance": "A Plaza Premium, perto do A7, oferece ducha paga; pedir horário na recepção assim que entrar. Com 40 min na sala é possível um banho de 10–15 min se não houver espera. Saia antes se o portão for B/C.",
+        "alternative": "Club Aspire (A18): há referência a chuveiro mediante agendamento, mas ele NÃO aparece na lista atual de comodidades do LoungeKey. Confirme diretamente; não conte com ele como garantido."
+      }
+    },
+    {
+      "id": "d31",
+      "date": "31 OUT",
+      "airport": "MAD",
+      "terminal": "T4 → T4S",
+      "lounge": "Neptuno",
+      "flight": "BA Cityflyer · 07:30",
+      "window": "06:10–06:30",
+      "level": "curta",
+      "access": "Visa Airport Companion / LoungeKey",
+      "logistics": "Check-in BA no T4, trem automatizado até T4S e controle de passaportes antes da sala. Precisa de cartão de embarque T4S; confirmar portão S no dia. Ir direto ao portão se chegar tarde.",
+      "source": "https://www.aena.es/es/madrid-barajas-adolfo-suarez/servicios-vip/salas-vip/sala-vip-neptuno.html",
+      "showerSource": "https://www.aena.es/es/madrid-barajas-adolfo-suarez/servicios-vip/salas-vip/sala-vip-neptuno.html",
+      "shower": {
+        "available": "sim",
+        "cost": "Taxa não informada pela Aena; confirmar",
+        "practical": "nao_recomendado",
+        "guidance": "A Neptuno possui duchas, mas apenas 20 min foram reservados para a sala antes do voo das 07:30. Use para café rápido, não para banho; só entre se segurança, trem e passaporte estiverem concluídos."
+      }
+    },
+    {
+      "id": "d03",
+      "date": "03 NOV",
+      "airport": "MAD",
+      "terminal": "T2 Schengen",
+      "lounge": "Puerta de Alcalá",
+      "flight": "UX7854 · 10:25",
+      "window": "09:05–09:35",
+      "level": "curta",
+      "access": "Visa Airport Companion / LoungeKey",
+      "logistics": "Air Europa para Lisboa parte do T2 (balcões 505–532). Após bagagem e segurança, sala próxima à zona D. Não tentar a Neptuno no T4S: é para saídas não Schengen.",
+      "source": "https://airport.mastercard.com/en/lounge-finder/lounge?loungecode=MAD6",
+      "showerSource": "https://www.aena.es/es/madrid-barajas-adolfo-suarez/servicios-vip/salas-vip/sala-vip-puerta-alcala.html",
+      "shower": {
+        "available": "sim",
+        "cost": "Taxa não informada pela Aena; confirmar",
+        "practical": "nao_recomendado",
+        "guidance": "Há duchas, mas a janela de 30 min é curta para fila, banho e acesso ao portão. Priorize o voo das 10:25 para Lisboa; aproveite a sala só para descanso rápido."
+      }
+    },
+    {
+      "id": "d04",
+      "date": "04 NOV",
+      "airport": "LIS",
+      "terminal": "T1 Schengen",
+      "lounge": "ANA Lounge",
+      "flight": "Azul AD8751 · 09:15",
+      "window": "06:45–07:30",
+      "level": "boa",
+      "access": "Visa Airport Companion / LoungeKey",
+      "logistics": "Depois do trem noturno e do traslado Oriente→LIS, passar na segurança do T1. Sala no piso 6, perto do portão 22, ANTES do controle de passaportes ao Brasil. Sair até 07:30 e prever fila; acesso pode ser restrito de manhã.",
+      "source": "https://airport.mastercard.com/en/lounge-finder/lounge?loungecode=LIS6",
+      "showerSource": "https://www.lisbonairport.pt/en/lis/services-shopping/premium-services/ana-lounge",
+      "shower": {
+        "available": "sim",
+        "cost": "Pago à parte, cerca de €17 (confirmar no balcão)",
+        "practical": "possivel",
+        "guidance": "Boa oportunidade após o trem noturno, se chegar à sala até 06:45. Peça ducha e kit na recepção; limite a 10–15 min e saia até 07:30, antes da imigração não Schengen para o Brasil."
+      }
+    }
+  ],
+  "notes": [
+    "Congonhas em 24/10: sem janela útil entre o desembarque e a transferência para GRU.",
+    "London City em 02/11: não há sala VIP pública em operação em 2026.",
+    "Lisboa em 03/11: prioridade ao trem de 12:09 em Oriente, não a lounges.",
+    "A existência de chuveiros não garante um box livre na hora; solicite na recepção ao entrar.",
+    "O acesso Visa/DragonPass ou LoungeKey pode ser gratuito, mas o serviço de ducha pode ter taxa própria.",
+    "Uma sala estar na rede DragonPass ou LoungeKey não garante visita gratuita: consultar o saldo do cartão no app antes de entrar."
+  ]
+}
