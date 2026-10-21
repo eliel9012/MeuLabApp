@@ -5,7 +5,7 @@ struct RadarVolumeView: View {
     @Environment(FlightStore.self) private var store
     @State private var scene = RadarSceneController()
     @State private var mapTexture: TextureResource?
-    @State private var dragStartY: Float?
+    @State private var dragStartPosition: SIMD3<Float>?
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 5)) { timeline in
@@ -57,11 +57,16 @@ struct RadarVolumeView: View {
             })
             .gesture(DragGesture(coordinateSpace: .global).targetedToEntity(scene.tableSurface)
                 .onChanged { value in
-                    if dragStartY == nil { dragStartY = scene.root.position.y }
+                    if dragStartPosition == nil { dragStartPosition = scene.root.position }
                     let movement = value.convert(value.translation3D, from: .global, to: .scene)
-                    scene.root.position.y = min(0.25, max(-0.25, (dragStartY ?? 0) + movement.y))
+                    let start = dragStartPosition ?? .zero
+                    scene.root.position = [
+                        min(0.18, max(-0.18, start.x + movement.x)),
+                        min(0.25, max(-0.25, start.y + movement.y)),
+                        start.z
+                    ]
                 }
-                .onEnded { _ in dragStartY = nil })
+                .onEnded { _ in dragStartPosition = nil })
         }
         .onAppear { store.isVolumeOpen = true }
         .onDisappear { store.isVolumeOpen = false }
