@@ -33,5 +33,12 @@ struct MeuLabVisionApp: App {
         }
         .defaultSize(width: 1_050, height: 800)
 
+        WindowGroup(id: "flight-search") {
+            VisionFlightSearchView()
+                .environment(flights)
+                .environment(lab)
+        }
+        .defaultSize(width: 940, height: 800)
+
     }
 }

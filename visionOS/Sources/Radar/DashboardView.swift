@@ -107,8 +107,26 @@ struct DashboardView: View {
                 Spacer()
 
                 Button {
-                    if store.isMapOpen { dismissWindow(id: "radar-map") }
-                    else { openWindow(id: "radar-map") }
+                    if store.isSearchOpen {
+                        store.isSearchOpen = false
+                        dismissWindow(id: "flight-search")
+                    } else {
+                        store.isSearchOpen = true
+                        openWindow(id: "flight-search")
+                    }
+                } label: {
+                    Label(store.isSearchOpen ? "Fechar busca" : "Buscar voos", systemImage: "magnifyingglass")
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    if store.isMapOpen {
+                        store.isMapOpen = false
+                        dismissWindow(id: "radar-map")
+                    } else {
+                        store.isMapOpen = true
+                        openWindow(id: "radar-map")
+                    }
                 } label: {
                     Label(store.isMapOpen ? "Fechar mapa" : "Mapa interativo", systemImage: "map")
                 }

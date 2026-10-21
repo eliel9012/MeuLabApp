@@ -28,4 +28,16 @@ final class MeuLabVisionUITests: XCTestCase {
         app.activate()
         XCTAssertTrue(open.waitForExistence(timeout: 10))
     }
+
+    func testFlightSearchOpensWithLiveAndAirportModes() {
+        let app = XCUIApplication()
+        app.launch()
+
+        let open = app.buttons["Buscar voos"]
+        XCTAssertTrue(open.waitForExistence(timeout: 15))
+        open.tap()
+        XCTAssertTrue(app.textFields["Número, matrícula ou ICAO"].waitForExistence(timeout: 10))
+        app.buttons["Aeroportos"].tap()
+        XCTAssertTrue(app.buttons["Atualizar"].waitForExistence(timeout: 10))
+    }
 }

@@ -37,6 +37,7 @@ struct VisionRootView: View {
             else {
                 dismissWindow(id: "radar-volume")
                 dismissWindow(id: "radar-map")
+                dismissWindow(id: "flight-search")
             }
         }
         .onChange(of: scenePhase) { _, phase in

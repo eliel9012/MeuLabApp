@@ -21,6 +21,7 @@ final class FlightStore {
     var showMapLabels = true
     var followsSelection = false
     var isMapOpen = false
+    var isSearchOpen = false
     var tracks: [String: [FlightTrackPoint]] = [:]
     var trackRevision = 0
     var lastReceivedAt: Date?
