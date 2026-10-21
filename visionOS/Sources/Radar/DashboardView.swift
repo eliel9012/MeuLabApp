@@ -1,0 +1,133 @@
+import SwiftUI
+
+struct DashboardView: View {
+    @Environment(FlightStore.self) private var store
+    @Environment(\.openWindow) private var openWindow
+    @Environment(\.dismissWindow) private var dismissWindow
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var showingSettings = false
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 5)) { timeline in
+            VStack(alignment: .leading, spacing: 17) {
+                header
+                StatisticsView(now: timeline.date)
+                controls
+
+                if let errorMessage = store.errorMessage {
+                    Label(errorMessage, systemImage: "wifi.exclamationmark")
+                        .font(.callout)
+                        .foregroundStyle(.orange)
+                }
+
+                HStack {
+                    Text("Tráfego aéreo")
+                        .font(.title2.bold())
+                    Spacer()
+                    Picker("Exibir", selection: Binding(
+                        get: { store.settings.filter },
+                        set: { store.settings.filter = $0 }
+                    )) {
+                        ForEach(AircraftFilter.allCases) { value in
+                            Text(value.rawValue).tag(value)
+                        }
+                    }
+                    .pickerStyle(.menu)
+                }
+
+                AircraftListView(now: timeline.date)
+                    .frame(maxHeight: .infinity)
+
+                AircraftDetailView()
+
+                Label("Visualização experimental · não utilizar para navegação ou controle de tráfego aéreo.", systemImage: "info.circle")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+            .padding(28)
+            .frame(minWidth: 840, minHeight: 700)
+            .background {
+                RoundedRectangle(cornerRadius: 32)
+                    .fill(.regularMaterial)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 32)
+                            .fill(Color.black.opacity(0.78))
+                    }
+            }
+        }
+        .sheet(isPresented: $showingSettings) { SettingsView() }
+        .task { store.start() }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase == .active { store.start() }
+            else { store.stopPolling() }
+        }
+    }
+
+    private var header: some View {
+        HStack(spacing: 18) {
+            ZStack {
+                RoundedRectangle(cornerRadius: 17)
+                    .fill(.black.opacity(0.42))
+                Image(systemName: "airplane")
+                    .font(.system(size: 30, weight: .bold))
+                    .rotationEffect(.degrees(-45))
+                    .foregroundStyle(.cyan.gradient)
+            }
+            .frame(width: 64, height: 64)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text("AeroSpatial")
+                    .font(.system(size: 31, weight: .bold))
+                Text("Franca, São Paulo")
+                    .font(.title3)
+                    .foregroundStyle(.secondary)
+            }
+            Spacer()
+            HStack(spacing: 9) {
+                Circle()
+                    .fill(store.isConnected ? .green : .red)
+                    .frame(width: 8, height: 8)
+                Text(store.isConnected ? "LIVE · ADS-B" : "LIVE · DESCONECTADO")
+                    .font(.caption.weight(.bold))
+            }
+            .foregroundStyle(store.isConnected ? .green : .red)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 9)
+            .background(store.isConnected ? Color.green.opacity(0.12) : Color.red.opacity(0.12), in: Capsule())
+
+            Button("Configurações", systemImage: "gearshape") { showingSettings = true }
+                .labelStyle(.iconOnly)
+                .buttonStyle(.plain)
+        }
+    }
+
+    private var controls: some View {
+        HStack(spacing: 12) {
+            Text(store.status)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .lineLimit(1)
+            Button("Atualizar", systemImage: "arrow.clockwise") {
+                Task { await store.refresh() }
+            }
+            .disabled(store.isLoading)
+            Button(store.isPaused ? "Retomar" : "Pausar", systemImage: store.isPaused ? "play.fill" : "pause.fill") {
+                store.setPaused(!store.isPaused)
+            }
+
+            Spacer()
+
+            Button {
+                if store.isVolumeOpen {
+                    dismissWindow(id: "radar-volume")
+                } else {
+                    openWindow(id: "radar-volume")
+                }
+            } label: {
+                Label(store.isVolumeOpen ? "Fechar radar" : "Radar 3D", systemImage: "cube.transparent")
+                    .frame(minWidth: 140)
+            }
+            .buttonStyle(.bordered)
+        }
+    }
+}

@@ -1,0 +1,33 @@
+name: MeuLabVision
+options:
+  createIntermediateGroups: true
+  minimumXcodeGenVersion: 2.44.0
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    GENERATE_INFOPLIST_FILE: YES
+    TARGETED_DEVICE_FAMILY: 7
+targets:
+  MeuLabVision:
+    type: application
+    platform: visionOS
+    deploymentTarget: "2.0"
+    sources:
+      - path: Sources
+      - path: ../MeuLabApp/Models/SystemModels.swift
+      - path: ../MeuLabApp/Models/RadioModels.swift
+      - path: ../MeuLabApp/Models/WeatherModels.swift
+      - path: ../MeuLabApp/Services/Formatters.swift
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: fun.meulab.vision
+        INFOPLIST_KEY_CFBundleDisplayName: MeuLab Vision
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        ENABLE_USER_SCRIPT_SANDBOXING: NO
+    postBuildScripts:
+      - name: Copy local API configuration
+        basedOnDependencyAnalysis: false
+        script: |
+          if [ -f "${PROJECT_DIR}/../Secrets.plist" ]; then
+            cp "${PROJECT_DIR}/../Secrets.plist" "${TARGET_BUILD_DIR}/${UNLOCALIZED_RESOURCES_FOLDER_PATH}/Secrets.plist"
+          fi
