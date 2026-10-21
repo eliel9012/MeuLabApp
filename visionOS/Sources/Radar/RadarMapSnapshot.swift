@@ -7,7 +7,7 @@ import UIKit
 enum RadarMapSnapshot {
     private static let imageSize = CGSize(width: 1_024, height: 1_024)
 
-    static func texture(radiusKilometers: Double) async throws -> TextureResource {
+    static func texture(radiusKilometers: Double, style: RadarMapStyle) async throws -> TextureResource {
         let center = Geodesy.approximateFranca
         let latitudeDelta = radiusKilometers * 2 / 111.32
         let longitudeDelta = latitudeDelta / cos(center.latitudeDegrees * .pi / 180)
@@ -23,7 +23,11 @@ enum RadarMapSnapshot {
             center: coordinate,
             span: MKCoordinateSpan(latitudeDelta: latitudeDelta, longitudeDelta: longitudeDelta)
         )
-        options.preferredConfiguration = MKStandardMapConfiguration(elevationStyle: .flat)
+        switch style {
+        case .standard: options.preferredConfiguration = MKStandardMapConfiguration(elevationStyle: .flat)
+        case .imagery: options.preferredConfiguration = MKImageryMapConfiguration(elevationStyle: .flat)
+        case .hybrid: options.preferredConfiguration = MKHybridMapConfiguration(elevationStyle: .flat)
+        }
 
         try Task.checkCancellation()
         let snapshot = try await MKMapSnapshotter(options: options).start()
@@ -36,7 +40,7 @@ enum RadarMapSnapshot {
         guard let cgImage = image.cgImage else { throw RadarMapError.imageUnavailable }
         return try await TextureResource(
             image: cgImage,
-            withName: "franca-apple-map-\(Int(radiusKilometers))",
+            withName: "franca-apple-map-\(Int(radiusKilometers))-\(style.rawValue)",
             options: .init(semantic: .color)
         )
     }

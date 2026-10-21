@@ -38,7 +38,7 @@ struct SettingsView: View {
                 LabeledContent("Endpoint", value: "radar.meulab.fun")
                 LabeledContent("Frescor da posição", value: "30 segundos")
                 LabeledContent("Atualização", value: "3 s; backoff em falhas")
-                Text("Origem geográfica aproximada: 20,54° S · 47,40° O. Não corresponde à posição validada da antena.")
+                Text("Origem: receptor de Franca do app iPhone · 20,512504° S · 47,400830° O.")
                     .font(.caption).foregroundStyle(.secondary)
             }
         }

@@ -107,6 +107,14 @@ struct DashboardView: View {
                 Spacer()
 
                 Button {
+                    if store.isMapOpen { dismissWindow(id: "radar-map") }
+                    else { openWindow(id: "radar-map") }
+                } label: {
+                    Label(store.isMapOpen ? "Fechar mapa" : "Mapa interativo", systemImage: "map")
+                }
+                .buttonStyle(.bordered)
+
+                Button {
                     if store.isVolumeOpen {
                         dismissWindow(id: "radar-volume")
                     } else {

@@ -13,4 +13,19 @@ final class MeuLabVisionUITests: XCTestCase {
         open.tap()
         XCTAssertTrue(close.waitForExistence(timeout: 10))
     }
+
+    func testInteractiveMapOpensAndCanClose() {
+        let app = XCUIApplication()
+        app.launch()
+
+        let open = app.buttons["Mapa interativo"]
+        XCTAssertTrue(open.waitForExistence(timeout: 15))
+        open.tap()
+        XCTAssertTrue(app.staticTexts["Mapa interativo"].waitForExistence(timeout: 10))
+        let close = app.buttons["Fechar mapa"]
+        XCTAssertTrue(close.waitForExistence(timeout: 10))
+        close.tap()
+        app.activate()
+        XCTAssertTrue(open.waitForExistence(timeout: 10))
+    }
 }

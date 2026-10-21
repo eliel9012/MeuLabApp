@@ -13,11 +13,13 @@ final class RadarSceneController {
     )
     private let background = Entity()
     private let markerLayer = Entity()
+    private let trailLayer = Entity()
     private let factory = AircraftEntityFactory()
     private var markers: [String: ModelEntity] = [:]
     private var stems: [String: ModelEntity] = [:]
     private var mapPlane: ModelEntity?
     private var currentRadius: Double = -1
+    private var currentTrailKey = ""
     private let groundY: Float = -0.22
     private let visualRadius: Float = 0.34
 
@@ -38,6 +40,7 @@ final class RadarSceneController {
         tableSurface.addChild(grabber)
         root.addChild(background)
         root.addChild(tableSurface)
+        root.addChild(trailLayer)
         root.addChild(markerLayer)
     }
 
@@ -160,6 +163,40 @@ final class RadarSceneController {
                 let color: UIColor = flight.hex == selectedHex ? .cyan : (isAging ? .systemOrange : .systemBlue)
                 stem.model?.materials = [SimpleMaterial(color: color.withAlphaComponent(0.65), isMetallic: false)]
             }
+        }
+    }
+
+    func updateSelectedTrail(points: [FlightTrackPoint], selectedHex: String?, revision: Int,
+                             settings: RadarSettings, visible: Bool) {
+        let key = "\(selectedHex ?? "")-\(revision)-\(settings.radiusKilometers)-\(settings.verticalExaggeration)-\(visible)"
+        guard key != currentTrailKey else { return }
+        currentTrailKey = key
+        trailLayer.children.forEach { $0.removeFromParent() }
+        guard visible, points.count >= 2 else { return }
+        let positions: [SIMD3<Float>] = points.compactMap { point in
+            let coordinate = GeodeticCoordinate(latitudeDegrees: point.latitude,
+                                                longitudeDegrees: point.longitude,
+                                                altitudeMeters: point.altitudeMeters)
+            let enu = Geodesy.enu(coordinate, relativeTo: Geodesy.approximateFranca)
+            guard enu.horizontalDistanceMeters <= settings.radiusKilometers * 1_000,
+                  let visual = Geodesy.visualPosition(
+                    enu: enu, displayedAltitudeMeters: point.altitudeMeters,
+                    radiusKilometers: settings.radiusKilometers,
+                    verticalExaggeration: settings.verticalExaggeration
+                  ) else { return nil }
+            return [Float(visual.x), Float(visual.y), Float(visual.z)]
+        }
+        for (start, end) in zip(positions, positions.dropFirst()) {
+            let delta = end - start
+            let length = simd_length(delta)
+            guard length > 0.001 else { continue }
+            let segment = ModelEntity(
+                mesh: .generateBox(size: [0.0018, 0.0018, length]),
+                materials: [SimpleMaterial(color: UIColor.cyan.withAlphaComponent(0.75), isMetallic: false)]
+            )
+            segment.position = (start + end) / 2
+            segment.orientation = simd_quatf(from: [0, 0, 1], to: simd_normalize(delta))
+            trailLayer.addChild(segment)
         }
     }
 

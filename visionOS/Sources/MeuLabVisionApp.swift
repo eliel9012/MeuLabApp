@@ -27,5 +27,11 @@ struct MeuLabVisionApp: App {
             return WindowPlacement(.trailing(control))
         }
 
+        WindowGroup(id: "radar-map") {
+            RadarMapWindowView()
+                .environment(flights)
+        }
+        .defaultSize(width: 1_050, height: 800)
+
     }
 }

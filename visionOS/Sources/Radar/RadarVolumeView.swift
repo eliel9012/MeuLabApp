@@ -18,6 +18,13 @@ struct RadarVolumeView: View {
                     settings: store.settings,
                     ageByHex: positionAges(at: timeline.date)
                 )
+                scene.updateSelectedTrail(
+                    points: store.tracks[store.selectedHex ?? ""] ?? [],
+                    selectedHex: store.selectedHex,
+                    revision: store.trackRevision,
+                    settings: store.settings,
+                    visible: store.showTrails
+                )
                 content.add(scene.root)
                 placeLabels(attachments: attachments, content: content, at: timeline.date)
             } update: { content, attachments in
@@ -30,6 +37,13 @@ struct RadarVolumeView: View {
                     selectedHex: store.selectedHex,
                     settings: store.settings,
                     ageByHex: positionAges(at: timeline.date)
+                )
+                scene.updateSelectedTrail(
+                    points: store.tracks[store.selectedHex ?? ""] ?? [],
+                    selectedHex: store.selectedHex,
+                    revision: store.trackRevision,
+                    settings: store.settings,
+                    visible: store.showTrails
                 )
                 placeLabels(attachments: attachments, content: content, at: timeline.date)
             } attachments: {
@@ -71,10 +85,13 @@ struct RadarVolumeView: View {
         .onAppear { store.isVolumeOpen = true }
         .onDisappear { store.isVolumeOpen = false }
         .task { store.start() }
-        .task(id: store.settings.radiusKilometers) {
+        .task(id: "\(store.settings.radiusKilometers)-\(store.mapStyle.rawValue)") {
             mapTexture = nil
             do {
-                mapTexture = try await RadarMapSnapshot.texture(radiusKilometers: store.settings.radiusKilometers)
+                mapTexture = try await RadarMapSnapshot.texture(
+                    radiusKilometers: store.settings.radiusKilometers,
+                    style: store.mapStyle
+                )
             } catch {
                 // The radar grid remains available if MapKit cannot load.
             }

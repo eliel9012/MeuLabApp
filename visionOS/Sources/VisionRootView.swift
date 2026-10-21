@@ -34,7 +34,10 @@ struct VisionRootView: View {
         }
         .onChange(of: lab.selection) { _, section in
             if section == .radar { openWindow(id: "radar-volume") }
-            else { dismissWindow(id: "radar-volume") }
+            else {
+                dismissWindow(id: "radar-volume")
+                dismissWindow(id: "radar-map")
+            }
         }
         .onChange(of: scenePhase) { _, phase in
             if phase == .active { lab.start() }

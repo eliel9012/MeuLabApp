@@ -1,6 +1,13 @@
 import Foundation
 import Observation
 
+struct FlightTrackPoint: Sendable {
+    let latitude: Double
+    let longitude: Double
+    let altitudeMeters: Double
+    let recordedAt: Date
+}
+
 /// View state and polling lifecycle. All observable mutations take place on the main actor.
 @MainActor
 @Observable
@@ -8,6 +15,14 @@ final class FlightStore {
     var aircraft: [Aircraft] = []
     var selectedHex: String?
     var settings = RadarSettings()
+    var mapStyle: RadarMapStyle = .standard
+    var showAirports = true
+    var showTrails = false
+    var showMapLabels = true
+    var followsSelection = false
+    var isMapOpen = false
+    var tracks: [String: [FlightTrackPoint]] = [:]
+    var trackRevision = 0
     var lastReceivedAt: Date?
     var snapshotGeneratedAt: Date?
     var status = "Pronto para conectar"
@@ -122,6 +137,7 @@ final class FlightStore {
         aircraft = snapshot.aircraft
         lastReceivedAt = Date()
         snapshotGeneratedAt = snapshot.generatedAt
+        recordTracks(at: lastReceivedAt ?? Date())
         if let selectedHex, !aircraft.contains(where: { $0.hex == selectedHex }) {
             self.selectedHex = nil
         }
@@ -129,5 +145,32 @@ final class FlightStore {
             selectedHex = aircraft.first(where: { isRenderable($0, at: Date()) })?.hex
         }
         errorMessage = nil
+    }
+
+    private func recordTracks(at now: Date) {
+        var changed = false
+        for flight in aircraft {
+            guard let lat = flight.latitude, let lon = flight.longitude,
+                  (flight.seenPositionSeconds ?? .infinity) <= 30 else { continue }
+            if let previous = tracks[flight.hex]?.last {
+                guard now.timeIntervalSince(previous.recordedAt) >= 10,
+                      abs(lat - previous.latitude) > 0.0001 || abs(lon - previous.longitude) > 0.0001 else { continue }
+            }
+            let point = FlightTrackPoint(latitude: lat, longitude: lon,
+                                         altitudeMeters: flight.altitudeMeters ?? 0, recordedAt: now)
+            var history = tracks[flight.hex] ?? []
+            history.append(point)
+            tracks[flight.hex] = Array(history.suffix(120))
+            changed = true
+        }
+        for hex in Array(tracks.keys) {
+            let recent = tracks[hex, default: []].filter { now.timeIntervalSince($0.recordedAt) < 1_800 }
+            if recent.count != tracks[hex]?.count {
+                changed = true
+                if recent.isEmpty { tracks.removeValue(forKey: hex) }
+                else { tracks[hex] = recent }
+            }
+        }
+        if changed { trackRevision += 1 }
     }
 }
