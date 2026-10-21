@@ -12,6 +12,7 @@ final class RadarSceneController {
     private let factory = AircraftEntityFactory()
     private var markers: [String: ModelEntity] = [:]
     private var stems: [String: ModelEntity] = [:]
+    private var mapPlane: ModelEntity?
     private var currentRadius: Double = -1
     private let groundY: Float = -0.22
     private let visualRadius: Float = 0.34
@@ -27,6 +28,7 @@ final class RadarSceneController {
         guard radiusKilometers != currentRadius else { return }
         currentRadius = radiusKilometers
         background.children.forEach { $0.removeFromParent() }
+        mapPlane = nil
 
         let base = ModelEntity(
             mesh: .generateBox(size: [0.72, 0.018, 0.72]),
@@ -88,6 +90,22 @@ final class RadarSceneController {
         background.addChild(antenna)
     }
 
+    func setMap(_ texture: TextureResource?) {
+        guard let texture else {
+            mapPlane?.removeFromParent()
+            mapPlane = nil
+            return
+        }
+        guard mapPlane == nil else { return }
+        let plane = ModelEntity(
+            mesh: .generatePlane(width: 0.68, depth: 0.68),
+            materials: [UnlitMaterial(texture: texture)]
+        )
+        plane.position = [0, groundY - 0.001, 0]
+        background.addChild(plane)
+        mapPlane = plane
+    }
+
     func reconcile(aircraft: [Aircraft], selectedHex: String?, settings: RadarSettings, ageByHex: [String: Double]) {
         let newIDs = Set(aircraft.map(\.hex))
         for key in Array(markers.keys) where !newIDs.contains(key) {
@@ -101,7 +119,7 @@ final class RadarSceneController {
             if let existing = markers[flight.hex] {
                 entity = existing
             } else {
-                entity = factory.make(hex: flight.hex)
+                entity = factory.make(aircraft: flight)
                 markers[flight.hex] = entity
                 markerLayer.addChild(entity)
                 let stem = ModelEntity(

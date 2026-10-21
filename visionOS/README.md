@@ -10,4 +10,4 @@ App nativo visionOS. A central mostra ADS-B, Sistema, Infraestrutura, Rádio, Cl
 
 Para recriar o projeto após mudar `project.yml`, execute `xcodegen generate --spec visionOS/project.yml` na raiz do repositório.
 
-O radar consulta `https://radar.meulab.fun/data/aircraft.json`. Os outros painéis usam a API configurada no `Secrets.plist`. A tela mostra erro de conexão quando a fonte falha e preserva as últimas observações recebidas. Nenhum dado fictício é carregado.
+O radar consulta `https://radar.meulab.fun/data/aircraft.json` automaticamente a cada 3 segundos quando conectado. A mesa mostra mapa real centrado em Franca, com cidades vizinhas, via tiles OpenStreetMap em cache e crédito no próprio mapa. Aeronaves usam modelos 3D procedurais de jato ou turboélice. Os outros painéis usam a API configurada no `Secrets.plist`. A tela mostra erro de conexão quando a fonte falha e preserva as últimas observações recebidas. Nenhum dado fictício é carregado.

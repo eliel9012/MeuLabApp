@@ -26,6 +26,7 @@ struct VisionRootView: View {
         .background(Color(red: 0.035, green: 0.045, blue: 0.07).opacity(0.82), in: RoundedRectangle(cornerRadius: 32))
         .task {
             lab.start()
+            flights.start()
             try? await Task.sleep(for: .milliseconds(400))
             if !Task.isCancelled, lab.selection == .radar, !flights.isVolumeOpen {
                 openWindow(id: "radar-volume")

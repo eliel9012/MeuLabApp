@@ -4,7 +4,6 @@ struct DashboardView: View {
     @Environment(FlightStore.self) private var store
     @Environment(\.openWindow) private var openWindow
     @Environment(\.dismissWindow) private var dismissWindow
-    @Environment(\.scenePhase) private var scenePhase
     @State private var showingSettings = false
 
     var body: some View {
@@ -56,11 +55,6 @@ struct DashboardView: View {
             }
         }
         .sheet(isPresented: $showingSettings) { SettingsView() }
-        .task { store.start() }
-        .onChange(of: scenePhase) { _, newPhase in
-            if newPhase == .active { store.start() }
-            else { store.stopPolling() }
-        }
     }
 
     private var header: some View {
@@ -107,10 +101,13 @@ struct DashboardView: View {
                 .font(.caption)
                 .foregroundStyle(.secondary)
                 .lineLimit(1)
-            Button("Atualizar", systemImage: "arrow.clockwise") {
-                Task { await store.refresh() }
+            if let lastReceivedAt = store.lastReceivedAt {
+                Text("Auto · \(lastReceivedAt.formatted(date: .omitted, time: .standard))")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.secondary)
+            } else if store.isLoading {
+                ProgressView().controlSize(.small)
             }
-            .disabled(store.isLoading)
             Button(store.isPaused ? "Retomar" : "Pausar", systemImage: store.isPaused ? "play.fill" : "pause.fill") {
                 store.setPaused(!store.isPaused)
             }

@@ -4,11 +4,13 @@ import SwiftUI
 struct RadarVolumeView: View {
     @Environment(FlightStore.self) private var store
     @State private var scene = RadarSceneController()
+    @State private var mapTexture: TextureResource?
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 5)) { timeline in
             RealityView { content, attachments in
                 scene.buildBackground(radiusKilometers: store.settings.radiusKilometers)
+                scene.setMap(mapTexture)
                 scene.reconcile(
                     aircraft: store.renderableAircraft(at: timeline.date),
                     selectedHex: store.selectedHex,
@@ -21,6 +23,7 @@ struct RadarVolumeView: View {
                 // SwiftUI tracks store accesses in the update closure, so this is
                 // invoked when aircraft, settings or the selection changes.
                 scene.buildBackground(radiusKilometers: store.settings.radiusKilometers)
+                scene.setMap(mapTexture)
                 scene.reconcile(
                     aircraft: store.renderableAircraft(at: timeline.date),
                     selectedHex: store.selectedHex,
@@ -55,6 +58,14 @@ struct RadarVolumeView: View {
         .onAppear { store.isVolumeOpen = true }
         .onDisappear { store.isVolumeOpen = false }
         .task { store.start() }
+        .task(id: store.settings.radiusKilometers) {
+            mapTexture = nil
+            do {
+                mapTexture = try await RadarMapSnapshot.texture(radiusKilometers: store.settings.radiusKilometers)
+            } catch {
+                // The radar grid remains available if map tiles cannot load.
+            }
+        }
     }
 
     private func positionAges(at date: Date) -> [String: Double] {
