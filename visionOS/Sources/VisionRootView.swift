@@ -44,8 +44,11 @@ struct VisionRootView: View {
     private var sidebar: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack(spacing: 10) {
-                Image(systemName: "square.stack.3d.up.fill")
-                    .foregroundStyle(.cyan)
+                Image("RadarLocalIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 29, height: 29)
+                    .clipShape(RoundedRectangle(cornerRadius: 7))
                 Text("MeuLab")
                     .font(.title2.bold())
             }

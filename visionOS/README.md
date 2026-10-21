@@ -1,6 +1,6 @@
 # MeuLab Vision
 
-App nativo visionOS. A central mostra ADS-B, Sistema, Infraestrutura, Rádio, Clima e ACARS com dados reais. Ao abrir ADS-B, o radar surge como volume RealityKit tridimensional ao lado da janela; o botão **Radar 3D** permite fechá-lo e reabri-lo. O app iOS original permanece no seu alvo atual.
+App nativo visionOS. A central mostra ADS-B, Sistema, Infraestrutura, Rádio, Clima e ACARS com dados reais. Ao abrir ADS-B, o radar surge como volume RealityKit tridimensional ao lado da janela; o botão **Radar 3D** permite fechá-lo e reabri-lo. A ficha da aeronave busca fotos no PlaneSpotters (com fallback OpenSky) e dados de voo no FlightAware via backend MeuLab. Ícone do iPhone também usado no app visionOS. O app iOS original permanece no seu alvo atual.
 
 ## Abrir
 

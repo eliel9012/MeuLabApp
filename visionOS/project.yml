@@ -19,6 +19,8 @@ targets:
           UIApplicationSupportsMultipleScenes: true
     sources:
       - path: Sources
+      - path: Assets.xcassets
+      - path: ../MeuLabApp/Models/AviationStackModels.swift
       - path: ../MeuLabApp/Models/SystemModels.swift
       - path: ../MeuLabApp/Models/RadioModels.swift
       - path: ../MeuLabApp/Models/WeatherModels.swift

@@ -68,10 +68,10 @@ struct DashboardView: View {
             ZStack {
                 RoundedRectangle(cornerRadius: 17)
                     .fill(.black.opacity(0.42))
-                Image(systemName: "airplane")
-                    .font(.system(size: 30, weight: .bold))
-                    .rotationEffect(.degrees(-45))
-                    .foregroundStyle(.cyan.gradient)
+                Image("RadarLocalIcon")
+                    .resizable()
+                    .scaledToFit()
+                    .clipShape(RoundedRectangle(cornerRadius: 15))
             }
             .frame(width: 64, height: 64)
 

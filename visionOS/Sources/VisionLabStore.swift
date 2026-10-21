@@ -33,7 +33,7 @@ private enum VisionAPIError: LocalizedError {
     }
 }
 
-private struct VisionAPIClient {
+struct VisionAPIClient {
     let baseURL: URL
     let token: String
 
