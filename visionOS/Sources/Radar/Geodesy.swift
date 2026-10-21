@@ -32,7 +32,8 @@ enum Geodesy {
     static let semiMajorAxis = 6_378_137.0
     static let inverseFlattening = 298.257223563
     static let eccentricitySquared = 1 - pow(1 - 1 / inverseFlattening, 2)
-    static let approximateFranca = GeodeticCoordinate(latitudeDegrees: -20.54, longitudeDegrees: -47.40, altitudeMeters: 0)
+    // Same ADS-B receiver position used by MeuLab on iPhone.
+    static let approximateFranca = GeodeticCoordinate(latitudeDegrees: -20.512504, longitudeDegrees: -47.400830, altitudeMeters: 0)
 
     static func ecef(_ c: GeodeticCoordinate) -> CartesianCoordinate {
         let lat = c.latitudeDegrees * .pi / 180

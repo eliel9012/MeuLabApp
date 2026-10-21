@@ -7,6 +7,10 @@ import simd
 @MainActor
 final class RadarSceneController {
     let root = Entity()
+    let tableSurface = ModelEntity(
+        mesh: .generateBox(size: [0.72, 0.018, 0.72]),
+        materials: [SimpleMaterial(color: UIColor.white.withAlphaComponent(0.14), isMetallic: false)]
+    )
     private let background = Entity()
     private let markerLayer = Entity()
     private let factory = AircraftEntityFactory()
@@ -20,7 +24,20 @@ final class RadarSceneController {
     init() {
         root.name = "radar-root"
         background.name = "radar-background"
+        tableSurface.name = "radar-table"
+        tableSurface.position = [0, groundY - 0.012, 0]
+        tableSurface.components.set(InputTargetComponent())
+        tableSurface.components.set(CollisionComponent(shapes: [.generateBox(size: [0.72, 0.025, 0.72])]))
+        let grabber = ModelEntity(
+            mesh: .generateBox(size: [0.12, 0.012, 0.024]),
+            materials: [SimpleMaterial(color: UIColor.cyan.withAlphaComponent(0.75), isMetallic: true)]
+        )
+        grabber.name = "radar-table-grabber"
+        grabber.position = [0, 0.019, 0.33]
+        grabber.components.set(CollisionComponent(shapes: [.generateBox(size: [0.12, 0.022, 0.034])]))
+        tableSurface.addChild(grabber)
         root.addChild(background)
+        root.addChild(tableSurface)
         root.addChild(markerLayer)
     }
 
@@ -29,13 +46,6 @@ final class RadarSceneController {
         currentRadius = radiusKilometers
         background.children.forEach { $0.removeFromParent() }
         mapPlane = nil
-
-        let base = ModelEntity(
-            mesh: .generateBox(size: [0.72, 0.018, 0.72]),
-            materials: [SimpleMaterial(color: UIColor.white.withAlphaComponent(0.14), isMetallic: false)]
-        )
-        base.position = [0, groundY - 0.012, 0]
-        background.addChild(base)
 
         for x in [-0.36 as Float, 0.36] {
             let edge = ModelEntity(

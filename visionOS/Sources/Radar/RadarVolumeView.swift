@@ -5,6 +5,7 @@ struct RadarVolumeView: View {
     @Environment(FlightStore.self) private var store
     @State private var scene = RadarSceneController()
     @State private var mapTexture: TextureResource?
+    @State private var dragStartY: Float?
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 5)) { timeline in
@@ -54,6 +55,13 @@ struct RadarVolumeView: View {
                 guard value.entity.name.hasPrefix("flight:") else { return }
                 store.selectedHex = String(value.entity.name.dropFirst("flight:".count))
             })
+            .gesture(DragGesture(coordinateSpace: .global).targetedToEntity(scene.tableSurface)
+                .onChanged { value in
+                    if dragStartY == nil { dragStartY = scene.root.position.y }
+                    let movement = value.convert(value.translation3D, from: .global, to: .scene)
+                    scene.root.position.y = min(0.25, max(-0.25, (dragStartY ?? 0) + movement.y))
+                }
+                .onEnded { _ in dragStartY = nil })
         }
         .onAppear { store.isVolumeOpen = true }
         .onDisappear { store.isVolumeOpen = false }
@@ -63,7 +71,7 @@ struct RadarVolumeView: View {
             do {
                 mapTexture = try await RadarMapSnapshot.texture(radiusKilometers: store.settings.radiusKilometers)
             } catch {
-                // The radar grid remains available if map tiles cannot load.
+                // The radar grid remains available if MapKit cannot load.
             }
         }
     }
@@ -91,7 +99,7 @@ struct RadarVolumeView: View {
                 verticalExaggeration: store.settings.verticalExaggeration
             ) else { continue }
             label.position = [Float(visual.x) + 0.035, Float(visual.y) + 0.035, Float(visual.z)]
-            if label.parent == nil { content.add(label) }
+            if label.parent == nil { scene.root.addChild(label) }
         }
     }
 }

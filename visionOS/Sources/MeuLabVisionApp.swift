@@ -19,7 +19,7 @@ struct MeuLabVisionApp: App {
                 .environment(flights)
         }
         .windowStyle(.volumetric)
-        .defaultSize(width: 0.8, height: 0.6, depth: 0.8, in: .meters)
+        .defaultSize(width: 0.8, height: 1.2, depth: 0.8, in: .meters)
         .defaultWindowPlacement { _, context in
             guard let control = context.windows.first(where: { $0.id == "mission-control" }) else {
                 return WindowPlacement()
