@@ -4,6 +4,7 @@ import SwiftUI
 /// Interactive 2D companion to the 3D radar. Both views share live observations and selection.
 struct RadarMapWindowView: View {
     @Environment(FlightStore.self) private var store
+    @Environment(\.dismissWindow) private var dismissWindow
     @State private var position: MapCameraPosition = .region(Self.region(radiusKilometers: 100))
 
     private static let receiver = CLLocationCoordinate2D(
@@ -126,6 +127,11 @@ struct RadarMapWindowView: View {
             Label("Mapa interativo", systemImage: "map.fill").font(.title2.bold())
             Spacer()
             Text("Franca · SP").foregroundStyle(.secondary)
+            Button("Fechar janela do mapa", systemImage: "xmark") {
+                store.isMapOpen = false
+                dismissWindow(id: "radar-map")
+            }
+            .labelStyle(.iconOnly)
         }
     }
 

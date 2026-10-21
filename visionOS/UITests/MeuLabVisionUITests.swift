@@ -22,9 +22,11 @@ final class MeuLabVisionUITests: XCTestCase {
         XCTAssertTrue(open.waitForExistence(timeout: 15))
         open.tap()
         XCTAssertTrue(app.staticTexts["Mapa interativo"].waitForExistence(timeout: 10))
-        let close = app.buttons["Fechar mapa"]
+        let close = app.buttons["Fechar janela do mapa"]
         XCTAssertTrue(close.waitForExistence(timeout: 10))
         close.tap()
+        let closed = expectation(for: NSPredicate(format: "exists == false"), evaluatedWith: close)
+        wait(for: [closed], timeout: 10)
         app.activate()
         XCTAssertTrue(open.waitForExistence(timeout: 10))
     }
