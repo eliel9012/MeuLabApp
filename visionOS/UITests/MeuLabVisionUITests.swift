@@ -77,4 +77,12 @@ final class MeuLabVisionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Disparos recentes"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["Regras do servidor"].exists)
     }
+
+    func testSatellitesShowsPassSections() {
+        let app = XCUIApplication()
+        app.launch()
+        app.buttons["Satélites"].tap()
+        XCTAssertTrue(app.staticTexts["Meteor · próximos passes"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["Orbcomm · próximos passes"].exists)
+    }
 }

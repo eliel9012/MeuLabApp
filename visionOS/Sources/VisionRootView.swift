@@ -24,6 +24,9 @@ struct VisionRootView: View {
                 } else if lab.selection == .alerts {
                     VisionAlertsView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if lab.selection == .satellites {
+                    VisionSatellitesView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     VisionDataView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -71,19 +74,24 @@ struct VisionRootView: View {
                 .font(.caption2.bold())
                 .tracking(2)
                 .foregroundStyle(.secondary)
-            ForEach(VisionSection.allCases) { section in
-                Button {
-                    lab.select(section)
-                } label: {
-                    Label(section.rawValue, systemImage: section.symbol)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 12)
-                        .background(lab.selection == section ? Color.blue.opacity(0.42) : .clear, in: RoundedRectangle(cornerRadius: 14))
+            ScrollView {
+                VStack(spacing: 12) {
+                    ForEach(VisionSection.allCases) { section in
+                        Button {
+                            lab.select(section)
+                        } label: {
+                            Label(section.rawValue, systemImage: section.symbol)
+                                .font(.headline)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .padding(.horizontal, 14)
+                                .padding(.vertical, 12)
+                                .background(lab.selection == section ? Color.blue.opacity(0.42) : .clear, in: RoundedRectangle(cornerRadius: 14))
+                        }
+                        .buttonStyle(.plain)
+                    }
                 }
-                .buttonStyle(.plain)
             }
+            .scrollIndicators(.hidden)
             Spacer()
             Text("Dados ao vivo")
                 .font(.caption)
@@ -121,6 +129,7 @@ struct VisionDataView: View {
                     case .trip: EmptyView()
                     case .analytics: EmptyView()
                     case .alerts: EmptyView()
+                    case .satellites: EmptyView()
                     case .system: systemContent
                     case .infrastructure: infrastructureContent
                     case .radio: radioContent

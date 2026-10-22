@@ -21,3 +21,5 @@ O botão **Buscar voos** abre a busca de número/matrícula/ICAO. Resultados loc
 **Analytics** consulta as séries reais de CPU, memória, disco, temperatura e tráfego ADS-B no backend MeuLab. Permite alternar entre 24 horas e 7 dias; períodos sem amostras mostram ausência de dados, sem gráficos fictícios.
 
 **Alertas** mostra regras e disparos registrados no backend MeuLab. Disparos não reconhecidos podem ser reconhecidos na própria janela; a lista atualiza automaticamente enquanto aberta. Sem regras ou disparos, a tela indica lista vazia.
+
+**Satélites** consulta a API2 para próximos passes de Meteor e Orbcomm, estado da recepção e idade do TLE. As previsões vêm do servidor; a janela exibe falha de conexão quando a API2 está indisponível, sem horários simulados.
