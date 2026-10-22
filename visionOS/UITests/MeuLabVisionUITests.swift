@@ -61,4 +61,12 @@ final class MeuLabVisionUITests: XCTestCase {
         app.buttons["Rádio"].tap()
         XCTAssertTrue(app.staticTexts["Histórico recente"].waitForExistence(timeout: 20))
     }
+
+    func testAnalyticsShowsSystemAndRadarSections() {
+        let app = XCUIApplication()
+        app.launch()
+        app.buttons["Analytics"].tap()
+        XCTAssertTrue(app.staticTexts["Sistema · dados do servidor"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["Tráfego ADS-B · histórico do receptor"].exists)
+    }
 }
