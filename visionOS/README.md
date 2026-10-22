@@ -22,6 +22,4 @@ O botão **Buscar voos** abre a busca de número/matrícula/ICAO. Resultados loc
 
 **Alertas** mostra regras e disparos registrados no backend MeuLab. Disparos não reconhecidos podem ser reconhecidos na própria janela; a lista atualiza automaticamente enquanto aberta. Sem regras ou disparos, a tela indica lista vazia.
 
-**Satélites** consulta a API2 para próximos passes de Meteor e Orbcomm, estado da recepção e idade do TLE. As previsões vêm do servidor; a janela exibe falha de conexão quando a API2 está indisponível, sem horários simulados.
-
 **Infraestrutura** inclui saúde da API, estado dos containers Docker, logs recentes por container, serviços systemd e saúde dos discos. Cada fonte mostra falha própria se indisponível.

@@ -7,7 +7,6 @@ enum VisionSection: String, CaseIterable, Identifiable {
     case trip = "Viagem"
     case analytics = "Analytics"
     case alerts = "Alertas"
-    case satellites = "Satélites"
     case system = "Sistema"
     case infrastructure = "Infraestrutura"
     case radio = "Rádio"
@@ -21,7 +20,6 @@ enum VisionSection: String, CaseIterable, Identifiable {
         case .trip: "suitcase.rolling.fill"
         case .analytics: "chart.xyaxis.line"
         case .alerts: "bell.badge"
-        case .satellites: "satellite"
         case .system: "cpu"
         case .infrastructure: "server.rack"
         case .radio: "radio"
@@ -45,13 +43,12 @@ struct VisionAPIClient {
     let baseURL: URL
     let token: String
 
-    init(api2: Bool = false) throws {
+    init() throws {
         guard let path = Bundle.main.path(forResource: "Secrets", ofType: "plist"),
               let values = NSDictionary(contentsOfFile: path) as? [String: Any],
-              let base = values[api2 ? "API2_BASE_URL" : "API_BASE_URL"] as? String,
+              let base = values["API_BASE_URL"] as? String,
               let url = URL(string: base),
-              let token = (api2 ? [values["API2_TOKEN"] as? String] :
-                           [values["API_TOKEN"] as? String, values["MEULAB_API_TOKEN"] as? String])
+              let token = [values["API_TOKEN"] as? String, values["MEULAB_API_TOKEN"] as? String]
                 .compactMap({ $0 }).first(where: { !$0.isEmpty }) else { throw VisionAPIError.missingConfiguration }
         baseURL = url
         self.token = token
@@ -195,7 +192,7 @@ final class VisionLabStore {
 
     func refresh() async {
         guard selection != .radar, selection != .trip, selection != .analytics,
-              selection != .alerts, selection != .satellites else { return }
+              selection != .alerts else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -205,7 +202,6 @@ final class VisionLabStore {
             case .trip: break
             case .analytics: break
             case .alerts: break
-            case .satellites: break
             case .system:
                 system = try await api.fetch("api/system/status")
             case .infrastructure:
