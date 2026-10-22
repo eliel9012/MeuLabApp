@@ -54,4 +54,11 @@ final class MeuLabVisionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Clima na rota"].exists)
         XCTAssertTrue(app.staticTexts["Roteiro"].exists)
     }
+
+    func testRadioShowsHistorySection() {
+        let app = XCUIApplication()
+        app.launch()
+        app.buttons["Rádio"].tap()
+        XCTAssertTrue(app.staticTexts["Histórico recente"].waitForExistence(timeout: 20))
+    }
 }

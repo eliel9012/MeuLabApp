@@ -181,6 +181,34 @@ struct VisionDataView: View {
                 }
                 detail("Fonte", "Stream ao vivo do MeuLab")
             } else { placeholder }
+            Text("Histórico recente").font(.title2.bold())
+            if lab.radioHistory.isEmpty {
+                Text("Sem músicas recentes registradas.").foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(lab.radioHistory.enumerated()), id: \.offset) { _, track in
+                    HStack(spacing: 14) {
+                        if let artwork = track.artworkURL {
+                            AsyncImage(url: artwork) { image in image.resizable().scaledToFill() }
+                                placeholder: { Color.blue.opacity(0.2) }
+                                .frame(width: 52, height: 52)
+                                .clipShape(RoundedRectangle(cornerRadius: 9))
+                        } else {
+                            Image(systemName: "music.note")
+                                .frame(width: 52, height: 52)
+                        }
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(track.title).font(.headline)
+                            Text(track.artist).font(.subheadline).foregroundStyle(.secondary)
+                        }
+                        Spacer()
+                        if let date = ISO8601DateFormatter().date(from: track.timestamp) {
+                            Text(date, style: .relative).font(.caption).foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(12)
+                    .background(.white.opacity(0.06), in: RoundedRectangle(cornerRadius: 12))
+                }
+            }
         }
     }
 

@@ -120,6 +120,7 @@ final class VisionLabStore {
     var partitions: [VisionPartition] = []
     var interfaces: [VisionNetworkInterface] = []
     var radio: NowPlaying?
+    var radioHistory: [NowPlaying] = []
     var weather: WeatherData?
     var acars: VisionACARSSummary?
     var acarsMessages: [VisionACARSMessage] = []
@@ -168,7 +169,9 @@ final class VisionLabStore {
                 async let network: VisionNetworkStats = api.fetch("api/system/network")
                 (system, processes, partitions, interfaces) = try await (status, processList.items, partitionList.partitions, network.interfaces)
             case .radio:
-                radio = try await api.fetch("api/radio/now-playing")
+                async let now: NowPlaying = api.fetch("api/radio/now-playing")
+                async let history: RadioHistoryResponse = api.fetch("api/radio/history?limit=40")
+                (radio, radioHistory) = try await (now, history.items)
             case .weather:
                 weather = try await api.fetch("api/weather/current")
             case .acars:
