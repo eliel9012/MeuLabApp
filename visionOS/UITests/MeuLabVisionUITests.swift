@@ -69,4 +69,12 @@ final class MeuLabVisionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Sistema · dados do servidor"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["Tráfego ADS-B · histórico do receptor"].exists)
     }
+
+    func testAlertsShowsRulesAndTriggers() {
+        let app = XCUIApplication()
+        app.launch()
+        app.buttons["Alertas"].tap()
+        XCTAssertTrue(app.staticTexts["Disparos recentes"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["Regras do servidor"].exists)
+    }
 }

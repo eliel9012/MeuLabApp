@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		06A07331418A7DE73E4E0DA5 /* VisionAlertsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */; };
 		070180876832600DA998A4F2 /* VisionRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FB0A74FC27B7CB0D03BB57 /* VisionRootView.swift */; };
 		09E0C68BCBA5DF9321B9EB28 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8916CBBE95B5EE9E87B2A77C /* SettingsView.swift */; };
 		0F14BE0C1EE843CF8E0D863E /* SystemModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A1D1DA228E6A81621A0757 /* SystemModels.swift */; };
@@ -60,6 +61,7 @@
 		0AE79B3ED10643FA069DD785 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
 		2BAFA59F600F230B4F0ECA62 /* AviationStackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationStackModels.swift; sourceTree = "<group>"; };
 		2CB212C38117D557BE1368FD /* Geodesy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geodesy.swift; sourceTree = "<group>"; };
+		323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAlertsView.swift; sourceTree = "<group>"; };
 		40B5E332BC5A97609A0903CD /* FlightStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightStore.swift; sourceTree = "<group>"; };
 		4CE7101425219ADF3237D670 /* VisionTripModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionTripModels.swift; sourceTree = "<group>"; };
 		4D7D7ABA8B1E6087E2B423C9 /* AircraftEntityFactory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftEntityFactory.swift; sourceTree = "<group>"; };
@@ -119,6 +121,7 @@
 		2C0B5FBA269DCE99EAB25A09 /* Lab */ = {
 			isa = PBXGroup;
 			children = (
+				323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */,
 				F12307CBAEE10DEC9239F07D /* VisionAnalyticsView.swift */,
 			);
 			path = Lab;
@@ -364,6 +367,7 @@
 				09E0C68BCBA5DF9321B9EB28 /* SettingsView.swift in Sources */,
 				610225FF5AE86BE2CA9D5914 /* StatisticsView.swift in Sources */,
 				0F14BE0C1EE843CF8E0D863E /* SystemModels.swift in Sources */,
+				06A07331418A7DE73E4E0DA5 /* VisionAlertsView.swift in Sources */,
 				E3D351D33287D997397927A1 /* VisionAnalyticsView.swift in Sources */,
 				3254415C8B04A83C89E69F54 /* VisionFlightEnrichmentService.swift in Sources */,
 				315BB954232F17C58C43DE90 /* VisionFlightSearchView.swift in Sources */,

@@ -19,3 +19,5 @@ O botão **Buscar voos** abre a busca de número/matrícula/ICAO. Resultados loc
 **Viagem** traz os 14 dias e 42 eventos do roteiro do iPhone, incluindo os 8 voos definidos e os itens pendentes. Mostra o próximo compromisso, o trecho selecionado, status e horários do FlightAware quando a data e a rota correspondem, e clima atual e previsão por hora de origem e destino via Open-Meteo. Horários planejados são identificados como roteiro; posições no radar só aparecem quando captadas no ADS-B local. O arquivo `Resources/TripItinerary.json` é gerado do roteiro do iPhone por `python3 visionOS/Scripts/sync_itinerary.py`; execute o script novamente se o roteiro original mudar.
 
 **Analytics** consulta as séries reais de CPU, memória, disco, temperatura e tráfego ADS-B no backend MeuLab. Permite alternar entre 24 horas e 7 dias; períodos sem amostras mostram ausência de dados, sem gráficos fictícios.
+
+**Alertas** mostra regras e disparos registrados no backend MeuLab. Disparos não reconhecidos podem ser reconhecidos na própria janela; a lista atualiza automaticamente enquanto aberta. Sem regras ou disparos, a tela indica lista vazia.

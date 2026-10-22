@@ -6,6 +6,7 @@ enum VisionSection: String, CaseIterable, Identifiable {
     case radar = "ADS-B"
     case trip = "Viagem"
     case analytics = "Analytics"
+    case alerts = "Alertas"
     case system = "Sistema"
     case infrastructure = "Infraestrutura"
     case radio = "Rádio"
@@ -18,6 +19,7 @@ enum VisionSection: String, CaseIterable, Identifiable {
         case .radar: "airplane"
         case .trip: "suitcase.rolling.fill"
         case .analytics: "chart.xyaxis.line"
+        case .alerts: "bell.badge"
         case .system: "cpu"
         case .infrastructure: "server.rack"
         case .radio: "radio"
@@ -62,6 +64,23 @@ struct VisionAPIClient {
         request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
         request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.cachePolicy = .reloadIgnoringLocalCacheData
+        request.timeoutInterval = 15
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else { throw VisionAPIError.http(0) }
+        guard (200...299).contains(http.statusCode) else { throw VisionAPIError.http(http.statusCode) }
+        return try JSONDecoder().decode(T.self, from: data)
+    }
+
+    func post<T: Decodable>(_ path: String, as type: T.Type = T.self) async throws -> T {
+        guard let url = URL(string: "/\(path)", relativeTo: baseURL)?.absoluteURL else {
+            throw VisionAPIError.missingConfiguration
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(token, forHTTPHeaderField: "X-API-Token")
+        request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
         request.timeoutInterval = 15
         let (data, response) = try await URLSession.shared.data(for: request)
         guard let http = response as? HTTPURLResponse else { throw VisionAPIError.http(0) }
@@ -154,7 +173,7 @@ final class VisionLabStore {
     }
 
     func refresh() async {
-        guard selection != .radar, selection != .trip, selection != .analytics else { return }
+        guard selection != .radar, selection != .trip, selection != .analytics, selection != .alerts else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -163,6 +182,7 @@ final class VisionLabStore {
             case .radar: break
             case .trip: break
             case .analytics: break
+            case .alerts: break
             case .system:
                 system = try await api.fetch("api/system/status")
             case .infrastructure:
