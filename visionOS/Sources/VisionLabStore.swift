@@ -90,6 +90,24 @@ struct VisionAPIClient {
         guard (200...299).contains(http.statusCode) else { throw VisionAPIError.http(http.statusCode) }
         return try JSONDecoder().decode(T.self, from: data)
     }
+
+    func fetchText(_ path: String, query: [URLQueryItem]) async throws -> String {
+        guard let base = URL(string: "/\(path)", relativeTo: baseURL)?.absoluteURL,
+              var components = URLComponents(url: base, resolvingAgainstBaseURL: false) else {
+            throw VisionAPIError.missingConfiguration
+        }
+        components.queryItems = query
+        guard let url = components.url else { throw VisionAPIError.missingConfiguration }
+        var request = URLRequest(url: url)
+        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        request.setValue(token, forHTTPHeaderField: "X-API-Token")
+        request.setValue("MeuLabApp/1.0", forHTTPHeaderField: "User-Agent")
+        request.timeoutInterval = 15
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else { throw VisionAPIError.http(0) }
+        guard (200...299).contains(http.statusCode) else { throw VisionAPIError.http(http.statusCode) }
+        return String(decoding: data, as: UTF8.self)
+    }
 }
 
 struct VisionProcessList: Decodable { let items: [VisionProcess] }

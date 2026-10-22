@@ -38,6 +38,7 @@
 		C58B099D1641484B220E8804 /* MeuLabVisionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88C21742CD0B97DA602C77BB /* MeuLabVisionApp.swift */; };
 		CC400623A4C14FAF288C9D5C /* ReadsbAircraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C1BE4695C0F89D9F39ABDF /* ReadsbAircraft.swift */; };
 		D51E07FE486F10F462AFC52F /* ADSBClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 014024C7FB954B89DABF4E7F /* ADSBClient.swift */; };
+		E30432825A3DC1235A0C61AD /* VisionInfraExtrasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDD518AB77A4ECD9851EFC67 /* VisionInfraExtrasView.swift */; };
 		E3D351D33287D997397927A1 /* VisionAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12307CBAEE10DEC9239F07D /* VisionAnalyticsView.swift */; };
 		E52347E528306836B3913081 /* WeatherModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2DCD6F574FAA7ECA393919 /* WeatherModels.swift */; };
 		F4846CCF6F6F5F70BEF219B4 /* RadarSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E926EE03F39E50855BF21C1 /* RadarSettings.swift */; };
@@ -82,6 +83,7 @@
 		B24AD8F820CF8986A63D1523 /* AircraftDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDecoder.swift; sourceTree = "<group>"; };
 		B2CEA0029006525D7AFDFDB7 /* MeuLabVisionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabVisionUITests.swift; sourceTree = "<group>"; };
 		B3DF4E298105F80313D8A33A /* AircraftDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDetailView.swift; sourceTree = "<group>"; };
+		BDD518AB77A4ECD9851EFC67 /* VisionInfraExtrasView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionInfraExtrasView.swift; sourceTree = "<group>"; };
 		C08D28F3A5CE4C9E01AC8878 /* VisionSatellitesView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionSatellitesView.swift; sourceTree = "<group>"; };
 		C10A8DA0BCC6D3794D46C900 /* MeuLabVision.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = MeuLabVision.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		CC2DCD6F574FAA7ECA393919 /* WeatherModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WeatherModels.swift; sourceTree = "<group>"; };
@@ -125,6 +127,7 @@
 			children = (
 				323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */,
 				F12307CBAEE10DEC9239F07D /* VisionAnalyticsView.swift */,
+				BDD518AB77A4ECD9851EFC67 /* VisionInfraExtrasView.swift */,
 				C08D28F3A5CE4C9E01AC8878 /* VisionSatellitesView.swift */,
 			);
 			path = Lab;
@@ -374,6 +377,7 @@
 				E3D351D33287D997397927A1 /* VisionAnalyticsView.swift in Sources */,
 				3254415C8B04A83C89E69F54 /* VisionFlightEnrichmentService.swift in Sources */,
 				315BB954232F17C58C43DE90 /* VisionFlightSearchView.swift in Sources */,
+				E30432825A3DC1235A0C61AD /* VisionInfraExtrasView.swift in Sources */,
 				9F868B477B764F01D1C93B6D /* VisionLabStore.swift in Sources */,
 				070180876832600DA998A4F2 /* VisionRootView.swift in Sources */,
 				0919A91001C62B139E71E90C /* VisionSatellitesView.swift in Sources */,

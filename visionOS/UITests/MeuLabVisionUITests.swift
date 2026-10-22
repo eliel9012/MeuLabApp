@@ -85,4 +85,14 @@ final class MeuLabVisionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Meteor · próximos passes"].waitForExistence(timeout: 20))
         XCTAssertTrue(app.staticTexts["Orbcomm · próximos passes"].exists)
     }
+
+    func testInfrastructureShowsAdvancedTools() {
+        let app = XCUIApplication()
+        app.launch()
+        app.buttons["Infraestrutura"].tap()
+        XCTAssertTrue(app.staticTexts["Saúde da API"].waitForExistence(timeout: 20))
+        XCTAssertTrue(app.staticTexts["Containers Docker"].exists)
+        XCTAssertTrue(app.staticTexts["Serviços systemd"].exists)
+        XCTAssertTrue(app.staticTexts["Saúde dos discos"].exists)
+    }
 }

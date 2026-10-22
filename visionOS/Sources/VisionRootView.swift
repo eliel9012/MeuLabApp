@@ -177,6 +177,7 @@ struct VisionDataView: View {
             ForEach(lab.partitions) { item in detail(item.mount, "\(item.filesystem) · \(item.usedPercent) usado") }
             Text("Rede").font(.title2.bold())
             ForEach(lab.interfaces) { item in detail(item.iface, "↓ \(ByteCountFormatter.string(fromByteCount: item.rxBytes, countStyle: .file)) · ↑ \(ByteCountFormatter.string(fromByteCount: item.txBytes, countStyle: .file))") }
+            VisionInfraExtrasView()
         }
     }
 
