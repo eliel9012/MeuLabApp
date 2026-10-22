@@ -15,6 +15,9 @@ struct VisionRootView: View {
                 if lab.selection == .radar {
                     DashboardView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if lab.selection == .trip {
+                    VisionTripView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     VisionDataView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -109,6 +112,7 @@ struct VisionDataView: View {
                 VStack(alignment: .leading, spacing: 20) {
                     switch lab.selection {
                     case .radar: EmptyView()
+                    case .trip: EmptyView()
                     case .system: systemContent
                     case .infrastructure: infrastructureContent
                     case .radio: radioContent

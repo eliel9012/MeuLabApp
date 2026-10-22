@@ -42,4 +42,16 @@ final class MeuLabVisionUITests: XCTestCase {
         app.buttons["Aeroportos"].tap()
         XCTAssertTrue(app.buttons["Atualizar"].waitForExistence(timeout: 10))
     }
+
+    func testTripShowsItineraryFlightsAndWeather() {
+        let app = XCUIApplication()
+        app.launch()
+
+        let trip = app.buttons["Viagem"]
+        XCTAssertTrue(trip.waitForExistence(timeout: 15))
+        trip.tap()
+        XCTAssertTrue(app.staticTexts["8 trechos confirmados"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Clima na rota"].exists)
+        XCTAssertTrue(app.staticTexts["Roteiro"].exists)
+    }
 }

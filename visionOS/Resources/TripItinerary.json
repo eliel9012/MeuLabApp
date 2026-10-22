@@ -1,0 +1,608 @@
+[
+  {
+    "date": "22 out",
+    "events": [
+      {
+        "desc": "Pôster A0 já submetido em 01/10; falta só a impressão, por volta de 16 e 17/10. Prazo do short paper: 22/10.",
+        "icon": "📄",
+        "id": "d22.0",
+        "pending": true,
+        "time": "livre",
+        "title": "Short paper JOAS — falta imprimir o pôster",
+        "tz": "America/Sao_Paulo"
+      }
+    ],
+    "id": "d22",
+    "title": "Antes de embarcar",
+    "tone": "event",
+    "weekday": "quinta-feira"
+  },
+  {
+    "date": "23 out",
+    "events": [
+      {
+        "address": "Aeroporto Leite Lopes (RAO), Av. Thomaz Alberto Whately, Ribeirão Preto – SP",
+        "desc": "Sair de Franca de madrugada para estar no aeroporto por volta das 5h.",
+        "icon": "🚗",
+        "id": "d23.0",
+        "lat": -21.1392477,
+        "lon": -47.7765262,
+        "pending": false,
+        "time": "~05:00",
+        "title": "Sair para o aeroporto de Ribeirão Preto",
+        "tz": "America/Sao_Paulo"
+      },
+      {
+        "address": "Aeroporto Leite Lopes (RAO), Av. Thomaz Alberto Whately, Ribeirão Preto – SP",
+        "desc": "Chegada às 09:55. Voo com 1 conexão.",
+        "icon": "🛫",
+        "id": "d23.1",
+        "lat": -21.1392477,
+        "lon": -47.7765262,
+        "pending": false,
+        "time": "06:00",
+        "title": "Voo Azul AD 4211 — Ribeirão Preto (RAO) → Londrina (LDB)",
+        "tz": "America/Sao_Paulo"
+      }
+    ],
+    "id": "d23",
+    "title": "Ribeirão Preto → Londrina",
+    "tone": "travel",
+    "weekday": "sexta-feira"
+  },
+  {
+    "date": "24 out",
+    "events": [
+      {
+        "address": "Aeroporto de Londrina — José Richa (LDB), Av. dos Estudantes 1000, Londrina – PR",
+        "desc": "Chegada às 06:35. Voo direto.",
+        "icon": "✈️",
+        "id": "d24.0",
+        "lat": -23.328542,
+        "lon": -51.1377836,
+        "pending": false,
+        "time": "05:15",
+        "title": "Voo LATAM LA3691 — Londrina (LDB) → Guarulhos (GRU)",
+        "tz": "America/Sao_Paulo"
+      },
+      {
+        "address": "Aeroporto Internacional de Guarulhos (GRU), Rod. Hélio Smidt s/n, Cumbica, Guarulhos – SP",
+        "desc": "⚠️ Bilhetes separados (LATAM + Air Europa): retirar a bagagem, trocar de terminal e despachar de novo no balcão da Air Europa. Janela de 7h15 entre o pouso e a decolagem.",
+        "icon": "⏱️",
+        "id": "d24.1",
+        "lat": -23.4262732,
+        "lon": -46.4816737,
+        "pending": false,
+        "time": "06:35 → 13:50",
+        "title": "Conexão em Guarulhos (~7h) — bem folgada",
+        "tz": "America/Sao_Paulo"
+      },
+      {
+        "address": "Aeroporto Internacional de Guarulhos (GRU), Rod. Hélio Smidt s/n, Cumbica, Guarulhos – SP",
+        "desc": "Chegada às 04:00 de 25/10 (hora de Madri). Economy Standard, 10h10 de voo noturno. O check-in abre de 24 a 48h antes.",
+        "icon": "✈️",
+        "id": "d24.2",
+        "lat": -23.4262732,
+        "lon": -46.4816737,
+        "pending": false,
+        "time": "13:50",
+        "title": "Voo Air Europa UX 058 — Guarulhos (GRU) → Madri (MAD)",
+        "tz": "America/Sao_Paulo"
+      }
+    ],
+    "id": "d24",
+    "title": "Londrina → Guarulhos → Madri",
+    "tone": "travel",
+    "weekday": "sábado"
+  },
+  {
+    "date": "25 out",
+    "events": [
+      {
+        "address": "Aeroporto Adolfo Suárez Madrid-Barajas, Av. de la Hispanidad s/n, 28042 Madrid",
+        "desc": "A Europa saiu do horário de verão nesta madrugada: Madri fica 4h à frente de Brasília e Londres, 3h. Fila de imigração com biometria do EES.",
+        "icon": "🛬",
+        "id": "d25.0",
+        "lat": 40.4936983,
+        "lon": -3.5674678,
+        "pending": false,
+        "time": "04:00",
+        "title": "Chegada a Madri",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "Password to Madrid Plaza España, Calle San Leonardo 12, 28015 Madrid",
+        "desc": "1 noite (25 → 26/10), quarto individual econômico, café da manhã incluído, tarifa não reembolsável. Pedir para guardar a mala de manhã, já que o check-in é só às 15h.",
+        "icon": "🏨",
+        "id": "d25.1",
+        "lat": 40.4246355,
+        "lon": -3.7113767,
+        "pending": false,
+        "time": "15:00",
+        "title": "Check-in — Password to Madrid Plaza España",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "desc": "As urnas fecham às 17h de Brasília, que são 21h em Madri. Fora do domicílio eleitoral: justificar pelo e-Título no dia ou em até 60 dias.",
+        "icon": "🗳️",
+        "id": "d25.2",
+        "pending": false,
+        "time": "21:00",
+        "title": "Brasil — segundo turno",
+        "tz": "Europe/Madrid"
+      }
+    ],
+    "id": "d25",
+    "title": "Madri",
+    "tone": "leisure",
+    "weekday": "domingo"
+  },
+  {
+    "date": "26 out",
+    "events": [
+      {
+        "address": "Password to Madrid Plaza España, Calle San Leonardo 12, 28015 Madrid",
+        "desc": "Checkout cedo; confira se o café já está servido nesse horário. O T4S é o satélite, com trem interno, e a saída do Espaço Schengen passa por controle de passaporte. Estar lá umas 2h30 antes do voo.",
+        "icon": "🚇",
+        "id": "d26.0",
+        "lat": 40.4246355,
+        "lon": -3.7113767,
+        "pending": false,
+        "time": "07:00",
+        "title": "Sair para o Terminal 4S",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "Aeroporto Adolfo Suárez Madrid-Barajas, Terminal 4S, 28042 Madrid",
+        "desc": "Chegada às 10:50 (hora de Londres), no South Terminal de Gatwick. Economy, com 1 mala de 23 kg e 1 de cabine de 10 kg. Sem reembolso; alteração a 65 € mais a diferença tarifária.",
+        "icon": "✈️",
+        "id": "d26.1",
+        "lat": 40.4944735,
+        "lon": -3.5671731,
+        "pending": false,
+        "time": "09:30",
+        "title": "Voo Iberia IB 0983 — Madri (MAD) → Londres (LGW)",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "desc": "Na casa do Ivan ou hospedagem própria. Ainda por confirmar.",
+        "icon": "🏠",
+        "id": "d26.2",
+        "pending": true,
+        "time": "a definir",
+        "title": "Pouso em Londres, 26 a 28/10",
+        "tz": "Europe/London"
+      }
+    ],
+    "id": "d26",
+    "title": "Madri → Londres",
+    "tone": "travel",
+    "weekday": "segunda-feira"
+  },
+  {
+    "date": "27 out",
+    "events": [
+      {
+        "desc": "As urnas fecham às 22h de Israel. Boca de urna às 20h em Londres, 17h em Brasília.",
+        "icon": "🗳️",
+        "id": "d27.0",
+        "pending": false,
+        "time": "20:00",
+        "title": "Israel — eleição para o Knesset",
+        "tz": "Europe/London"
+      }
+    ],
+    "id": "d27",
+    "title": "Londres",
+    "tone": "leisure",
+    "weekday": "terça-feira"
+  },
+  {
+    "date": "28 out",
+    "events": [
+      {
+        "address": "Heathrow Terminal 5, Wallis Road, Harmondsworth, London TW6 2GA",
+        "desc": "Saída internacional com despacho de mala: umas 2h30 antes do voo.",
+        "icon": "🚇",
+        "id": "d28.0",
+        "lat": 51.472515,
+        "lon": -0.4877331,
+        "pending": false,
+        "time": "06:45",
+        "title": "Chegar a Heathrow, Terminal 5",
+        "tz": "Europe/London"
+      },
+      {
+        "address": "Heathrow Terminal 5, Wallis Road, Harmondsworth, London TW6 2GA",
+        "desc": "Chegada às 12:50 (hora de Madri), no T4S. Vendido como BA7053 (British Airways) e operado pela Iberia, tarifa Económica Plus. Nova entrada no Espaço Schengen, com nova fila do EES.",
+        "icon": "✈️",
+        "id": "d28.1",
+        "lat": 51.472515,
+        "lon": -0.4877331,
+        "pending": false,
+        "time": "09:15",
+        "title": "Voo Iberia IB 0712 — Londres (LHR) → Madri (MAD)",
+        "tz": "Europe/London"
+      },
+      {
+        "address": "Aeroporto Adolfo Suárez Madrid-Barajas, Terminal 4S, 28042 Madrid",
+        "desc": "Entre imigração, trem do satélite e esteira, conte uns 40 minutos até sair. O hotel fica em Rejas, a poucos minutos do CRIDA, com check-in às 14h: dá para deixar a mala antes do PostQat. Se apertar, o PostQat tem opção online.",
+        "icon": "🚕",
+        "id": "d28.2",
+        "lat": 40.4944735,
+        "lon": -3.5671731,
+        "pending": false,
+        "time": "13:30",
+        "title": "Aeroporto → hotel → CRIDA",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "Compostela Suites, Calle Zambrana 4, Rejas, San Blas-Canillejas, 28042 Madrid",
+        "desc": "Apartamento para uso individual, 1 noite (28 → 29/10), checkout às 12h. Cancelar agora custa US$ 114,70.",
+        "icon": "🏨",
+        "id": "d28.3",
+        "lat": 40.447426,
+        "lon": -3.5803092,
+        "pending": false,
+        "time": "14:00",
+        "title": "Check-in — Compostela Suites",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "CRIDA AIE (Centro de Referencia I+D+i ATM), Parque Empresarial Las Mercedes, Calle Campezo 1, Edificio 7, 4ª planta, 28022 Madrid",
+        "desc": "Inscrição confirmada. Chegada a partir das 14h. Há opção online se o voo atrasar.",
+        "icon": "🎓",
+        "id": "d28.4",
+        "lat": 40.4482277,
+        "lon": -3.5799175,
+        "pending": false,
+        "time": "15:00 → 18:00",
+        "title": "Workshop PostQat — Concept Development and Stakeholder Alignment",
+        "tz": "Europe/Madrid"
+      }
+    ],
+    "id": "d28",
+    "title": "Londres → Madri",
+    "tone": "travel",
+    "weekday": "quarta-feira"
+  },
+  {
+    "date": "29 out",
+    "events": [
+      {
+        "address": "CRIDA AIE (Centro de Referencia I+D+i ATM), Parque Empresarial Las Mercedes, Calle Campezo 1, Edificio 7, 4ª planta, 28022 Madrid",
+        "desc": "Inscrição confirmada. O pôster também fica exposto nos coffee breaks dos dois dias.",
+        "icon": "🎓",
+        "id": "d29.0",
+        "lat": 40.4482277,
+        "lon": -3.5799175,
+        "pending": false,
+        "time": "dia todo",
+        "title": "OpenSky Symposium, dia 1",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "Compostela Suites, Calle Zambrana 4, Rejas, San Blas-Canillejas, 28042 Madrid",
+        "desc": "A primeira sai às 12h e a segunda entra às 14h, em tipos de quarto diferentes. Pedir ao hotel para manter o mesmo quarto ou, antes de sair para o simpósio, fazer o checkout e deixar a mala na recepção.",
+        "icon": "🏨",
+        "id": "d29.1",
+        "lat": 40.447426,
+        "lon": -3.5803092,
+        "pending": true,
+        "time": "manhã",
+        "title": "Emendar as duas reservas do Compostela",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "CRIDA AIE (Centro de Referencia I+D+i ATM), Parque Empresarial Las Mercedes, Calle Campezo 1, Edificio 7, 4ª planta, 28022 Madrid",
+        "desc": "Pôster A0 do short paper JOAS.",
+        "icon": "🖼️",
+        "id": "d29.2",
+        "lat": 40.4482277,
+        "lon": -3.5799175,
+        "pending": false,
+        "time": "16:20 → 17:20",
+        "title": "Sessão de pôster",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "Compostela Suites, Calle Zambrana 4, Rejas, San Blas-Canillejas, 28042 Madrid",
+        "desc": "Apartamento de 1 quarto, 2 noites (29 → 31/10), checkout no sábado às 12h. Tarifa não reembolsável.",
+        "icon": "🏨",
+        "id": "d29.3",
+        "lat": 40.447426,
+        "lon": -3.5803092,
+        "pending": false,
+        "time": "noite",
+        "title": "Compostela Suites — segunda reserva",
+        "tz": "Europe/Madrid"
+      }
+    ],
+    "id": "d29",
+    "title": "OpenSky Symposium — dia 1",
+    "tone": "event",
+    "weekday": "quinta-feira"
+  },
+  {
+    "date": "30 out",
+    "events": [
+      {
+        "address": "CRIDA AIE (Centro de Referencia I+D+i ATM), Parque Empresarial Las Mercedes, Calle Campezo 1, Edificio 7, 4ª planta, 28022 Madrid",
+        "desc": "Inscrição confirmada. Noite livre em Madri depois do encerramento.",
+        "icon": "🎓",
+        "id": "d30.0",
+        "lat": 40.4482277,
+        "lon": -3.5799175,
+        "pending": false,
+        "time": "dia todo",
+        "title": "OpenSky Symposium, dia 2",
+        "tz": "Europe/Madrid"
+      }
+    ],
+    "id": "d30",
+    "title": "OpenSky Symposium — dia 2",
+    "tone": "event",
+    "weekday": "sexta-feira"
+  },
+  {
+    "date": "31 out",
+    "events": [
+      {
+        "address": "Compostela Suites, Calle Zambrana 4, Rejas, San Blas-Canillejas, 28042 Madrid",
+        "desc": "Checkout até as 12h. O hotel fica perto do aeroporto, então um voo a partir do meio da tarde encaixa bem.",
+        "icon": "🏨",
+        "id": "d31.0",
+        "lat": 40.447426,
+        "lon": -3.5803092,
+        "pending": false,
+        "time": "12:00",
+        "title": "Check-out — Compostela Suites",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "desc": "Trecho ainda não comprado.",
+        "icon": "🎫",
+        "id": "d31.1",
+        "pending": true,
+        "time": "tarde",
+        "title": "Voo a comprar — Madri → Londres",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "desc": "Na casa do Ivan ou hospedagem própria. Ainda por confirmar.",
+        "icon": "🏠",
+        "id": "d31.2",
+        "pending": true,
+        "time": "a definir",
+        "title": "Pouso em Londres, 31/10 a 2/11",
+        "tz": "Europe/London"
+      }
+    ],
+    "id": "d31",
+    "title": "Madri → Londres",
+    "tone": "travel",
+    "weekday": "sábado"
+  },
+  {
+    "date": "01 nov",
+    "events": [
+      {
+        "desc": "Os EUA saem do horário de verão hoje: Nova York passa a ficar 2h atrás de Brasília.",
+        "icon": "🤝",
+        "id": "d01.0",
+        "pending": false,
+        "time": "livre",
+        "title": "Dia livre com o Ivan",
+        "tz": "Europe/London"
+      }
+    ],
+    "id": "d01",
+    "title": "Londres — dia livre com o Ivan",
+    "tone": "leisure",
+    "weekday": "domingo"
+  },
+  {
+    "date": "02 nov",
+    "events": [
+      {
+        "address": "Apple Battersea, Battersea Power Station, Electric Boulevard, London",
+        "desc": "Inscrição aguardando aprovação. Resolver onde fica a mala durante o dia.",
+        "icon": "🍎",
+        "id": "d02.0",
+        "lat": 51.4818632,
+        "lon": -0.1449057,
+        "pending": true,
+        "time": "09:30 → 16:30",
+        "title": "Workshop Apple: iPhone Duo — Apple Battersea",
+        "tz": "Europe/London"
+      },
+      {
+        "address": "Apple Battersea, Battersea Power Station, Electric Boulevard, London",
+        "desc": "De Battersea ao London City Airport são cerca de uma hora de transporte público.",
+        "icon": "🚇",
+        "id": "d02.1",
+        "lat": 51.4818632,
+        "lon": -0.1449057,
+        "pending": false,
+        "time": "16:30",
+        "title": "Sair para o London City Airport",
+        "tz": "Europe/London"
+      },
+      {
+        "address": "London City Airport, Hartmann Road, London E16 2PX",
+        "desc": "Chegada às 22:35 (hora de Madri), no Terminal 4S. Voo direto, 2h20, operado pela BA Cityflyer, tarifa Económica Plus.",
+        "icon": "✈️",
+        "id": "d02.2",
+        "lat": 51.5042655,
+        "lon": 0.0549024,
+        "pending": false,
+        "time": "19:15",
+        "title": "Voo BA Cityflyer BA 3270 — Londres (LCY) → Madri (MAD)",
+        "tz": "Europe/London"
+      },
+      {
+        "address": "Hotel Don Luis, Avenida General 12, Barajas, 28042 Madrid",
+        "desc": "Quarto individual, sem café da manhã. Colado no aeroporto. R$ 353.",
+        "icon": "🏨",
+        "id": "d02.3",
+        "lat": 40.4727052,
+        "lon": -3.578643,
+        "pending": false,
+        "time": "23:00",
+        "title": "Check-in — Hotel Don Luis",
+        "tz": "Europe/Madrid"
+      }
+    ],
+    "id": "d02",
+    "title": "Londres → Madri",
+    "tone": "travel",
+    "weekday": "segunda-feira"
+  },
+  {
+    "date": "03 nov",
+    "events": [
+      {
+        "address": "Hotel Don Luis, Avenida General 12, Barajas, 28042 Madrid",
+        "desc": "O voo agora sai às 10:25: deixar o hotel por volta das 8h.",
+        "icon": "🧳",
+        "id": "d03.0",
+        "lat": 40.4727052,
+        "lon": -3.578643,
+        "pending": false,
+        "time": "08:00",
+        "title": "Sair para o aeroporto — checkout do Don Luis",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "Aeroporto Adolfo Suárez Madrid-Barajas, Av. de la Hispanidad s/n, 28042 Madrid",
+        "desc": "Chegada às 10:45 (hora de Lisboa, 1h atrás de Madri). Vendido pela Azul e operado pela Air Europa. Voo dentro do Espaço Schengen, sem controle de passaporte.",
+        "icon": "✈️",
+        "id": "d03.1",
+        "lat": 40.4936983,
+        "lon": -3.5674678,
+        "pending": false,
+        "time": "10:25",
+        "title": "Voo Azul AD 7854 — Madri (MAD) → Lisboa (LIS)",
+        "tz": "Europe/Madrid"
+      },
+      {
+        "address": "Aeroporto Humberto Delgado, Alameda das Comunidades Portuguesas, Lisboa",
+        "desc": "Metrô, linha vermelha, uns 10 minutos, ou táxi. Confirme no check-in em Madri que a mala despachada vai direto para Campinas: sem esteira, a janela até o trem fica tranquila; com esteira, aperta.",
+        "icon": "🚇",
+        "id": "d03.2",
+        "lat": 38.7809981,
+        "lon": -9.1318608,
+        "pending": true,
+        "time": "11:00",
+        "title": "Aeroporto de Lisboa → Oriente",
+        "tz": "Europe/Lisbon"
+      },
+      {
+        "address": "Estação do Oriente, Avenida de Berlim, Lisboa",
+        "desc": "Chegada às 14:48. Carruagem 3, lugar 51.",
+        "icon": "🚆",
+        "id": "d03.3",
+        "lat": 38.7680297,
+        "lon": -9.0999227,
+        "pending": false,
+        "time": "12:09 → 14:48",
+        "title": "Trem Alfa Pendular AP 125 — Lisboa Oriente → Porto Campanhã",
+        "tz": "Europe/Lisbon"
+      },
+      {
+        "address": "Estação Porto Campanhã, Largo da Estação, Porto",
+        "desc": "Sem hotel: tudo o que você carregar vai junto até o trem da madrugada.",
+        "icon": "🍽️",
+        "id": "d03.4",
+        "lat": 41.148741,
+        "lon": -8.5854585,
+        "pending": false,
+        "time": "tarde",
+        "title": "Tarde e noite no Porto",
+        "tz": "Europe/Lisbon"
+      },
+      {
+        "desc": "As primeiras urnas fecham às 18h de Nova York, 23h em Portugal e 20h em Brasília. Os resultados decisivos saem de madrugada, com você no Porto e depois no trem.",
+        "icon": "🗳️",
+        "id": "d03.5",
+        "pending": false,
+        "time": "23:00",
+        "title": "EUA — eleições de meio de mandato",
+        "tz": "Europe/Lisbon"
+      }
+    ],
+    "id": "d03",
+    "title": "Madri → Lisboa → Porto",
+    "tone": "travel",
+    "weekday": "terça-feira"
+  },
+  {
+    "date": "04 nov",
+    "events": [
+      {
+        "address": "Estação Porto Campanhã, Largo da Estação, Porto",
+        "desc": "Chegada às 05:50. Noite no trem. Vale conferir no app da CP, perto da data, se o horário continua o mesmo.",
+        "icon": "🚆",
+        "id": "d04.0",
+        "lat": 41.148741,
+        "lon": -8.5854585,
+        "pending": false,
+        "time": "01:08 → 05:50",
+        "title": "Trem Regional R 3400 — Porto Campanhã → Lisboa Oriente",
+        "tz": "Europe/Lisbon"
+      },
+      {
+        "address": "Estação do Oriente, Avenida de Berlim, Lisboa",
+        "desc": "O metrô costuma abrir por volta das 6h30; de táxi ou aplicativo são uns 10 minutos. Chegar ao aeroporto até umas 6h15.",
+        "icon": "🚕",
+        "id": "d04.1",
+        "lat": 38.7680297,
+        "lon": -9.0999227,
+        "pending": false,
+        "time": "05:50",
+        "title": "Sair para o aeroporto de Lisboa",
+        "tz": "Europe/Lisbon"
+      },
+      {
+        "address": "Aeroporto Humberto Delgado, Alameda das Comunidades Portuguesas, Lisboa",
+        "desc": "Chegada às 16:50 (hora de Brasília). Saída do Espaço Schengen em Lisboa: estar no aeroporto umas 3h antes.",
+        "icon": "🛫",
+        "id": "d04.2",
+        "lat": 38.7809981,
+        "lon": -9.1318608,
+        "pending": false,
+        "time": "09:15",
+        "title": "Voo Azul AD 8751 — Lisboa (LIS) → Campinas (VCP)",
+        "tz": "Europe/Lisbon"
+      },
+      {
+        "address": "Terminal Rodoviário de Campinas — Ramos de Azevedo, Rua Doutor Pereira Lima, Campinas – SP",
+        "desc": "Entre imigração, bagagem e alfândega, conte cerca de 1h após o pouso. Depois, aplicativo ou táxi, uns 30 a 40 minutos. Sobra por volta de 1h de folga; se o voo atrasar muito, remarque o ônibus.",
+        "icon": "🚕",
+        "id": "d04.3",
+        "lat": -22.9058921,
+        "lon": -47.0725672,
+        "pending": false,
+        "time": "18:00",
+        "title": "Viracopos → Rodoviária de Campinas",
+        "tz": "America/Sao_Paulo"
+      },
+      {
+        "address": "Terminal Rodoviário de Campinas — Ramos de Azevedo, Rua Doutor Pereira Lima, Campinas – SP",
+        "desc": "Chegada à 01:40 de 05/11. Poltrona 22. Embarque direto: vá à plataforma e mostre ao motorista o cartão de embarque que chega por e-mail.",
+        "icon": "🚌",
+        "id": "d04.4",
+        "lat": -22.9058921,
+        "lon": -47.0725672,
+        "pending": false,
+        "time": "20:00",
+        "title": "Ônibus Cometa — Campinas → Franca",
+        "tz": "America/Sao_Paulo"
+      }
+    ],
+    "id": "d04",
+    "title": "Porto → Lisboa → Campinas → Franca",
+    "tone": "home",
+    "weekday": "quarta-feira"
+  }
+]

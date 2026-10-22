@@ -20,6 +20,7 @@ targets:
     sources:
       - path: Sources
       - path: Assets.xcassets
+      - path: Resources
       - path: ../MeuLabApp/Models/AviationStackModels.swift
       - path: ../MeuLabApp/Models/SystemModels.swift
       - path: ../MeuLabApp/Models/RadioModels.swift

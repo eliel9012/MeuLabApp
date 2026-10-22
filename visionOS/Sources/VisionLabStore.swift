@@ -4,6 +4,7 @@ import Observation
 
 enum VisionSection: String, CaseIterable, Identifiable {
     case radar = "ADS-B"
+    case trip = "Viagem"
     case system = "Sistema"
     case infrastructure = "Infraestrutura"
     case radio = "Rádio"
@@ -14,6 +15,7 @@ enum VisionSection: String, CaseIterable, Identifiable {
     var symbol: String {
         switch self {
         case .radar: "airplane"
+        case .trip: "suitcase.rolling.fill"
         case .system: "cpu"
         case .infrastructure: "server.rack"
         case .radio: "radio"
@@ -149,13 +151,14 @@ final class VisionLabStore {
     }
 
     func refresh() async {
-        guard selection != .radar else { return }
+        guard selection != .radar, selection != .trip else { return }
         isLoading = true
         defer { isLoading = false }
         do {
             let api = try VisionAPIClient()
             switch selection {
             case .radar: break
+            case .trip: break
             case .system:
                 system = try await api.fetch("api/system/status")
             case .infrastructure:
