@@ -18,6 +18,9 @@ final class FlightStore {
     var mapStyle: RadarMapStyle = .standard
     var showAirports = true
     var showTrails = false
+    var showClouds = true
+    var cloudCapturedAt: Date?
+    var cloudError: String?
     var showMapLabels = true
     var followsSelection = false
     var isMapOpen = false

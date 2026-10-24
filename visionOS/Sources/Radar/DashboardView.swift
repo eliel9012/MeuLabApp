@@ -11,7 +11,7 @@ struct DashboardView: View {
             VStack(alignment: .leading, spacing: 17) {
                 header
                 StatisticsView(now: timeline.date)
-                controls
+                controls(at: timeline.date)
 
                 if let errorMessage = store.errorMessage {
                     Label(errorMessage, systemImage: "wifi.exclamationmark")
@@ -95,7 +95,7 @@ struct DashboardView: View {
         }
     }
 
-    private var controls: some View {
+    private func controls(at timelineDate: Date) -> some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack(spacing: 12) {
                 Text(store.status)
@@ -155,6 +155,23 @@ struct DashboardView: View {
                         .foregroundStyle(.secondary)
                 } else if store.isLoading {
                     ProgressView().controlSize(.small)
+                }
+
+                if store.isVolumeOpen, store.showClouds {
+                    if let captured = store.cloudCapturedAt {
+                        Text("GOES-East IR · \(captured.formatted(date: .omitted, time: .shortened)) · \(Int(max(0, timelineDate.timeIntervalSince(captured)) / 60)) min")
+                            .font(.caption.monospacedDigit())
+                            .foregroundStyle(.cyan)
+                    } else if let error = store.cloudError {
+                        Text("Satélite: \(error)")
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .lineLimit(1)
+                    } else {
+                        Text("Carregando satélite…")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
                 }
 
                 Spacer()

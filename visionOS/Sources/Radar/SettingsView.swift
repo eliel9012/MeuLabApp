@@ -37,6 +37,15 @@ struct SettingsView: View {
                     .font(.caption).foregroundStyle(.secondary)
             }
             Section("Dados") {
+                Toggle("Nuvens por satélite na mesa", isOn: Binding(
+                    get: { store.showClouds },
+                    set: { store.showClouds = $0 }
+                ))
+                Text("GOES-East infravermelho: temperatura dos topos de nuvens, atualizada automaticamente a cada 10 min. A captura pode chegar com atraso.")
+                    .font(.caption).foregroundStyle(.secondary)
+                Link("Satélite: NASA GIBS / GOES-East ABI",
+                     destination: URL(string: "https://worldview.earthdata.nasa.gov/")!)
+                    .font(.caption)
                 LabeledContent("Endpoint", value: "radar.meulab.fun")
                 LabeledContent("Frescor da posição", value: "30 segundos")
                 LabeledContent("Atualização", value: "3 s; backoff em falhas")

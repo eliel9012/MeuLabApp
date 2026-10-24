@@ -75,7 +75,7 @@ struct RadarTerrain {
                         radiusKilometers: radiusKilometers)
     }
 
-    func mesh(radiusKilometers: Double, textureCoordinates: [SIMD2<Float>]?) throws -> MeshResource {
+    func mesh(radiusKilometers: Double, textureCoordinates: [SIMD2<Float>]?, verticalOffset: Float = 0) throws -> MeshResource {
         let size = RadarVisualGeometry.meshResolution
         let visualRadius = RadarVisualGeometry.mapRadius
         let step = visualRadius * 2 / Float(size - 1)
@@ -93,7 +93,7 @@ struct RadarTerrain {
                 let y = surfaceY(eastMeters: Double(x) * metersPerVisualMeter,
                                  northMeters: -Double(z) * metersPerVisualMeter,
                                  radiusKilometers: radiusKilometers)
-                positions.append([x, y, z])
+                positions.append([x, y + verticalOffset, z])
                 coordinates.append(textureCoordinates?[row * size + column]
                     ?? [Float(column) / Float(size - 1), 1 - Float(row) / Float(size - 1)])
             }

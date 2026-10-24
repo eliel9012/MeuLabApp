@@ -35,6 +35,7 @@
 		9F868B477B764F01D1C93B6D /* VisionLabStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = F45EF5E443C582CB4CEFE6D6 /* VisionLabStore.swift */; };
 		A374059984DF2C24EB11DDE2 /* AircraftDecoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B24AD8F820CF8986A63D1523 /* AircraftDecoder.swift */; };
 		A3884BAA1B939023A92F1E3D /* Formatters.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0AE79B3ED10643FA069DD785 /* Formatters.swift */; };
+		A40CBB1074A64B83B91A5660 /* RadarCloudSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = 17800E8DC98A62D431F7D582 /* RadarCloudSnapshot.swift */; };
 		BD3B2E138803EA82F399142A /* MeuLabVisionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2CEA0029006525D7AFDFDB7 /* MeuLabVisionUITests.swift */; };
 		C58B099D1641484B220E8804 /* MeuLabVisionApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 88C21742CD0B97DA602C77BB /* MeuLabVisionApp.swift */; };
 		CC400623A4C14FAF288C9D5C /* ReadsbAircraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = 76C1BE4695C0F89D9F39ABDF /* ReadsbAircraft.swift */; };
@@ -64,6 +65,7 @@
 		0885BD0E754B8FF8AA30F39B /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		0AE79B3ED10643FA069DD785 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
 		14E21DE070FC6A97B733E88E /* FrancaTerrain.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = FrancaTerrain.json; sourceTree = "<group>"; };
+		17800E8DC98A62D431F7D582 /* RadarCloudSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarCloudSnapshot.swift; sourceTree = "<group>"; };
 		2BAFA59F600F230B4F0ECA62 /* AviationStackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationStackModels.swift; sourceTree = "<group>"; };
 		2CB212C38117D557BE1368FD /* Geodesy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geodesy.swift; sourceTree = "<group>"; };
 		323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAlertsView.swift; sourceTree = "<group>"; };
@@ -170,6 +172,7 @@
 				FB7512A15377EAF996CEA757 /* DashboardView.swift */,
 				40B5E332BC5A97609A0903CD /* FlightStore.swift */,
 				2CB212C38117D557BE1368FD /* Geodesy.swift */,
+				17800E8DC98A62D431F7D582 /* RadarCloudSnapshot.swift */,
 				CFBA59CE9A30DF02A8ED3627 /* RadarMapSnapshot.swift */,
 				02EE6344AF837F933C904F16 /* RadarMapWindowView.swift */,
 				6B4EBECF33C0FBBFC6EFCF34 /* RadarSceneController.swift */,
@@ -371,6 +374,7 @@
 				A3884BAA1B939023A92F1E3D /* Formatters.swift in Sources */,
 				87F9B0BC1764E323A1F54BAD /* Geodesy.swift in Sources */,
 				C58B099D1641484B220E8804 /* MeuLabVisionApp.swift in Sources */,
+				A40CBB1074A64B83B91A5660 /* RadarCloudSnapshot.swift in Sources */,
 				551EA93DF2BA299647CB74A6 /* RadarMapSnapshot.swift in Sources */,
 				2F56431B7BBE0FD32C7B8E68 /* RadarMapWindowView.swift in Sources */,
 				4B2DAB7D62326A7B688A88B2 /* RadarSceneController.swift in Sources */,

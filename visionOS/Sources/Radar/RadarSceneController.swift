@@ -18,8 +18,10 @@ final class RadarSceneController {
     private var markers: [String: ModelEntity] = [:]
     private var stems: [String: ModelEntity] = [:]
     private var terrainSurface: ModelEntity?
+    private var cloudSurface: ModelEntity?
     private var currentRadius: Double = -1
     private var currentMapRevision = -1
+    private var currentCloudRevision = -1
     private var currentTrailKey = ""
     private let groundY = RadarVisualGeometry.groundY
     private let visualRadius = RadarVisualGeometry.mapRadius
@@ -50,7 +52,9 @@ final class RadarSceneController {
         currentRadius = radiusKilometers
         background.children.forEach { $0.removeFromParent() }
         terrainSurface = nil
+        cloudSurface = nil
         currentMapRevision = -1
+        currentCloudRevision = -1
 
         let halfTable = RadarVisualGeometry.tableWidth / 2
         for x in [-halfTable, halfTable] {
@@ -134,6 +138,21 @@ final class RadarSceneController {
             background.addChild(plane)
             terrainSurface = plane
         }
+    }
+
+    func setClouds(_ surface: RadarCloudSurface?, revision: Int) {
+        guard currentCloudRevision != revision else { return }
+        currentCloudRevision = revision
+        cloudSurface?.removeFromParent()
+        cloudSurface = nil
+        guard let surface, let terrain = RadarTerrain.shared,
+              let mesh = try? terrain.mesh(radiusKilometers: currentRadius,
+                                           textureCoordinates: surface.textureCoordinates,
+                                           verticalOffset: 0.007) else { return }
+        let entity = ModelEntity(mesh: mesh, materials: [UnlitMaterial(texture: surface.texture)])
+        entity.name = "goes-east-infrared"
+        background.addChild(entity)
+        cloudSurface = entity
     }
 
     func reconcile(aircraft: [Aircraft], selectedHex: String?, settings: RadarSettings, ageByHex: [String: Double]) {

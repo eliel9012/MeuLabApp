@@ -6,6 +6,8 @@ struct RadarVolumeView: View {
     @State private var scene = RadarSceneController()
     @State private var mapSurface: RadarMapSurface?
     @State private var mapRevision = 0
+    @State private var cloudSurface: RadarCloudSurface?
+    @State private var cloudRevision = 0
     @State private var dragStartPosition: SIMD3<Float>?
 
     var body: some View {
@@ -13,6 +15,7 @@ struct RadarVolumeView: View {
             RealityView { content, attachments in
                 scene.buildBackground(radiusKilometers: store.settings.radiusKilometers)
                 scene.setMap(mapSurface, revision: mapRevision)
+                scene.setClouds(cloudSurface, revision: cloudRevision)
                 scene.reconcile(
                     aircraft: store.renderableAircraft(at: timeline.date),
                     selectedHex: store.selectedHex,
@@ -33,6 +36,7 @@ struct RadarVolumeView: View {
                 // invoked when aircraft, settings or the selection changes.
                 scene.buildBackground(radiusKilometers: store.settings.radiusKilometers)
                 scene.setMap(mapSurface, revision: mapRevision)
+                scene.setClouds(cloudSurface, revision: cloudRevision)
                 scene.reconcile(
                     aircraft: store.renderableAircraft(at: timeline.date),
                     selectedHex: store.selectedHex,
@@ -99,6 +103,31 @@ struct RadarVolumeView: View {
                 mapRevision += 1
             } catch {
                 // Real DEM relief and radar grid remain available if MapKit cannot load.
+            }
+        }
+        .task(id: "\(store.settings.radiusKilometers)-\(store.showClouds)") {
+            cloudSurface = nil
+            cloudRevision += 1
+            store.cloudCapturedAt = nil
+            store.cloudError = nil
+            guard store.showClouds else { return }
+            while !Task.isCancelled {
+                do {
+                    let result = try await RadarCloudSnapshot.surface(radiusKilometers: store.settings.radiusKilometers)
+                    guard !Task.isCancelled else { return }
+                    cloudSurface = result
+                    cloudRevision += 1
+                    store.cloudCapturedAt = result.capturedAt
+                    store.cloudError = nil
+                    try await Task.sleep(for: .seconds(600))
+                } catch {
+                    guard !Task.isCancelled else { return }
+                    cloudSurface = nil
+                    cloudRevision += 1
+                    store.cloudCapturedAt = nil
+                    store.cloudError = error.localizedDescription
+                    try? await Task.sleep(for: .seconds(120))
+                }
             }
         }
     }
