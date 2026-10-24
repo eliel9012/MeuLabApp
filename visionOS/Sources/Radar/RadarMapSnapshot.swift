@@ -2,14 +2,20 @@ import MapKit
 import RealityKit
 import UIKit
 
+struct RadarMapSurface {
+    let texture: TextureResource
+    let textureCoordinates: [SIMD2<Float>]
+}
+
 /// Apple Maps snapshot centered on the same receiver used by the iPhone app.
 @MainActor
 enum RadarMapSnapshot {
     private static let imageSize = CGSize(width: 1_024, height: 1_024)
 
-    static func texture(radiusKilometers: Double, style: RadarMapStyle) async throws -> TextureResource {
+    static func surface(radiusKilometers: Double, style: RadarMapStyle) async throws -> RadarMapSurface {
         let center = Geodesy.approximateFranca
-        let latitudeDelta = radiusKilometers * 2 / 111.32
+        // Extra margin accommodates Mercator distortion at the square's corners.
+        let latitudeDelta = radiusKilometers * 2.3 / 111.32
         let longitudeDelta = latitudeDelta / cos(center.latitudeDegrees * .pi / 180)
         let coordinate = CLLocationCoordinate2D(
             latitude: center.latitudeDegrees,
@@ -38,11 +44,28 @@ enum RadarMapSnapshot {
             drawFranca(at: marker, in: context.cgContext)
         }
         guard let cgImage = image.cgImage else { throw RadarMapError.imageUnavailable }
-        return try await TextureResource(
+        let texture = try await TextureResource(
             image: cgImage,
             withName: "franca-apple-map-\(Int(radiusKilometers))-\(style.rawValue)",
             options: .init(semantic: .color)
         )
+        let size = RadarVisualGeometry.meshResolution
+        let radiusMeters = radiusKilometers * 1_000
+        var coordinates: [SIMD2<Float>] = []
+        coordinates.reserveCapacity(size * size)
+        for row in 0..<size {
+            let north = radiusMeters * (1 - Double(row) * 2 / Double(size - 1))
+            for column in 0..<size {
+                let east = radiusMeters * (Double(column) * 2 / Double(size - 1) - 1)
+                let location = Geodesy.surfaceCoordinate(eastMeters: east, northMeters: north)
+                let point = snapshot.point(for: .init(latitude: location.latitudeDegrees,
+                                                      longitude: location.longitudeDegrees))
+                let u = Float(min(1, max(0, point.x / imageSize.width)))
+                let v = Float(1 - min(1, max(0, point.y / imageSize.height)))
+                coordinates.append([u, v])
+            }
+        }
+        return .init(texture: texture, textureCoordinates: coordinates)
     }
 
     private static func drawFranca(at point: CGPoint, in context: CGContext) {

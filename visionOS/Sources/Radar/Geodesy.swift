@@ -20,7 +20,7 @@ struct ENUCoordinate: Sendable {
     var horizontalDistanceMeters: Double { hypot(east, north) }
 }
 
-/// Coordinate in a 0.9 m wide RealityKit volume. X east, Y up, -Z north.
+/// Coordinate in the RealityKit volume. X east, Y up, -Z north.
 struct RadarVisualCoordinate: Sendable {
     let x: Double
     let y: Double
@@ -62,17 +62,50 @@ enum Geodesy {
         )
     }
 
+    /// WGS84 surface coordinate at an ENU offset from the receiver.
+    static func surfaceCoordinate(eastMeters: Double, northMeters: Double) -> GeodeticCoordinate {
+        let origin = approximateFranca
+        let base = ecef(origin)
+        let lat = origin.latitudeDegrees * .pi / 180
+        let lon = origin.longitudeDegrees * .pi / 180
+        let east = SIMD3(-sin(lon), cos(lon), 0.0)
+        let north = SIMD3(-sin(lat) * cos(lon), -sin(lat) * sin(lon), cos(lat))
+        let up = SIMD3(cos(lat) * cos(lon), cos(lat) * sin(lon), sin(lat))
+        let q = SIMD3(base.x, base.y, base.z) + east * eastMeters + north * northMeters
+        let a2 = semiMajorAxis * semiMajorAxis
+        let b = semiMajorAxis * (1 - 1 / inverseFlattening)
+        let b2 = b * b
+        let aa = (up.x * up.x + up.y * up.y) / a2 + up.z * up.z / b2
+        let bb = 2 * ((q.x * up.x + q.y * up.y) / a2 + q.z * up.z / b2)
+        let cc = (q.x * q.x + q.y * q.y) / a2 + q.z * q.z / b2 - 1
+        let height = (-bb + sqrt(max(0, bb * bb - 4 * aa * cc))) / (2 * aa)
+        let point = q + up * height
+        let longitude = atan2(point.y, point.x)
+        let horizontal = hypot(point.x, point.y)
+        var latitude = atan2(point.z, horizontal * (1 - eccentricitySquared))
+        for _ in 0..<5 {
+            let radius = semiMajorAxis / sqrt(1 - eccentricitySquared * pow(sin(latitude), 2))
+            latitude = atan2(point.z + eccentricitySquared * radius * sin(latitude), horizontal)
+        }
+        return .init(latitudeDegrees: latitude * 180 / .pi,
+                     longitudeDegrees: longitude * 180 / .pi, altitudeMeters: 0)
+    }
+
     /// Deliberately non-uniform vertical exaggeration for a human-scale volume.
-    /// The horizontal range spans 0.34 m in each direction; "Y" is not to that scale.
+    /// Aircraft height is scaled from receiver elevation; "Y" is not to horizontal scale.
     static func visualPosition(enu: ENUCoordinate, displayedAltitudeMeters: Double,
                                radiusKilometers: Double, verticalExaggeration: Double) -> RadarVisualCoordinate? {
         guard radiusKilometers.isFinite, radiusKilometers > 0,
               verticalExaggeration.isFinite, verticalExaggeration > 0,
               displayedAltitudeMeters.isFinite else { return nil }
-        let normalized = 0.34 / (radiusKilometers * 1000)
+        let normalized = Double(RadarVisualGeometry.mapRadius) / (radiusKilometers * 1000)
+        let terrain = RadarTerrain.shared
+        let baseline = Double(RadarVisualGeometry.groundY)
+            + (terrain == nil ? 0 : Double(RadarVisualGeometry.terrainBaseHeight))
+        let relativeAltitude = max(0, displayedAltitudeMeters - (terrain?.centerElevationMeters ?? 0))
         return RadarVisualCoordinate(
             x: enu.east * normalized,
-            y: -0.22 + min(0.44, max(0, displayedAltitudeMeters) / 16_000 * 0.24 * verticalExaggeration),
+            y: baseline + min(0.44, relativeAltitude / 16_000 * 0.24 * verticalExaggeration),
             z: -enu.north * normalized
         )
     }

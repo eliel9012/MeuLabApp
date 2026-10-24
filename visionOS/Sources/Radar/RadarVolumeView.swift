@@ -4,14 +4,15 @@ import SwiftUI
 struct RadarVolumeView: View {
     @Environment(FlightStore.self) private var store
     @State private var scene = RadarSceneController()
-    @State private var mapTexture: TextureResource?
+    @State private var mapSurface: RadarMapSurface?
+    @State private var mapRevision = 0
     @State private var dragStartPosition: SIMD3<Float>?
 
     var body: some View {
         TimelineView(.periodic(from: .now, by: 5)) { timeline in
             RealityView { content, attachments in
                 scene.buildBackground(radiusKilometers: store.settings.radiusKilometers)
-                scene.setMap(mapTexture)
+                scene.setMap(mapSurface, revision: mapRevision)
                 scene.reconcile(
                     aircraft: store.renderableAircraft(at: timeline.date),
                     selectedHex: store.selectedHex,
@@ -31,7 +32,7 @@ struct RadarVolumeView: View {
                 // SwiftUI tracks store accesses in the update closure, so this is
                 // invoked when aircraft, settings or the selection changes.
                 scene.buildBackground(radiusKilometers: store.settings.radiusKilometers)
-                scene.setMap(mapTexture)
+                scene.setMap(mapSurface, revision: mapRevision)
                 scene.reconcile(
                     aircraft: store.renderableAircraft(at: timeline.date),
                     selectedHex: store.selectedHex,
@@ -86,14 +87,18 @@ struct RadarVolumeView: View {
         .onDisappear { store.isVolumeOpen = false }
         .task { store.start() }
         .task(id: "\(store.settings.radiusKilometers)-\(store.mapStyle.rawValue)") {
-            mapTexture = nil
+            mapSurface = nil
+            mapRevision += 1
             do {
-                mapTexture = try await RadarMapSnapshot.texture(
+                let result = try await RadarMapSnapshot.surface(
                     radiusKilometers: store.settings.radiusKilometers,
                     style: store.mapStyle
                 )
+                guard !Task.isCancelled else { return }
+                mapSurface = result
+                mapRevision += 1
             } catch {
-                // The radar grid remains available if MapKit cannot load.
+                // Real DEM relief and radar grid remain available if MapKit cannot load.
             }
         }
     }
@@ -106,21 +111,10 @@ struct RadarVolumeView: View {
 
     private func placeLabels(attachments: RealityViewAttachments, content: RealityViewContent, at date: Date) {
         for flight in store.renderableAircraft(at: date) {
-            guard let lat = flight.latitude, let lon = flight.longitude,
+            guard flight.latitude != nil, flight.longitude != nil,
                   let label = attachments.entity(for: flight.hex) else { continue }
-            let coordinate = GeodeticCoordinate(
-                latitudeDegrees: lat,
-                longitudeDegrees: lon,
-                altitudeMeters: flight.geometricAltitudeMeters ?? flight.altitudeMeters ?? 0
-            )
-            let enu = Geodesy.enu(coordinate, relativeTo: Geodesy.approximateFranca)
-            guard let visual = Geodesy.visualPosition(
-                enu: enu,
-                displayedAltitudeMeters: flight.altitudeMeters ?? 0,
-                radiusKilometers: store.settings.radiusKilometers,
-                verticalExaggeration: store.settings.verticalExaggeration
-            ) else { continue }
-            label.position = [Float(visual.x) + 0.035, Float(visual.y) + 0.035, Float(visual.z)]
+            guard let position = scene.markerPosition(for: flight.hex) else { continue }
+            label.position = position + [0.035, 0.035, 0]
             if label.parent == nil { scene.root.addChild(label) }
         }
     }

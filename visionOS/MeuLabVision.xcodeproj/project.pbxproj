@@ -23,7 +23,9 @@
 		551EA93DF2BA299647CB74A6 /* RadarMapSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFBA59CE9A30DF02A8ED3627 /* RadarMapSnapshot.swift */; };
 		5FAE1D7F61FC8E370FA47E3F /* Aircraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78BADAACBA14E60D755F7E2 /* Aircraft.swift */; };
 		610225FF5AE86BE2CA9D5914 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0885BD0E754B8FF8AA30F39B /* StatisticsView.swift */; };
+		705AD12541CFBC079D31D13B /* RadarTerrain.swift in Sources */ = {isa = PBXBuildFile; fileRef = 94D2611861C579AD0CC4F644 /* RadarTerrain.swift */; };
 		7AF529D701F4FFC6B2D96959 /* VisionTripModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4CE7101425219ADF3237D670 /* VisionTripModels.swift */; };
+		83482203104780B7827C655E /* FrancaTerrain.json in Resources */ = {isa = PBXBuildFile; fileRef = 14E21DE070FC6A97B733E88E /* FrancaTerrain.json */; };
 		87F9B0BC1764E323A1F54BAD /* Geodesy.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2CB212C38117D557BE1368FD /* Geodesy.swift */; };
 		8FC56F8E9470E2A5C6EF5C92 /* AircraftEntityFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4D7D7ABA8B1E6087E2B423C9 /* AircraftEntityFactory.swift */; };
 		998BF07B6E92C47651D36BF6 /* DashboardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FB7512A15377EAF996CEA757 /* DashboardView.swift */; };
@@ -40,6 +42,7 @@
 		E30432825A3DC1235A0C61AD /* VisionInfraExtrasView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDD518AB77A4ECD9851EFC67 /* VisionInfraExtrasView.swift */; };
 		E3D351D33287D997397927A1 /* VisionAnalyticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12307CBAEE10DEC9239F07D /* VisionAnalyticsView.swift */; };
 		E52347E528306836B3913081 /* WeatherModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC2DCD6F574FAA7ECA393919 /* WeatherModels.swift */; };
+		EC1058F0B4FD8E0EC9FFBC74 /* FrancaTerrain.bin in Resources */ = {isa = PBXBuildFile; fileRef = AA52EB85F1C3474B96126662 /* FrancaTerrain.bin */; };
 		F4846CCF6F6F5F70BEF219B4 /* RadarSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4E926EE03F39E50855BF21C1 /* RadarSettings.swift */; };
 		F8670124A3502F45E35BDCA0 /* AviationStackModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2BAFA59F600F230B4F0ECA62 /* AviationStackModels.swift */; };
 /* End PBXBuildFile section */
@@ -60,6 +63,7 @@
 		04FB0A74FC27B7CB0D03BB57 /* VisionRootView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionRootView.swift; sourceTree = "<group>"; };
 		0885BD0E754B8FF8AA30F39B /* StatisticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StatisticsView.swift; sourceTree = "<group>"; };
 		0AE79B3ED10643FA069DD785 /* Formatters.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Formatters.swift; sourceTree = "<group>"; };
+		14E21DE070FC6A97B733E88E /* FrancaTerrain.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = FrancaTerrain.json; sourceTree = "<group>"; };
 		2BAFA59F600F230B4F0ECA62 /* AviationStackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationStackModels.swift; sourceTree = "<group>"; };
 		2CB212C38117D557BE1368FD /* Geodesy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geodesy.swift; sourceTree = "<group>"; };
 		323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAlertsView.swift; sourceTree = "<group>"; };
@@ -78,6 +82,8 @@
 		8B5C91BEB1366C4620C091A2 /* VisionFlightSearchView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionFlightSearchView.swift; sourceTree = "<group>"; };
 		8B6C30FE5DE91A9960C6BE2C /* TripItinerary.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = TripItinerary.json; sourceTree = "<group>"; };
 		9407B510605FFA7F5118CB91 /* AircraftListView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftListView.swift; sourceTree = "<group>"; };
+		94D2611861C579AD0CC4F644 /* RadarTerrain.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarTerrain.swift; sourceTree = "<group>"; };
+		AA52EB85F1C3474B96126662 /* FrancaTerrain.bin */ = {isa = PBXFileReference; lastKnownFileType = archive.macbinary; path = FrancaTerrain.bin; sourceTree = "<group>"; };
 		AD3F781CCABB04268595B4E1 /* VisionTripView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionTripView.swift; sourceTree = "<group>"; };
 		B24AD8F820CF8986A63D1523 /* AircraftDecoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AircraftDecoder.swift; sourceTree = "<group>"; };
 		B2CEA0029006525D7AFDFDB7 /* MeuLabVisionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MeuLabVisionUITests.swift; sourceTree = "<group>"; };
@@ -168,6 +174,7 @@
 				02EE6344AF837F933C904F16 /* RadarMapWindowView.swift */,
 				6B4EBECF33C0FBBFC6EFCF34 /* RadarSceneController.swift */,
 				4E926EE03F39E50855BF21C1 /* RadarSettings.swift */,
+				94D2611861C579AD0CC4F644 /* RadarTerrain.swift */,
 				890B7D0FCBCF7A3DBD5828AA /* RadarVolumeView.swift */,
 				76C1BE4695C0F89D9F39ABDF /* ReadsbAircraft.swift */,
 				8916CBBE95B5EE9E87B2A77C /* SettingsView.swift */,
@@ -202,6 +209,8 @@
 		B5624B13398CFAFF46DA4192 /* Resources */ = {
 			isa = PBXGroup;
 			children = (
+				AA52EB85F1C3474B96126662 /* FrancaTerrain.bin */,
+				14E21DE070FC6A97B733E88E /* FrancaTerrain.json */,
 				8B6C30FE5DE91A9960C6BE2C /* TripItinerary.json */,
 			);
 			path = Resources;
@@ -307,6 +316,8 @@
 			buildActionMask = 2147483647;
 			files = (
 				1E35C799385EDCC0EC49EA3C /* Assets.xcassets in Resources */,
+				EC1058F0B4FD8E0EC9FFBC74 /* FrancaTerrain.bin in Resources */,
+				83482203104780B7827C655E /* FrancaTerrain.json in Resources */,
 				9B43EBAD4D483722EE153C7A /* TripItinerary.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -364,6 +375,7 @@
 				2F56431B7BBE0FD32C7B8E68 /* RadarMapWindowView.swift in Sources */,
 				4B2DAB7D62326A7B688A88B2 /* RadarSceneController.swift in Sources */,
 				F4846CCF6F6F5F70BEF219B4 /* RadarSettings.swift in Sources */,
+				705AD12541CFBC079D31D13B /* RadarTerrain.swift in Sources */,
 				2501750DD147AA535DA36B86 /* RadarVolumeView.swift in Sources */,
 				3E37357484872A148BDAC60D /* RadioModels.swift in Sources */,
 				CC400623A4C14FAF288C9D5C /* ReadsbAircraft.swift in Sources */,

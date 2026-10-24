@@ -146,6 +146,9 @@ struct DashboardView: View {
             }
 
             HStack(spacing: 12) {
+                Text("Mesa 1,2 m · raio \(Int(store.settings.radiusKilometers)) km")
+                    .font(.caption.monospacedDigit())
+                    .foregroundStyle(.cyan)
                 if let lastReceivedAt = store.lastReceivedAt {
                     Text("\(store.isPaused ? "Última leitura" : "Auto") · \(lastReceivedAt.formatted(date: .omitted, time: .standard))")
                         .font(.caption.monospacedDigit())

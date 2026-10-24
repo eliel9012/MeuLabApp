@@ -7,6 +7,7 @@ final class MeuLabVisionUITests: XCTestCase {
 
         let close = app.buttons["Fechar radar"]
         XCTAssertTrue(close.waitForExistence(timeout: 15))
+        XCTAssertTrue(app.staticTexts["Mesa 1,2 m · raio 100 km"].exists)
         close.tap()
         let open = app.buttons["Radar 3D"]
         XCTAssertTrue(open.waitForExistence(timeout: 10))

@@ -33,6 +33,8 @@ struct SettingsView: View {
                 }
                 Text("A altura dos marcadores é exagerada para legibilidade; não está na mesma escala que a distância horizontal.")
                     .font(.caption).foregroundStyle(.secondary)
+                Text("Mesa: 1,2 m de largura. Círculo externo = raio selecionado. Relevo WGS84 real com exagero vertical de 8× para leitura espacial.")
+                    .font(.caption).foregroundStyle(.secondary)
             }
             Section("Dados") {
                 LabeledContent("Endpoint", value: "radar.meulab.fun")
@@ -40,6 +42,9 @@ struct SettingsView: View {
                 LabeledContent("Atualização", value: "3 s; backoff em falhas")
                 Text("Origem: receptor de Franca do app iPhone · 20,512504° S · 47,400830° O.")
                     .font(.caption).foregroundStyle(.secondary)
+                Link("Topografia: Mapzen Terrain Tiles / SRTM, via AWS Open Data",
+                     destination: URL(string: "https://registry.opendata.aws/terrain-tiles/")!)
+                    .font(.caption)
             }
         }
         .navigationTitle("Configurações")
