@@ -196,7 +196,8 @@ final class VisionLabStore {
 
     func refresh() async {
         guard selection != .radar, selection != .trip, selection != .analytics,
-              selection != .alerts, selection != .series, selection != .apuracao else { return }
+              selection != .alerts, selection != .series, selection != .apuracao,
+              selection != .acars else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -222,10 +223,7 @@ final class VisionLabStore {
                 (radio, radioHistory) = try await (now, history.items)
             case .weather:
                 weather = try await api.fetch("api/weather/current")
-            case .acars:
-                async let summary: VisionACARSSummary = api.fetch("api/acars/summary")
-                async let messages: VisionACARSList = api.fetch("api/acars/messages?limit=12")
-                (acars, acarsMessages) = try await (summary, messages.messages)
+            case .acars: break
             }
             error = nil
             updatedAt = Date()

@@ -30,6 +30,9 @@ struct VisionRootView: View {
                 } else if lab.selection == .apuracao {
                     VisionApuracaoView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else if lab.selection == .acars {
+                    VisionACARSView()
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
                     VisionDataView()
                         .frame(maxWidth: .infinity, maxHeight: .infinity)

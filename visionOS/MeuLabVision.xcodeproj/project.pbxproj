@@ -21,6 +21,7 @@
 		3E37357484872A148BDAC60D /* RadioModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = F3D64071D395C211F1810BBB /* RadioModels.swift */; };
 		412FC4D156EEF5A6FB3DFC48 /* AircraftListView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9407B510605FFA7F5118CB91 /* AircraftListView.swift */; };
 		4B2DAB7D62326A7B688A88B2 /* RadarSceneController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 6B4EBECF33C0FBBFC6EFCF34 /* RadarSceneController.swift */; };
+		515B3D9890C065CF0493B3E7 /* VisionACARSView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3289024F3C0903EF590BDF32 /* VisionACARSView.swift */; };
 		551EA93DF2BA299647CB74A6 /* RadarMapSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = CFBA59CE9A30DF02A8ED3627 /* RadarMapSnapshot.swift */; };
 		5FAE1D7F61FC8E370FA47E3F /* Aircraft.swift in Sources */ = {isa = PBXBuildFile; fileRef = D78BADAACBA14E60D755F7E2 /* Aircraft.swift */; };
 		610225FF5AE86BE2CA9D5914 /* StatisticsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0885BD0E754B8FF8AA30F39B /* StatisticsView.swift */; };
@@ -75,6 +76,7 @@
 		2BAFA59F600F230B4F0ECA62 /* AviationStackModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AviationStackModels.swift; sourceTree = "<group>"; };
 		2CB212C38117D557BE1368FD /* Geodesy.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Geodesy.swift; sourceTree = "<group>"; };
 		323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAlertsView.swift; sourceTree = "<group>"; };
+		3289024F3C0903EF590BDF32 /* VisionACARSView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionACARSView.swift; sourceTree = "<group>"; };
 		35F0038C76DEF466AB8746F2 /* VisionApuracaoView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionApuracaoView.swift; sourceTree = "<group>"; };
 		40B5E332BC5A97609A0903CD /* FlightStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlightStore.swift; sourceTree = "<group>"; };
 		4CE7101425219ADF3237D670 /* VisionTripModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionTripModels.swift; sourceTree = "<group>"; };
@@ -142,6 +144,7 @@
 		2C0B5FBA269DCE99EAB25A09 /* Lab */ = {
 			isa = PBXGroup;
 			children = (
+				3289024F3C0903EF590BDF32 /* VisionACARSView.swift */,
 				323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */,
 				F12307CBAEE10DEC9239F07D /* VisionAnalyticsView.swift */,
 				35F0038C76DEF466AB8746F2 /* VisionApuracaoView.swift */,
@@ -412,6 +415,7 @@
 				09E0C68BCBA5DF9321B9EB28 /* SettingsView.swift in Sources */,
 				610225FF5AE86BE2CA9D5914 /* StatisticsView.swift in Sources */,
 				0F14BE0C1EE843CF8E0D863E /* SystemModels.swift in Sources */,
+				515B3D9890C065CF0493B3E7 /* VisionACARSView.swift in Sources */,
 				06A07331418A7DE73E4E0DA5 /* VisionAlertsView.swift in Sources */,
 				E3D351D33287D997397927A1 /* VisionAnalyticsView.swift in Sources */,
 				943920C1DDA26C3F3AFEC2C6 /* VisionApuracaoView.swift in Sources */,
