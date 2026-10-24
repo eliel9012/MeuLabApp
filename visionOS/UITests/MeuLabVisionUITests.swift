@@ -88,4 +88,25 @@ final class MeuLabVisionUITests: XCTestCase {
         XCTAssertTrue(app.staticTexts["Serviços systemd"].exists)
         XCTAssertTrue(app.staticTexts["Saúde dos discos"].exists)
     }
+
+    func testNewSectionsAndExpandedPanelsOpen() {
+        let app = XCUIApplication()
+        app.launch()
+
+        app.buttons["Séries"].tap()
+        XCTAssertTrue(app.staticTexts["Séries"].waitForExistence(timeout: 10))
+
+        app.buttons["Apuração"].tap()
+        XCTAssertTrue(app.staticTexts["Apuração 2026"].waitForExistence(timeout: 10))
+
+        app.buttons["ACARS"].tap()
+        XCTAssertTrue(app.staticTexts["Buscar mensagens"].waitForExistence(timeout: 10))
+
+        app.buttons["Clima"].tap()
+        XCTAssertTrue(app.staticTexts["Próximos 10 dias"].waitForExistence(timeout: 20))
+
+        app.buttons["Sistema"].tap()
+        XCTAssertTrue(app.staticTexts["Histórico de CPU"].waitForExistence(timeout: 10))
+        XCTAssertTrue(app.staticTexts["Fire Stick"].exists)
+    }
 }
