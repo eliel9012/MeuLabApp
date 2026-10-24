@@ -12,6 +12,8 @@ enum VisionSection: String, CaseIterable, Identifiable {
     case radio = "Rádio"
     case weather = "Clima"
     case acars = "ACARS"
+    case series = "Séries"
+    case apuracao = "Apuração"
 
     var id: String { rawValue }
     var symbol: String {
@@ -25,6 +27,8 @@ enum VisionSection: String, CaseIterable, Identifiable {
         case .radio: "radio"
         case .weather: "cloud.sun"
         case .acars: "waveform.path"
+        case .series: "film.stack"
+        case .apuracao: "chart.bar.xaxis"
         }
     }
 }
@@ -192,7 +196,7 @@ final class VisionLabStore {
 
     func refresh() async {
         guard selection != .radar, selection != .trip, selection != .analytics,
-              selection != .alerts else { return }
+              selection != .alerts, selection != .series, selection != .apuracao else { return }
         isLoading = true
         defer { isLoading = false }
         do {
@@ -202,6 +206,8 @@ final class VisionLabStore {
             case .trip: break
             case .analytics: break
             case .alerts: break
+            case .series: break
+            case .apuracao: break
             case .system:
                 system = try await api.fetch("api/system/status")
             case .infrastructure:

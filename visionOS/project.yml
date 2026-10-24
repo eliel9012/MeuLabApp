@@ -25,6 +25,9 @@ targets:
       - path: ../MeuLabApp/Models/SystemModels.swift
       - path: ../MeuLabApp/Models/RadioModels.swift
       - path: ../MeuLabApp/Models/WeatherModels.swift
+      - path: ../MeuLabApp/Models/ApuracaoModels.swift
+      - path: ../MeuLabApp/Services/ApuracaoService.swift
+      - path: ../MeuLabApp/ViewModels/ApuracaoViewModel.swift
       - path: ../MeuLabApp/Services/Formatters.swift
     settings:
       base:
