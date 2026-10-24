@@ -6,38 +6,52 @@ private struct VisionSystemAnalytics: Decodable {
     let memory: Memory
     let disk: Disk
     let temperature: Temperature
+    let uptime: Uptime?
 
     struct CPU: Decodable {
         let dataPoints: [Point]
         let average: Double
         let peak: Double
+        let minimum: Double?
         struct Point: Decodable { let timestamp: String; let usage: Double }
     }
     struct Memory: Decodable {
         let dataPoints: [Point]
         let averageUsage: Double
         let peakUsage: Double
+        let minimumAvailable: Double?
         struct Point: Decodable { let timestamp: String; let usedPercent: Double }
     }
     struct Disk: Decodable {
         let dataPoints: [Point]
         let averageUsage: Double
         let peakUsage: Double
+        let growthRate: Double?
         struct Point: Decodable { let timestamp: String; let usedPercent: Double }
     }
     struct Temperature: Decodable {
         let dataPoints: [Point]
         let average: Double
         let peak: Double
+        let minimum: Double?
         struct Point: Decodable { let timestamp: String; let temperature: Double }
     }
+    struct Uptime: Decodable { let current: Int; let average: Int; let reboots: Int }
 }
 
 private struct VisionADSBAnalytics: Decodable {
     let totalFlights: Int
     let uniqueAircraft: Int
     let hourlyStats: [Hour]
+    let dailyStats: [Day]?
+    let topAircraftTypes: [AircraftType]?
+    let topRoutes: [Route]?
+    let altitudeDistribution: [Altitude]?
     struct Hour: Decodable { let hour: Int; let flightCount: Int }
+    struct Day: Decodable { let date: String; let flightCount: Int; let uniqueAircraft: Int }
+    struct AircraftType: Decodable { let type: String; let count: Int; let percentage: Double }
+    struct Route: Decodable { let origin: String; let destination: String; let count: Int; let percentage: Double }
+    struct Altitude: Decodable { let range: String; let count: Int; let percentage: Double }
 }
 
 private struct VisionChartPoint: Identifiable {
@@ -120,6 +134,18 @@ struct VisionAnalyticsView: View {
                             }
                             .font(.caption).foregroundStyle(.secondary)
                         }
+                        if let uptime = system.uptime {
+                            HStack(spacing: 14) {
+                                stat("Uptime atual", Double(uptime.current) / 86_400, unit: " dias")
+                                stat("Uptime médio", Double(uptime.average) / 86_400, unit: " dias")
+                                stat("Reinícios", Double(uptime.reboots), unit: "")
+                            }
+                        }
+                        HStack(spacing: 14) {
+                            if let minimum = system.cpu.minimum { stat("CPU mínima", minimum, unit: "%") }
+                            if let minimum = system.memory.minimumAvailable { stat("RAM livre mínima", minimum, unit: " MB") }
+                            if let growth = system.disk.growthRate { stat("Crescimento disco", growth, unit: " GB/dia") }
+                        }
                     } else if let systemError {
                         empty(systemError)
                     } else { ProgressView("Carregando sistema…") }
@@ -143,6 +169,25 @@ struct VisionAnalyticsView: View {
                             }
                             .frame(height: 165)
                         }
+                        if let daily = adsb.dailyStats, !daily.isEmpty {
+                            Text("Por dia").font(.headline)
+                            Chart(daily, id: \.date) { day in
+                                BarMark(x: .value("Dia", day.date), y: .value("Observações", day.flightCount))
+                                    .foregroundStyle(.blue.gradient)
+                            }
+                            .frame(height: 165)
+                            ForEach(daily, id: \.date) { day in
+                                HStack {
+                                    Text(day.date)
+                                    Spacer()
+                                    Text("\(day.flightCount) observações · \(day.uniqueAircraft) aeronaves")
+                                        .foregroundStyle(.secondary)
+                                }
+                            }
+                        }
+                        analyticsList("Tipos de aeronave", items: (adsb.topAircraftTypes ?? []).map { ("\($0.type) · \($0.count)", $0.percentage) })
+                        analyticsList("Rotas", items: (adsb.topRoutes ?? []).map { ("\($0.origin) → \($0.destination) · \($0.count)", $0.percentage) })
+                        analyticsList("Faixas de altitude", items: (adsb.altitudeDistribution ?? []).map { ("\($0.range) · \($0.count)", $0.percentage) })
                     } else if let adsbError {
                         empty(adsbError)
                     } else { ProgressView("Carregando ADS-B…") }
@@ -165,6 +210,25 @@ struct VisionAnalyticsView: View {
         Label(message, systemImage: "info.circle")
             .foregroundStyle(.secondary)
             .padding(12)
+    }
+
+    private func analyticsList(_ title: String, items: [(String, Double)]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(title).font(.headline)
+            if items.isEmpty {
+                Text("Sem dados registrados neste período.").foregroundStyle(.secondary)
+            } else {
+                ForEach(Array(items.enumerated()), id: \.offset) { _, item in
+                    HStack {
+                        Text(item.0)
+                        Spacer()
+                        Text("\(item.1.formatted(.number.precision(.fractionLength(1))))%")
+                            .foregroundStyle(.secondary)
+                    }
+                }
+            }
+        }
+        .padding(.top, 10)
     }
 
     private func stat(_ title: String, _ value: Double, unit: String) -> some View {
