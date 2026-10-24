@@ -10,6 +10,7 @@
 		06A07331418A7DE73E4E0DA5 /* VisionAlertsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 323EC8EAB62D0EA47F68B422 /* VisionAlertsView.swift */; };
 		070180876832600DA998A4F2 /* VisionRootView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04FB0A74FC27B7CB0D03BB57 /* VisionRootView.swift */; };
 		09E0C68BCBA5DF9321B9EB28 /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 8916CBBE95B5EE9E87B2A77C /* SettingsView.swift */; };
+		0B5414CD0B86682E2D784476 /* VisionWeatherView.swift in Sources */ = {isa = PBXBuildFile; fileRef = D9A7A04A23E1F517DF0DD5AF /* VisionWeatherView.swift */; };
 		0F14BE0C1EE843CF8E0D863E /* SystemModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4A1D1DA228E6A81621A0757 /* SystemModels.swift */; };
 		1E35C799385EDCC0EC49EA3C /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 89D74454945267E0752272A9 /* Assets.xcassets */; };
 		2501750DD147AA535DA36B86 /* RadarVolumeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 890B7D0FCBCF7A3DBD5828AA /* RadarVolumeView.swift */; };
@@ -107,6 +108,7 @@
 		CFBA59CE9A30DF02A8ED3627 /* RadarMapSnapshot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadarMapSnapshot.swift; sourceTree = "<group>"; };
 		D4A1D1DA228E6A81621A0757 /* SystemModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemModels.swift; sourceTree = "<group>"; };
 		D78BADAACBA14E60D755F7E2 /* Aircraft.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Aircraft.swift; sourceTree = "<group>"; };
+		D9A7A04A23E1F517DF0DD5AF /* VisionWeatherView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionWeatherView.swift; sourceTree = "<group>"; };
 		F12307CBAEE10DEC9239F07D /* VisionAnalyticsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionAnalyticsView.swift; sourceTree = "<group>"; };
 		F3D64071D395C211F1810BBB /* RadioModels.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RadioModels.swift; sourceTree = "<group>"; };
 		F45EF5E443C582CB4CEFE6D6 /* VisionLabStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VisionLabStore.swift; sourceTree = "<group>"; };
@@ -150,6 +152,7 @@
 				35F0038C76DEF466AB8746F2 /* VisionApuracaoView.swift */,
 				BDD518AB77A4ECD9851EFC67 /* VisionInfraExtrasView.swift */,
 				A13884F9C81AF29ACB5D4D4E /* VisionSeriesView.swift */,
+				D9A7A04A23E1F517DF0DD5AF /* VisionWeatherView.swift */,
 			);
 			path = Lab;
 			sourceTree = "<group>";
@@ -427,6 +430,7 @@
 				36A32AB401284351D4403DBA /* VisionSeriesView.swift in Sources */,
 				7AF529D701F4FFC6B2D96959 /* VisionTripModels.swift in Sources */,
 				32EA44E014A68C8E150D6C0F /* VisionTripView.swift in Sources */,
+				0B5414CD0B86682E2D784476 /* VisionWeatherView.swift in Sources */,
 				E52347E528306836B3913081 /* WeatherModels.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
