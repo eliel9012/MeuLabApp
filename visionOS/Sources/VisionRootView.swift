@@ -173,6 +173,7 @@ struct VisionDataView: View {
                 detail("Uptime", system.uptime?.formatted ?? "—")
                 detail("Wi-Fi", system.wifi?.ssid ?? "—")
             } else { placeholder }
+            VisionSystemExtrasView()
         }
     }
 
